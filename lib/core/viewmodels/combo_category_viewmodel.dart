@@ -1,13 +1,13 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/category.dart';
 import '../repositories/combo_category_repository.dart';
 
-final comboCategoryListProvider = AsyncNotifierProviderFamily<
-    ComboCategoryList, List<Category>, String>(ComboCategoryList.new);
+part 'combo_category_viewmodel.g.dart';
 
-class ComboCategoryList extends FamilyAsyncNotifier<List<Category>, String> {
+@riverpod
+class ComboCategoryList extends _$ComboCategoryList {
   @override
-  Future<List<Category>> build(String arg) => _fetch(arg);
+  Future<List<Category>> build(String shopId) => _fetch(shopId);
 
   Future<List<Category>> _fetch(String shopId) =>
       ref.read(comboCategoryRepositoryProvider).getComboCategories(shopId);
@@ -20,7 +20,7 @@ class ComboCategoryList extends FamilyAsyncNotifier<List<Category>, String> {
           shopId: shopId,
           label: label,
         );
-    await _refresh();
+    await _refresh(shopId);
   }
 
   Future<void> deleteCategory({
@@ -30,12 +30,12 @@ class ComboCategoryList extends FamilyAsyncNotifier<List<Category>, String> {
     await ref
         .read(comboCategoryRepositoryProvider)
         .deleteComboCategory(categoryId);
-    await _refresh();
+    await _refresh(shopId);
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresh(String shopId) async {
     if (!ref.mounted) return;
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _fetch(arg));
+    state = await AsyncValue.guard(() => _fetch(shopId));
   }
 }
