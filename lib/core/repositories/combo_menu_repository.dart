@@ -31,6 +31,7 @@ class ComboMenuRepository {
     required double price,
     String? description,
     String? imageUrl,
+    String? categoryId,
     int sortOrder = 0,
   }) async {
     final data = await _client
@@ -41,6 +42,7 @@ class ComboMenuRepository {
           'price': price,
           if (description != null) 'description': description,
           if (imageUrl != null) 'image_url': imageUrl,
+          if (categoryId != null) 'category_id': categoryId,
           'sort_order': sortOrder,
         })
         .select()
@@ -54,6 +56,8 @@ class ComboMenuRepository {
     double? price,
     String? description,
     String? imageUrl,
+    String? categoryId,
+    bool? clearCategory,
     bool? isActive,
     int? sortOrder,
   }) async {
@@ -66,6 +70,8 @@ class ComboMenuRepository {
           if (imageUrl != null) 'image_url': imageUrl,
           if (isActive != null) 'is_active': isActive,
           if (sortOrder != null) 'sort_order': sortOrder,
+          if (categoryId != null) 'category_id': categoryId,
+          if (clearCategory == true) 'category_id': null,
           'updated_at': DateTime.now().toIso8601String(),
         })
         .eq('id', comboId)

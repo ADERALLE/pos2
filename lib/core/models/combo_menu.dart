@@ -13,6 +13,7 @@ abstract class ComboMenu with _$ComboMenu {
     String? description,
     required double price,
     @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'category_id') String? categoryId,
     @JsonKey(name: 'is_active') @Default(true) bool isActive,
     @JsonKey(name: 'sort_order') @Default(0) int sortOrder,
     @JsonKey(name: 'created_at') required DateTime createdAt,

@@ -32,6 +32,7 @@ class ComboMenuList extends _$ComboMenuList {
     required double price,
     String? description,
     String? imageUrl,
+    String? categoryId,
     required List<Map<String, dynamic>> items,
   }) async {
     final repo = ref.read(comboMenuRepositoryProvider);
@@ -41,6 +42,7 @@ class ComboMenuList extends _$ComboMenuList {
       price: price,
       description: description,
       imageUrl: imageUrl,
+      categoryId: categoryId,
     );
     if (items.isNotEmpty) {
       await repo.setComboItems(comboId: combo.id, items: items);
@@ -55,6 +57,8 @@ class ComboMenuList extends _$ComboMenuList {
     double? price,
     String? description,
     String? imageUrl,
+    String? categoryId,
+    bool clearCategory = false,
     bool? isActive,
     List<Map<String, dynamic>>? items,
   }) async {
@@ -65,6 +69,8 @@ class ComboMenuList extends _$ComboMenuList {
       price: price,
       description: description,
       imageUrl: imageUrl,
+      categoryId: categoryId,
+      clearCategory: clearCategory,
       isActive: isActive,
     );
     if (items != null) {

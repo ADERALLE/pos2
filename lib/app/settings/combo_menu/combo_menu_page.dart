@@ -7,6 +7,7 @@ import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/repositories/storage_repository.dart';
 
 import '../../../core/appconstants.dart';
+import '../../../core/models/category.dart';
 import '../../../core/models/combo_menu.dart';
 import '../../../core/models/menu_item.dart';
 import '../../../core/models/size_config.dart';
@@ -21,6 +22,7 @@ class ComboMenuPage extends ConsumerWidget {
     SizeConfig().init(context);
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final menuItemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
+    final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
 
     return Scaffold(
       body: Center(
@@ -41,6 +43,7 @@ class ComboMenuPage extends ConsumerWidget {
                       context,
                       ref,
                       menuItemsAsync.value ?? [],
+                      categories: categoriesAsync.value ?? [],
                     ),
                   ),
                 ],
@@ -63,6 +66,7 @@ class ComboMenuPage extends ConsumerWidget {
                       (context, i) => _ComboTile(
                         combo: combos[i],
                         menuItems: menuItemsAsync.value ?? [],
+                        categories: categoriesAsync.value ?? [],
                       ),
                       childCount: combos.length,
                     ),
@@ -80,6 +84,7 @@ class ComboMenuPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     List<MenuItem> menuItems, {
+    List<Category> categories = const [],
     ComboMenu? existing,
   }) {
     showModalBottomSheet(
@@ -88,6 +93,7 @@ class ComboMenuPage extends ConsumerWidget {
       builder: (_) => _ComboFormSheet(
         ref: ref,
         menuItems: menuItems,
+        categories: categories,
         existing: existing,
       ),
     );
@@ -97,9 +103,14 @@ class ComboMenuPage extends ConsumerWidget {
 // ── Combo list tile ──────────────────────────────────────────────────────────
 
 class _ComboTile extends ConsumerWidget {
-  const _ComboTile({required this.combo, required this.menuItems});
+  const _ComboTile({
+    required this.combo,
+    required this.menuItems,
+    required this.categories,
+  });
   final ComboMenu combo;
   final List<MenuItem> menuItems;
+  final List<Category> categories;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,6 +186,7 @@ class _ComboTile extends ConsumerWidget {
                 builder: (_) => _ComboFormSheet(
                   ref: ref,
                   menuItems: menuItems,
+                  categories: categories,
                   existing: combo,
                 ),
               );
@@ -229,11 +241,13 @@ class _ComboFormSheet extends StatefulWidget {
   const _ComboFormSheet({
     required this.ref,
     required this.menuItems,
+    this.categories = const [],
     this.existing,
   });
 
   final WidgetRef ref;
   final List<MenuItem> menuItems;
+  final List<Category> categories;
   final ComboMenu? existing;
 
   @override
@@ -248,6 +262,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   String? _imageUrl;
   bool _uploading = false;
   bool _saving = false;
+  String? _selectedCategoryId;
 
   /// Map of menuItemId → quantity for items included in the combo.
   late Map<String, int> _selectedItems;
@@ -263,6 +278,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
     _priceCtrl = TextEditingController(text: e != null ? e.price.toString() : '');
     _descCtrl = TextEditingController(text: e?.description ?? '');
     _imageUrl = e?.imageUrl;
+    _selectedCategoryId = e?.categoryId;
 
     _selectedItems = {};
     _choiceGroups = {};
@@ -327,6 +343,9 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
           description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
           imageUrl: _imageUrl,
           items: items,
+          categoryId: _selectedCategoryId,
+          clearCategory: _selectedCategoryId == null &&
+              widget.existing?.categoryId != null,
         );
       } else {
         await notifier.create(
@@ -336,6 +355,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
           description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
           imageUrl: _imageUrl,
           items: items,
+          categoryId: _selectedCategoryId,
         );
       }
       if (mounted) Navigator.pop(context);
@@ -423,6 +443,26 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               controller: _descCtrl,
               decoration: const InputDecoration(labelText: 'Description (optional)'),
               maxLines: 2,
+            ),
+            const SizedBox(height: 12),
+
+            // Category
+            DropdownButtonFormField<String?>(
+              value: _selectedCategoryId,
+              decoration: const InputDecoration(labelText: 'Category (optional)'),
+              items: [
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('— No category —'),
+                ),
+                ...widget.categories.map(
+                  (cat) => DropdownMenuItem<String?>(
+                    value: cat.id,
+                    child: Text(cat.label),
+                  ),
+                ),
+              ],
+              onChanged: (v) => setState(() => _selectedCategoryId = v),
             ),
             const SizedBox(height: 20),
 

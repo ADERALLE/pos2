@@ -33,3 +33,9 @@ ALTER TABLE public.combo_menu_items
 ---------------------------------------------
 
 ALTER TABLE shifts RENAME COLUMN rotation_amount TO passation_amount;
+
+
+----------------------------------------------
+
+ALTER TABLE public.combo_menus
+  ADD COLUMN IF NOT EXISTS category_id uuid REFERENCES public.categories(id);

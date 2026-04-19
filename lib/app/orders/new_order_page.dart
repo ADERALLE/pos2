@@ -18,6 +18,7 @@ import '../../core/models/size_config.dart';
 
 // ── State Provider for Category Filtering ────────────────────────────────────
 final selectedCategoryIdProvider = StateProvider<String?>((ref) => null);
+final selectedComboCategoryIdProvider = StateProvider<String?>((ref) => null);
 
 /// Controls which tab is active in the New Order grid.
 enum OrderViewTab { items, combos }
@@ -65,6 +66,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
 
     // Watch the filter state
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
+    final selectedComboCategoryId = ref.watch(selectedComboCategoryIdProvider);
     final activeTab = ref.watch(orderViewTabProvider);
 
     // Responsive breakpoints
@@ -130,7 +132,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // ── Category chips (only visible in Items tab) ──
+                  // ── Category chips (items tab OR combos tab) ──
                   if (activeTab == OrderViewTab.items)
                     categoriesAsync.maybeWhen(
                       data: (cats) => Container(
@@ -164,7 +166,37 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                       orElse: () => const SizedBox(height: 48),
                     )
                   else
-                    const SizedBox(height: 48),
+                    categoriesAsync.maybeWhen(
+                      data: (cats) => Container(
+                        height: 48,
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: cats.length + 1,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            if (i == 0) {
+                              final isSelected = selectedComboCategoryId == null;
+                              return _CategoryChip(
+                                label: 'All',
+                                isSelected: isSelected,
+                                onPressed: () => ref.read(selectedComboCategoryIdProvider.notifier).state = null,
+                              );
+                            }
+                            final category = cats[i - 1];
+                            final isSelected = selectedComboCategoryId == category.id;
+                            return _CategoryChip(
+                              label: category.label,
+                              isSelected: isSelected,
+                              onPressed: () => ref.read(selectedComboCategoryIdProvider.notifier).state =
+                                  isSelected ? null : category.id,
+                            );
+                          },
+                        ),
+                      ),
+                      orElse: () => const SizedBox(height: 48),
+                    ),
                 ],
               ),
             ),
@@ -216,7 +248,12 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 child: Center(child: Text('Error loading combos: $e')),
               ),
               data: (combos) {
-                final activeCombos = combos.where((c) => c.isActive).toList();
+                final activeCombos = combos
+                    .where((c) =>
+                        c.isActive &&
+                        (selectedComboCategoryId == null ||
+                            c.categoryId == selectedComboCategoryId))
+                    .toList();
                 if (activeCombos.isEmpty) {
                   return const SliverFillRemaining(
                     child: Center(child: Text('No combos available')),
