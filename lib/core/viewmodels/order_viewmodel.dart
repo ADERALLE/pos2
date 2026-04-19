@@ -408,21 +408,24 @@ class Cart extends _$Cart {
     final items = <Map<String, dynamic>>[];
     for (final c in state) {
       if (c.isCombo) {
-        // Decompose combo into individual order items so the kitchen
-        // sees every product and the DB schema stays unchanged.
-        for (final ci in c.comboMenu!.comboMenuItems) {
-          final mi = ci.menuItem;
-          if (mi == null) continue;
-          items.add({
-            'menu_item_id': mi.id,
-            'name': '${c.comboMenu!.name} – ${mi.name}',
-            'unit_price': 0.0, // individual price is 0; combo price is on the first line
-            'quantity': ci.quantity * c.quantity,
-          });
-        }
-        // Add a summary line carrying the combo price for correct totalling.
-        if (c.comboMenu!.comboMenuItems.isNotEmpty) {
-          items.last['unit_price'] = c.comboMenu!.price / c.quantity;
+        // Emit one group of order items per combo unit so each combo
+        // instance appears as a separate block in the order display.
+        for (int u = 0; u < c.quantity; u++) {
+          final suffix = c.quantity > 1 ? ' #${u + 1}' : '';
+          for (final ci in c.comboMenu!.comboMenuItems) {
+            final mi = ci.menuItem;
+            if (mi == null) continue;
+            items.add({
+              'menu_item_id': mi.id,
+              'name': '${c.comboMenu!.name}$suffix – ${mi.name}',
+              'unit_price': 0.0,
+              'quantity': ci.quantity,
+            });
+          }
+          // The last item of each group carries the full combo price.
+          if (c.comboMenu!.comboMenuItems.isNotEmpty) {
+            items.last['unit_price'] = c.comboMenu!.price;
+          }
         }
       } else {
         items.add({
