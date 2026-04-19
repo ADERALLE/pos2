@@ -49,13 +49,13 @@ class StaffDashboardRepository {
     double totalTips = 0;
     double cashRevenue  = 0;
     double cardRevenue  = 0;
-    double totalRotation = 0;
+    double totalPassation = 0;
     Duration totalDuration = Duration.zero;
 
     for (final s in shifts) {
       final orders = s['orders'] as List? ?? [];
       totalOrders  += orders.length;
-      totalRotation += (s['passation_amount'] as num? ?? 0).toDouble();
+      totalPassation += (s['passation_amount'] as num? ?? 0).toDouble();
 
       for (final o in orders) {
         if (o['status'] == 'done') {
@@ -73,7 +73,7 @@ class StaffDashboardRepository {
     }
 
     final cashToHandOver =
-    (cashRevenue + totalRotation - totalTips).clamp(0.0, double.infinity);
+    (cashRevenue + totalPassation - totalTips).clamp(0.0, double.infinity);
 
     return {
       'totalShifts':    totalShifts,
@@ -82,7 +82,7 @@ class StaffDashboardRepository {
       'cashRevenue':    cashRevenue,
       'cardRevenue':    cardRevenue,
       'totalTips':      totalTips,
-      'passationAmount': totalRotation,
+      'passationAmount': totalPassation,
       'cashToHandOver': cashToHandOver,
       'avgShiftDuration': totalShifts > 0
           ? totalDuration.inMinutes ~/ totalShifts

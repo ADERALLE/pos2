@@ -160,7 +160,7 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // row 3: tips (conditional) + rotation (conditional) + cash to hand over (always)
+                    // row 3: tips (conditional) + passation (conditional) + cash to hand over (always)
                     Row(
                       children: [
                         if ((s['totalTips'] as num).toDouble() > 0) ...[
@@ -174,7 +174,7 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage> {
                         ],
                         if ((s['passationAmount'] as num).toDouble() > 0) ...[
                           _StatCard(
-                            label: 'Rotation taken',
+                            label: 'Passation',
                             value: '${(s['passationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
                             icon: Icons.rotate_right_rounded,
                             color: Colors.orange,
@@ -424,7 +424,7 @@ class _ShiftCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // row 2: tips (conditional) + rotation (conditional) + cash to hand over (always)
+          // row 2: tips (conditional) + passation (conditional) + cash to hand over (always)
           Row(
             children: [
               if (totalTips > 0) ...[
@@ -439,7 +439,7 @@ class _ShiftCard extends StatelessWidget {
               if (passationAmount > 0) ...[
                 Expanded(child: _RevenueTile(
                   icon: Icons.rotate_right_rounded,
-                  label: 'Rotation',
+                  label: 'Passation',
                   value: '${passationAmount.toStringAsFixed(2)} MAD',
                   color: Colors.orange,
                 )),

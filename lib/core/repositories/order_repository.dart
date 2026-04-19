@@ -220,7 +220,7 @@ class OrderRepository {
     final cardRevenue = doneOrders.fold(0.0, (sum, o) => sum + o.cardAmount);
     final totalTips   = doneOrders.fold(0.0, (sum, o) => sum + o.tip);
 
-    // Cash to hand over = cash collected + rotation taken at shift start − tips (tips stay with cashier)
+    // Cash to hand over = cash collected + passation taken at shift start − tips (tips stay with cashier)
     final cashToHandOver = (cashRevenue + passationAmount - totalTips).clamp(0.0, double.infinity);
 
     return {

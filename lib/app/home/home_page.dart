@@ -152,15 +152,15 @@ class _NoShiftCard extends ConsumerWidget {
               ref: ref,
               title: 'Start shift',
               confirmLabel: 'Start',
-              showRotation: true,
-              onConfirm: (note, rotation) async {
+              showPassation: true,
+              onConfirm: (note, passation) async {
                 await ref
                     .read(activeShiftProvider(staff.id).notifier)
                     .openShift(
                   shopId: AppConstants.shopId,
                   staffId: staff.id,
                   note: note,
-                  passationAmount: rotation,
+                  passationAmount: passation,
                 );
               },
             ),
@@ -668,14 +668,14 @@ class _ShiftDialog extends StatefulWidget {
     required this.confirmLabel,
     required this.onConfirm,
     this.isDestructive = false,
-    this.showRotation = false,
+    this.showPassation = false,
 
   });
   final String title;
   final String confirmLabel;
-  final Future<void> Function(String? note, double rotation) onConfirm;
+  final Future<void> Function(String? note, double passation) onConfirm;
   final bool isDestructive;
-  final bool showRotation;
+  final bool showPassation;
 
 
   static void show({
@@ -683,9 +683,9 @@ class _ShiftDialog extends StatefulWidget {
     required WidgetRef ref,
     required String title,
     required String confirmLabel,
-    required Future<void> Function(String? note, double rotation) onConfirm,
+    required Future<void> Function(String? note, double passation) onConfirm,
     bool isDestructive = false,
-    bool showRotation = false,
+    bool showPassation = false,
 
   }) {
     showDialog(
@@ -695,7 +695,7 @@ class _ShiftDialog extends StatefulWidget {
         confirmLabel: confirmLabel,
         onConfirm: onConfirm,
         isDestructive: isDestructive,
-        showRotation: showRotation,
+        showPassation: showPassation,
 
       ),
     );
@@ -707,14 +707,14 @@ class _ShiftDialog extends StatefulWidget {
 
 class _ShiftDialogState extends State<_ShiftDialog> {
   final _controller = TextEditingController();
-  final _rotationController = TextEditingController(text: '0');
+  final _passationController = TextEditingController(text: '0');
 
   bool _loading = false;
 
   @override
   void dispose() {
     _controller.dispose();
-    _rotationController.dispose();
+    _passationController.dispose();
 
     super.dispose();
   }
@@ -722,10 +722,10 @@ class _ShiftDialogState extends State<_ShiftDialog> {
   Future<void> _submit() async {
     setState(() => _loading = true);
     try {
-      final rotation = double.tryParse(_rotationController.text.trim()) ?? 0.0;
+      final passation = double.tryParse(_passationController.text.trim()) ?? 0.0;
       await widget.onConfirm(
         _controller.text.trim().isEmpty ? null : _controller.text.trim(),
-        rotation,
+        passation,
       );
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -749,21 +749,21 @@ class _ShiftDialogState extends State<_ShiftDialog> {
         children: [
           TextField(
             controller: _controller,
-            autofocus: !widget.showRotation,
+            autofocus: !widget.showPassation,
             decoration: InputDecoration(
               hintText: 'Note (optional)',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             ),
           ),
-          if (widget.showRotation) ...[
+          if (widget.showPassation) ...[
             const SizedBox(height: 12),
             TextField(
-              controller: _rotationController,
+              controller: _passationController,
               autofocus: true,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Rotation amount',
+                labelText: 'Passation amount',
                 hintText: '0.00',
                 suffixText: 'MAD',
                 helperText: 'Cash taken from register at shift start',
