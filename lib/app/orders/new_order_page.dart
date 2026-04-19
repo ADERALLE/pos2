@@ -486,7 +486,21 @@ class _CartContentState extends ConsumerState<CartContent> {
                         )
                       : null,
                   title: Text(c.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${c.subtotal.toStringAsFixed(2)} MAD'),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (c.choicesSummary.isNotEmpty)
+                        Text(
+                          c.choicesSummary,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.tertiary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      Text('${c.subtotal.toStringAsFixed(2)} MAD'),
+                    ],
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
