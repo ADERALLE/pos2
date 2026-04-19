@@ -77,6 +77,42 @@ class CategoryList extends _$CategoryList {
   }
 }
 
+// ── Combo Category List ───────────────────────────────────────────────────────
+
+@riverpod
+class ComboCategoryList extends _$ComboCategoryList {
+  @override
+  Future<List<Category>> build(String shopId) async {
+    return _fetchComboCategories(shopId);
+  }
+
+  Future<List<Category>> _fetchComboCategories(String shopId) async {
+    return ref.read(menuRepositoryProvider).getComboCategories(shopId);
+  }
+
+  Future<void> create({required String shopId, required String label}) async {
+    await ref.read(menuRepositoryProvider).createComboCategory(
+      shopId: shopId,
+      label: label,
+    );
+    await _refresh(shopId);
+  }
+
+  Future<void> deleteCategory({
+    required String categoryId,
+    required String shopId,
+  }) async {
+    await ref.read(menuRepositoryProvider).deleteComboCategory(categoryId);
+    await _refresh(shopId);
+  }
+
+  Future<void> _refresh(String shopId) async {
+    if (!ref.mounted) return;
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() => _fetchComboCategories(shopId));
+  }
+}
+
 // ── Menu Item List ────────────────────────────────────────────────────────────
 
 @riverpod

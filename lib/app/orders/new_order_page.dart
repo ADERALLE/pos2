@@ -6,7 +6,6 @@ import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
-import 'package:pos_v1/core/viewmodels/combo_category_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';

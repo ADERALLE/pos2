@@ -11,7 +11,6 @@ import '../../../core/models/category.dart';
 import '../../../core/models/combo_menu.dart';
 import '../../../core/models/menu_item.dart';
 import '../../../core/models/size_config.dart';
-import '../../../core/viewmodels/combo_category_viewmodel.dart';
 import '../../../core/viewmodels/combo_menu_viewmodel.dart';
 import '../../../core/viewmodels/menu_viewmodel.dart';
 

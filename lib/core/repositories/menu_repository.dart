@@ -60,6 +60,34 @@ class MenuRepository {
     await _client.from('categories').delete().eq('id', categoryId);
   }
 
+  // ── combo categories ──────────────────────────────────────
+
+  Future<List<Category>> getComboCategories(String shopId) async {
+    final data = await _client
+        .from('combo_categories')
+        .select()
+        .eq('shop_id', shopId)
+        .order('sort_order');
+    return data.map((e) => Category.fromJson(e)).toList();
+  }
+
+  Future<Category> createComboCategory({
+    required String shopId,
+    required String label,
+    int sortOrder = 0,
+  }) async {
+    final data = await _client
+        .from('combo_categories')
+        .insert({'shop_id': shopId, 'label': label, 'sort_order': sortOrder})
+        .select()
+        .single();
+    return Category.fromJson(data);
+  }
+
+  Future<void> deleteComboCategory(String categoryId) async {
+    await _client.from('combo_categories').delete().eq('id', categoryId);
+  }
+
   // ── menu items ───────────────────────────────────────────
 
   Future<List<MenuItem>> getMenuItems(String shopId) async {
