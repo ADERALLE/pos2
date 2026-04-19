@@ -563,7 +563,7 @@ class _CartSidePanel extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(item.menuItem.name,
+                        child: Text(item.displayName,
                             style: Theme.of(context).textTheme.bodySmall,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis),
@@ -576,7 +576,7 @@ class _CartSidePanel extends ConsumerWidget {
                               ?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(width: 4),
                       GestureDetector(
-                        onTap: () => ref.read(cartProvider.notifier).removeItem(item.menuItem.id),
+                        onTap: () => ref.read(cartProvider.notifier).removeItem(item.cartKey),
                         child: Icon(Icons.close, size: 14,
                             color: scheme.onSurface.withOpacity(0.4)),
                       ),
