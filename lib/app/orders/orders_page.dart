@@ -207,6 +207,7 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
           ? Center(child: Text(AppLocalizations.of(context)!.noOrderHistory))
           : ListView.separated(
         controller: _scrollController,
+        itemCount: orders.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (_, i) => _OrderCard(order: orders[i], readonly: true),
       ),
