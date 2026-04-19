@@ -382,15 +382,42 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.existing != null;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
-      child: Form(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEdit ? 'Edit item' : 'Add item'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          _loading
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : TextButton(
+                  onPressed: _submit,
+                  child: Text(
+                    isEdit ? 'Save' : 'Add',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+        ],
+      ),
+      body: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Text(isEdit ? 'Edit item' : 'Add item',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
@@ -477,7 +504,7 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
                   width: 20,
                   child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(isEdit ? 'Save' : 'Add'),
-            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

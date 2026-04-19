@@ -454,19 +454,40 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
         ? activeItems
         : activeItems.where((i) => i.categoryId == _itemCategoryFilter).toList();
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
-      child: Form(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.existing != null ? 'Edit Combo' : 'New Combo'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          _saving
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : TextButton(
+                  onPressed: _save,
+                  child: Text(
+                    widget.existing != null ? 'Save' : 'Create',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+        ],
+      ),
+      body: Form(
         key: _formKey,
         child: ListView(
-          shrinkWrap: true,
+          padding: EdgeInsets.fromLTRB(
+              24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
           children: [
-            Text(
-              widget.existing != null ? 'Edit Combo' : 'New Combo',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
 
             // Image picker
             GestureDetector(
@@ -816,8 +837,6 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
       ),
     );
   }
-
-  /// Shows a dialog to assign or remove a choice group for a selected item.
   void _showChoiceGroupDialog(String menuItemId) {
     final ctrl = TextEditingController(text: _choiceGroups[menuItemId] ?? '');
 

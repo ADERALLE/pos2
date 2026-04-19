@@ -207,24 +207,44 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.existing != null;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        16,
-        16,
-        MediaQuery.of(context).viewInsets.bottom + 16,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(isEdit ? 'Edit staff' : 'Add staff'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          _loading
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : TextButton(
+                  onPressed: _submit,
+                  child: Text(
+                    isEdit ? 'Save' : 'Add',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+        ],
       ),
-      child: Form(
+      body: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              isEdit ? 'Edit staff' : 'Add staff',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+            16, 16, 16,
+            MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             TextFormField(
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
@@ -259,12 +279,13 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
               onPressed: _loading ? null : _submit,
               child: _loading
                   ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : Text(isEdit ? 'Save' : 'Add'),
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
