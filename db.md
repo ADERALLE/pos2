@@ -86,7 +86,7 @@ opened_at timestamp with time zone NOT NULL DEFAULT now(),
 closed_at timestamp with time zone,
 opening_note text,
 closing_note text,
-rotation_amount numeric NOT NULL DEFAULT 0 CHECK (rotation_amount >= 0::numeric),
+passation_amount numeric NOT NULL DEFAULT 0 CHECK (passation_amount >= 0::numeric),
 CONSTRAINT shifts_pkey PRIMARY KEY (id),
 CONSTRAINT shifts_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id),
 CONSTRAINT shifts_staff_id_fkey FOREIGN KEY (staff_id) REFERENCES public.staff(id)

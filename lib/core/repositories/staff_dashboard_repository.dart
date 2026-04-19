@@ -41,7 +41,7 @@ class StaffDashboardRepository {
   Future<Map<String, dynamic>> getStaffStats(String staffId) async {
     final shifts = await _client
         .from('shifts')
-        .select('id, opened_at, closed_at, rotation_amount, orders(total, status, cash_amount, card_amount, tip)')
+        .select('id, opened_at, closed_at, passation_amount, orders(total, status, cash_amount, card_amount, tip)')
         .eq('staff_id', staffId);
 
     int totalShifts  = shifts.length;
@@ -55,7 +55,7 @@ class StaffDashboardRepository {
     for (final s in shifts) {
       final orders = s['orders'] as List? ?? [];
       totalOrders  += orders.length;
-      totalRotation += (s['rotation_amount'] as num? ?? 0).toDouble();
+      totalRotation += (s['passation_amount'] as num? ?? 0).toDouble();
 
       for (final o in orders) {
         if (o['status'] == 'done') {
@@ -82,7 +82,7 @@ class StaffDashboardRepository {
       'cashRevenue':    cashRevenue,
       'cardRevenue':    cardRevenue,
       'totalTips':      totalTips,
-      'rotationAmount': totalRotation,
+      'passationAmount': totalRotation,
       'cashToHandOver': cashToHandOver,
       'avgShiftDuration': totalShifts > 0
           ? totalDuration.inMinutes ~/ totalShifts

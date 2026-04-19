@@ -11,7 +11,7 @@ abstract class Shift with _$Shift {
     @JsonKey(name: 'staff_id') required String staffId,
     @JsonKey(name: 'opened_at') required DateTime openedAt,
     @JsonKey(name: 'closed_at') DateTime? closedAt,
-    @JsonKey(name: 'rotation_amount') @Default(0.0) double rotationAmount,
+    @JsonKey(name: 'passation_amount') @Default(0.0) double passationAmount,
     @JsonKey(name: 'opening_note') String? openingNote,
     @JsonKey(name: 'closing_note') String? closingNote,
   }) = _Shift;

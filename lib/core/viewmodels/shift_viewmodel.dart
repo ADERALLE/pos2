@@ -18,7 +18,7 @@ class ActiveShift extends _$ActiveShift {
     required String shopId,
     required String staffId,
     String? note,
-    double rotationAmount = 0,
+    double passationAmount = 0,
 
   }) async {
     state = const AsyncLoading();
@@ -27,7 +27,7 @@ class ActiveShift extends _$ActiveShift {
         shopId: shopId,
         staffId: staffId,
         note: note,
-        rotationAmount: rotationAmount,
+        passationAmount: passationAmount,
 
           ),
     );

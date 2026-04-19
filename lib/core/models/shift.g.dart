@@ -14,7 +14,7 @@ _Shift _$ShiftFromJson(Map<String, dynamic> json) => _Shift(
       closedAt: json['closed_at'] == null
           ? null
           : DateTime.parse(json['closed_at'] as String),
-      rotationAmount: (json['rotation_amount'] as num?)?.toDouble() ?? 0.0,
+      passationAmount: (json['passation_amount'] as num?)?.toDouble() ?? 0.0,
       openingNote: json['opening_note'] as String?,
       closingNote: json['closing_note'] as String?,
     );
@@ -25,7 +25,7 @@ Map<String, dynamic> _$ShiftToJson(_Shift instance) => <String, dynamic>{
       'staff_id': instance.staffId,
       'opened_at': instance.openedAt.toIso8601String(),
       'closed_at': instance.closedAt?.toIso8601String(),
-      'rotation_amount': instance.rotationAmount,
+      'passation_amount': instance.passationAmount,
       'opening_note': instance.openingNote,
       'closing_note': instance.closingNote,
     };

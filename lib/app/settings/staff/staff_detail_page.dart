@@ -172,10 +172,10 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage> {
                           ),
                           const SizedBox(width: 10),
                         ],
-                        if ((s['rotationAmount'] as num).toDouble() > 0) ...[
+                        if ((s['passationAmount'] as num).toDouble() > 0) ...[
                           _StatCard(
                             label: 'Rotation taken',
-                            value: '${(s['rotationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
+                            value: '${(s['passationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
                             icon: Icons.rotate_right_rounded,
                             color: Colors.orange,
                           ),
@@ -319,9 +319,9 @@ class _ShiftCard extends StatelessWidget {
         .fold(0.0, (sum, o) => sum + (o['card_amount'] as num? ?? 0).toDouble());
     final totalTips = done
         .fold(0.0, (sum, o) => sum + (o['tip'] as num? ?? 0).toDouble());
-    final rotationAmount = (shift['rotation_amount'] as num? ?? 0).toDouble();
+    final passationAmount = (shift['passation_amount'] as num? ?? 0).toDouble();
     final totalRevenue = cashRevenue + cardRevenue;
-    final cashToHandOver = (cashRevenue + rotationAmount - totalTips).clamp(0.0, double.infinity);
+    final cashToHandOver = (cashRevenue + passationAmount - totalTips).clamp(0.0, double.infinity);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -436,11 +436,11 @@ class _ShiftCard extends StatelessWidget {
                 )),
                 const SizedBox(width: 8),
               ],
-              if (rotationAmount > 0) ...[
+              if (passationAmount > 0) ...[
                 Expanded(child: _RevenueTile(
                   icon: Icons.rotate_right_rounded,
                   label: 'Rotation',
-                  value: '${rotationAmount.toStringAsFixed(2)} MAD',
+                  value: '${passationAmount.toStringAsFixed(2)} MAD',
                   color: Colors.orange,
                 )),
                 const SizedBox(width: 8),

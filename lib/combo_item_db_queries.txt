@@ -29,3 +29,7 @@ CREATE INDEX idx_combo_menu_items_combo_id ON public.combo_menu_items(combo_menu
 
 ALTER TABLE public.combo_menu_items
   ADD COLUMN choice_group text;
+
+---------------------------------------------
+
+ALTER TABLE shifts RENAME COLUMN rotation_amount TO passation_amount;

@@ -23,8 +23,8 @@ mixin _$Shift {
   DateTime get openedAt;
   @JsonKey(name: 'closed_at')
   DateTime? get closedAt;
-  @JsonKey(name: 'rotation_amount')
-  double get rotationAmount;
+  @JsonKey(name: 'passation_amount')
+  double get passationAmount;
   @JsonKey(name: 'opening_note')
   String? get openingNote;
   @JsonKey(name: 'closing_note')
@@ -52,8 +52,8 @@ mixin _$Shift {
                 other.openedAt == openedAt) &&
             (identical(other.closedAt, closedAt) ||
                 other.closedAt == closedAt) &&
-            (identical(other.rotationAmount, rotationAmount) ||
-                other.rotationAmount == rotationAmount) &&
+            (identical(other.passationAmount, passationAmount) ||
+                other.passationAmount == passationAmount) &&
             (identical(other.openingNote, openingNote) ||
                 other.openingNote == openingNote) &&
             (identical(other.closingNote, closingNote) ||
@@ -63,11 +63,11 @@ mixin _$Shift {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, shopId, staffId, openedAt,
-      closedAt, rotationAmount, openingNote, closingNote);
+      closedAt, passationAmount, openingNote, closingNote);
 
   @override
   String toString() {
-    return 'Shift(id: $id, shopId: $shopId, staffId: $staffId, openedAt: $openedAt, closedAt: $closedAt, rotationAmount: $rotationAmount, openingNote: $openingNote, closingNote: $closingNote)';
+    return 'Shift(id: $id, shopId: $shopId, staffId: $staffId, openedAt: $openedAt, closedAt: $closedAt, passationAmount: $passationAmount, openingNote: $openingNote, closingNote: $closingNote)';
   }
 }
 
@@ -82,7 +82,7 @@ abstract mixin class $ShiftCopyWith<$Res> {
       @JsonKey(name: 'staff_id') String staffId,
       @JsonKey(name: 'opened_at') DateTime openedAt,
       @JsonKey(name: 'closed_at') DateTime? closedAt,
-      @JsonKey(name: 'rotation_amount') double rotationAmount,
+      @JsonKey(name: 'passation_amount') double passationAmount,
       @JsonKey(name: 'opening_note') String? openingNote,
       @JsonKey(name: 'closing_note') String? closingNote});
 }
@@ -104,7 +104,7 @@ class _$ShiftCopyWithImpl<$Res> implements $ShiftCopyWith<$Res> {
     Object? staffId = null,
     Object? openedAt = null,
     Object? closedAt = freezed,
-    Object? rotationAmount = null,
+    Object? passationAmount = null,
     Object? openingNote = freezed,
     Object? closingNote = freezed,
   }) {
@@ -129,9 +129,9 @@ class _$ShiftCopyWithImpl<$Res> implements $ShiftCopyWith<$Res> {
           ? _self.closedAt
           : closedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      rotationAmount: null == rotationAmount
-          ? _self.rotationAmount
-          : rotationAmount // ignore: cast_nullable_to_non_nullable
+      passationAmount: null == passationAmount
+          ? _self.passationAmount
+          : passationAmount // ignore: cast_nullable_to_non_nullable
               as double,
       openingNote: freezed == openingNote
           ? _self.openingNote
@@ -244,7 +244,7 @@ extension ShiftPatterns on Shift {
             @JsonKey(name: 'staff_id') String staffId,
             @JsonKey(name: 'opened_at') DateTime openedAt,
             @JsonKey(name: 'closed_at') DateTime? closedAt,
-            @JsonKey(name: 'rotation_amount') double rotationAmount,
+            @JsonKey(name: 'passation_amount') double passationAmount,
             @JsonKey(name: 'opening_note') String? openingNote,
             @JsonKey(name: 'closing_note') String? closingNote)?
         $default, {
@@ -259,7 +259,7 @@ extension ShiftPatterns on Shift {
             _that.staffId,
             _that.openedAt,
             _that.closedAt,
-            _that.rotationAmount,
+            _that.passationAmount,
             _that.openingNote,
             _that.closingNote);
       case _:
@@ -288,7 +288,7 @@ extension ShiftPatterns on Shift {
             @JsonKey(name: 'staff_id') String staffId,
             @JsonKey(name: 'opened_at') DateTime openedAt,
             @JsonKey(name: 'closed_at') DateTime? closedAt,
-            @JsonKey(name: 'rotation_amount') double rotationAmount,
+            @JsonKey(name: 'passation_amount') double passationAmount,
             @JsonKey(name: 'opening_note') String? openingNote,
             @JsonKey(name: 'closing_note') String? closingNote)
         $default,
@@ -302,7 +302,7 @@ extension ShiftPatterns on Shift {
             _that.staffId,
             _that.openedAt,
             _that.closedAt,
-            _that.rotationAmount,
+            _that.passationAmount,
             _that.openingNote,
             _that.closingNote);
       case _:
@@ -330,7 +330,7 @@ extension ShiftPatterns on Shift {
             @JsonKey(name: 'staff_id') String staffId,
             @JsonKey(name: 'opened_at') DateTime openedAt,
             @JsonKey(name: 'closed_at') DateTime? closedAt,
-            @JsonKey(name: 'rotation_amount') double rotationAmount,
+            @JsonKey(name: 'passation_amount') double passationAmount,
             @JsonKey(name: 'opening_note') String? openingNote,
             @JsonKey(name: 'closing_note') String? closingNote)?
         $default,
@@ -344,7 +344,7 @@ extension ShiftPatterns on Shift {
             _that.staffId,
             _that.openedAt,
             _that.closedAt,
-            _that.rotationAmount,
+            _that.passationAmount,
             _that.openingNote,
             _that.closingNote);
       case _:
@@ -362,7 +362,7 @@ class _Shift implements Shift {
       @JsonKey(name: 'staff_id') required this.staffId,
       @JsonKey(name: 'opened_at') required this.openedAt,
       @JsonKey(name: 'closed_at') this.closedAt,
-      @JsonKey(name: 'rotation_amount') this.rotationAmount = 0.0,
+      @JsonKey(name: 'passation_amount') this.passationAmount = 0.0,
       @JsonKey(name: 'opening_note') this.openingNote,
       @JsonKey(name: 'closing_note') this.closingNote});
   factory _Shift.fromJson(Map<String, dynamic> json) => _$ShiftFromJson(json);
@@ -382,8 +382,8 @@ class _Shift implements Shift {
   @JsonKey(name: 'closed_at')
   final DateTime? closedAt;
   @override
-  @JsonKey(name: 'rotation_amount')
-  final double rotationAmount;
+  @JsonKey(name: 'passation_amount')
+  final double passationAmount;
   @override
   @JsonKey(name: 'opening_note')
   final String? openingNote;
@@ -418,8 +418,8 @@ class _Shift implements Shift {
                 other.openedAt == openedAt) &&
             (identical(other.closedAt, closedAt) ||
                 other.closedAt == closedAt) &&
-            (identical(other.rotationAmount, rotationAmount) ||
-                other.rotationAmount == rotationAmount) &&
+            (identical(other.passationAmount, passationAmount) ||
+                other.passationAmount == passationAmount) &&
             (identical(other.openingNote, openingNote) ||
                 other.openingNote == openingNote) &&
             (identical(other.closingNote, closingNote) ||
@@ -429,11 +429,11 @@ class _Shift implements Shift {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, id, shopId, staffId, openedAt,
-      closedAt, rotationAmount, openingNote, closingNote);
+      closedAt, passationAmount, openingNote, closingNote);
 
   @override
   String toString() {
-    return 'Shift(id: $id, shopId: $shopId, staffId: $staffId, openedAt: $openedAt, closedAt: $closedAt, rotationAmount: $rotationAmount, openingNote: $openingNote, closingNote: $closingNote)';
+    return 'Shift(id: $id, shopId: $shopId, staffId: $staffId, openedAt: $openedAt, closedAt: $closedAt, passationAmount: $passationAmount, openingNote: $openingNote, closingNote: $closingNote)';
   }
 }
 
@@ -449,7 +449,7 @@ abstract mixin class _$ShiftCopyWith<$Res> implements $ShiftCopyWith<$Res> {
       @JsonKey(name: 'staff_id') String staffId,
       @JsonKey(name: 'opened_at') DateTime openedAt,
       @JsonKey(name: 'closed_at') DateTime? closedAt,
-      @JsonKey(name: 'rotation_amount') double rotationAmount,
+      @JsonKey(name: 'passation_amount') double passationAmount,
       @JsonKey(name: 'opening_note') String? openingNote,
       @JsonKey(name: 'closing_note') String? closingNote});
 }
@@ -471,7 +471,7 @@ class __$ShiftCopyWithImpl<$Res> implements _$ShiftCopyWith<$Res> {
     Object? staffId = null,
     Object? openedAt = null,
     Object? closedAt = freezed,
-    Object? rotationAmount = null,
+    Object? passationAmount = null,
     Object? openingNote = freezed,
     Object? closingNote = freezed,
   }) {
@@ -496,9 +496,9 @@ class __$ShiftCopyWithImpl<$Res> implements _$ShiftCopyWith<$Res> {
           ? _self.closedAt
           : closedAt // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      rotationAmount: null == rotationAmount
-          ? _self.rotationAmount
-          : rotationAmount // ignore: cast_nullable_to_non_nullable
+      passationAmount: null == passationAmount
+          ? _self.passationAmount
+          : passationAmount // ignore: cast_nullable_to_non_nullable
               as double,
       openingNote: freezed == openingNote
           ? _self.openingNote

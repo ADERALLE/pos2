@@ -143,12 +143,12 @@ class _ShiftInfoCard extends StatelessWidget {
               ),
             ],
           ),
-          if (shift.rotationAmount > 0) ...[
+          if (shift.passationAmount > 0) ...[
             const SizedBox(height: 4),
             _NoteRow(
               icon: Icons.rotate_right_rounded,
               color: Colors.orange,
-              note: 'Rotation: ${shift.rotationAmount.toStringAsFixed(2)} MAD',
+              note: 'Rotation: ${shift.passationAmount.toStringAsFixed(2)} MAD',
             ),
           ],
           if (shift.openingNote != null || shift.closingNote != null) ...[
@@ -290,10 +290,10 @@ class _StatsRow extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            if ((data['rotationAmount'] as num).toDouble() > 0) ...[
+            if ((data['passationAmount'] as num).toDouble() > 0) ...[
               Expanded(child: _StatCard(
                 label: 'Rotation taken',
-                value: '${(data['rotationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
+                value: '${(data['passationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
                 icon: Icons.rotate_right_rounded,
                 color: Colors.orange,
               )),

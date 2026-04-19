@@ -18,7 +18,7 @@ class ShiftRepository {
     required String shopId,
     required String staffId,
     String? note,
-    double rotationAmount = 0,
+    double passationAmount = 0,
   }) async {
     final data = await _client
         .from('shifts')
@@ -26,7 +26,7 @@ class ShiftRepository {
       'shop_id': shopId,
       'staff_id': staffId,
       if (note != null) 'opening_note': note,
-      'rotation_amount': rotationAmount,
+      'passation_amount': passationAmount,
     })
         .select()
         .single();

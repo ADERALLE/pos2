@@ -206,11 +206,11 @@ class OrderRepository {
 
     final shiftData = await _client
         .from('shifts')
-        .select('rotation_amount')
+        .select('passation_amount')
         .eq('id', shiftId)
         .single();
 
-    final rotationAmount = (shiftData['rotation_amount'] as num).toDouble();
+    final passationAmount = (shiftData['passation_amount'] as num).toDouble();
     final orderList = orders.map((e) => Order.fromJson(e)).toList();
     final doneOrders = orderList.where((o) => o.status == OrderStatus.done).toList();
     final cancelledOrders = orderList.where((o) => o.status == OrderStatus.cancelled).toList();
@@ -221,7 +221,7 @@ class OrderRepository {
     final totalTips   = doneOrders.fold(0.0, (sum, o) => sum + o.tip);
 
     // Cash to hand over = cash collected + rotation taken at shift start − tips (tips stay with cashier)
-    final cashToHandOver = (cashRevenue + rotationAmount - totalTips).clamp(0.0, double.infinity);
+    final cashToHandOver = (cashRevenue + passationAmount - totalTips).clamp(0.0, double.infinity);
 
     return {
       'orders': orderList,
@@ -232,7 +232,7 @@ class OrderRepository {
       'cashRevenue': cashRevenue,
       'cardRevenue': cardRevenue,
       'totalTips': totalTips,
-      'rotationAmount': rotationAmount,
+      'passationAmount': passationAmount,
       'cashToHandOver': cashToHandOver,
     };
   }

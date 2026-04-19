@@ -160,7 +160,7 @@ class _NoShiftCard extends ConsumerWidget {
                   shopId: AppConstants.shopId,
                   staffId: staff.id,
                   note: note,
-                  rotationAmount: rotation,
+                  passationAmount: rotation,
                 );
               },
             ),
