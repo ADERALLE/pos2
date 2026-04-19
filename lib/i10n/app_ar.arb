@@ -1,0 +1,9 @@
+{
+  "@@locale": "ar",
+  "appTitle": "Coffee POS",
+  "menu": "Menu",
+  "orders": "Orders",
+  "cart": "Cart",
+  "settings": "Settings",
+  "search": "Search coffee..."
+}
