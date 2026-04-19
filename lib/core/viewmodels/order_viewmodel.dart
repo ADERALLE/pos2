@@ -451,8 +451,11 @@ class Cart extends _$Cart {
             });
           }
           // The last item of each group carries the full combo price.
+          // Divide by quantity so that unit_price × quantity = combo.price,
+          // regardless of how many units that item contains.
           if (effectiveItems.isNotEmpty) {
-            items.last['unit_price'] = c.comboMenu!.price;
+            final lastQty = (items.last['quantity'] as int).clamp(1, double.maxFinite.toInt());
+            items.last['unit_price'] = c.comboMenu!.price / lastQty;
           }
         }
       } else {
