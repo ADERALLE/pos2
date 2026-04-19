@@ -10,6 +10,7 @@ import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';
+import 'package:pos_v1/core/models/combo_menu_item.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
 import '../../core/models/size_config.dart';
 
@@ -578,20 +579,55 @@ class _ComboMenuCard extends ConsumerWidget {
   const _ComboMenuCard({required this.combo});
   final ComboMenu combo;
 
+  /// Whether this combo contains at least one choice group.
+  bool get _hasChoices =>
+      combo.comboMenuItems.any((ci) => ci.choiceGroup != null);
+
+  /// Returns choice groups: groupName → list of ComboMenuItems in that group.
+  Map<String, List<ComboMenuItem>> get _choiceGroups {
+    final map = <String, List<ComboMenuItem>>{};
+    for (final ci in combo.comboMenuItems) {
+      if (ci.choiceGroup != null) {
+        map.putIfAbsent(ci.choiceGroup!, () => []).add(ci);
+      }
+    }
+    return map;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cartKey = 'combo_${combo.id}';
-    final inCart = ref.watch(cartProvider).where((c) => c.cartKey == cartKey).firstOrNull;
+    // For combos with choices, count all matching cart entries
+    final allInCart = ref.watch(cartProvider).where(
+        (c) => c.isCombo && c.comboMenu?.id == combo.id);
+    final totalInCart = allInCart.fold<int>(0, (s, c) => s + c.quantity);
     final theme = Theme.of(context);
 
-    // Build a short summary of included items
-    final itemSummary = combo.comboMenuItems
-        .where((ci) => ci.menuItem != null)
-        .map((ci) => ci.quantity > 1 ? '${ci.quantity}x ${ci.menuItem!.name}' : ci.menuItem!.name)
-        .join(', ');
+    // Build a short summary: fixed items + choice group labels
+    final parts = <String>[];
+    for (final ci in combo.comboMenuItems) {
+      if (ci.choiceGroup == null && ci.menuItem != null) {
+        parts.add(ci.quantity > 1
+            ? '${ci.quantity}x ${ci.menuItem!.name}'
+            : ci.menuItem!.name);
+      }
+    }
+    for (final group in _choiceGroups.keys) {
+      final options = _choiceGroups[group]!
+          .where((ci) => ci.menuItem != null)
+          .map((ci) => ci.menuItem!.name)
+          .join(' / ');
+      parts.add('$group: $options');
+    }
+    final itemSummary = parts.join(', ');
 
     return GestureDetector(
-      onTap: () => ref.read(cartProvider.notifier).addCombo(combo),
+      onTap: () {
+        if (_hasChoices) {
+          _showChoiceDialog(context, ref);
+        } else {
+          ref.read(cartProvider.notifier).addCombo(combo);
+        }
+      },
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
@@ -616,10 +652,13 @@ class _ComboMenuCard extends ConsumerWidget {
                   combo.imageUrl != null && combo.imageUrl!.isNotEmpty
                       ? CachedMenuImage(url: combo.imageUrl!)
                       : Container(
-                          color: theme.colorScheme.tertiaryContainer.withOpacity(0.4),
+                          color: theme.colorScheme.tertiaryContainer
+                              .withOpacity(0.4),
                           child: Center(
-                            child: Icon(Icons.restaurant_menu, size: 40,
-                                color: theme.colorScheme.tertiary.withOpacity(0.6)),
+                            child: Icon(Icons.restaurant_menu,
+                                size: 40,
+                                color: theme.colorScheme.tertiary
+                                    .withOpacity(0.6)),
                           ),
                         ),
                   // COMBO badge
@@ -627,13 +666,14 @@ class _ComboMenuCard extends ConsumerWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.tertiary,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        'COMBO',
+                        _hasChoices ? 'COMBO + CHOICE' : 'COMBO',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -642,7 +682,7 @@ class _ComboMenuCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  if (inCart != null)
+                  if (totalInCart > 0)
                     Positioned(
                       top: 8,
                       right: 8,
@@ -653,7 +693,7 @@ class _ComboMenuCard extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                         child: Text(
-                          '${inCart.quantity}',
+                          '$totalInCart',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -697,6 +737,113 @@ class _ComboMenuCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showChoiceDialog(BuildContext context, WidgetRef ref) {
+    final groups = _choiceGroups;
+    // Pre-select the first option in each group.
+    final selections = <String, String>{};
+    for (final entry in groups.entries) {
+      final first = entry.value.firstOrNull;
+      if (first != null) selections[entry.key] = first.menuItemId;
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            final theme = Theme.of(ctx);
+            return AlertDialog(
+              title: Text('Customize ${combo.name}'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: groups.entries.map((entry) {
+                    final groupName = entry.key;
+                    final options = entry.value;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12, bottom: 8),
+                          child: Text(
+                            'Choose your ${groupName.toLowerCase()}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
+                        ),
+                        ...options.map((ci) {
+                          final mi = ci.menuItem;
+                          if (mi == null) return const SizedBox.shrink();
+                          final isChosen =
+                              selections[groupName] == ci.menuItemId;
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: isChosen
+                                  ? BorderSide(
+                                      color: theme.colorScheme.primary,
+                                      width: 2)
+                                  : BorderSide.none,
+                            ),
+                            child: RadioListTile<String>(
+                              value: ci.menuItemId,
+                              groupValue: selections[groupName],
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setDialogState(() =>
+                                      selections[groupName] = val);
+                                }
+                              },
+                              title: Text(mi.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500)),
+                              secondary: mi.imageUrl != null &&
+                                      mi.imageUrl!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: SizedBox(
+                                        width: 44,
+                                        height: 44,
+                                        child:
+                                            CachedMenuImage(url: mi.imageUrl!),
+                                      ),
+                                    )
+                                  : null,
+                              dense: true,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
+                            ),
+                          );
+                        }),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    ref
+                        .read(cartProvider.notifier)
+                        .addComboWithChoices(combo, selections);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Add to order'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

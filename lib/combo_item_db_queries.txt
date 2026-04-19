@@ -25,3 +25,7 @@ CREATE TABLE public.combo_menu_items (
 -- Index pour performance
 CREATE INDEX idx_combo_menus_shop_id ON public.combo_menus(shop_id);
 CREATE INDEX idx_combo_menu_items_combo_id ON public.combo_menu_items(combo_menu_id);
+
+
+ALTER TABLE public.combo_menu_items
+  ADD COLUMN choice_group text;

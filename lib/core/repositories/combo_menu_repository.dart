@@ -93,6 +93,7 @@ class ComboMenuRepository {
                   'combo_menu_id': comboId,
                   'menu_item_id': i['menu_item_id'],
                   'quantity': i['quantity'] ?? 1,
+                  if (i['choice_group'] != null) 'choice_group': i['choice_group'],
                 })
             .toList(),
       );

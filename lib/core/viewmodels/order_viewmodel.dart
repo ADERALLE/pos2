@@ -347,12 +347,31 @@ class Cart extends _$Cart {
       state = [
         for (final c in state)
           if (c.cartKey == key)
-            CartItem(comboMenu: c.comboMenu, quantity: c.quantity + 1, note: c.note)
+            CartItem(comboMenu: c.comboMenu, quantity: c.quantity + 1, note: c.note, selectedChoices: c.selectedChoices)
           else
             c,
       ];
     } else {
       state = [...state, CartItem(comboMenu: combo)];
+    }
+  }
+
+  /// Adds a combo with specific choice selections.
+  /// Different selections produce different cart entries (via cartKey).
+  void addComboWithChoices(ComboMenu combo, Map<String, String> choices) {
+    final item = CartItem(comboMenu: combo, selectedChoices: Map.of(choices));
+    final key = item.cartKey;
+    final existing = state.where((c) => c.cartKey == key).firstOrNull;
+    if (existing != null) {
+      state = [
+        for (final c in state)
+          if (c.cartKey == key)
+            CartItem(comboMenu: c.comboMenu, quantity: c.quantity + 1, note: c.note, selectedChoices: c.selectedChoices)
+          else
+            c,
+      ];
+    } else {
+      state = [...state, item];
     }
   }
 
@@ -370,6 +389,7 @@ class Cart extends _$Cart {
             comboMenu: c.comboMenu,
             quantity: quantity,
             note: c.note,
+            selectedChoices: c.selectedChoices,
           )
         else
           c,
@@ -385,6 +405,7 @@ class Cart extends _$Cart {
             comboMenu: c.comboMenu,
             quantity: c.quantity,
             note: note,
+            selectedChoices: c.selectedChoices,
           )
         else
           c,
@@ -408,11 +429,18 @@ class Cart extends _$Cart {
     final items = <Map<String, dynamic>>[];
     for (final c in state) {
       if (c.isCombo) {
-        // Emit one group of order items per combo unit so each combo
-        // instance appears as a separate block in the order display.
+        // Determine which items to include: fixed items (no choiceGroup)
+        // plus the one selected item per choice group.
+        final selectedIds = c.selectedChoices.values.toSet();
+        final effectiveItems = c.comboMenu!.comboMenuItems.where((ci) {
+          if (ci.choiceGroup == null) return true; // fixed item
+          return selectedIds.contains(ci.menuItemId); // chosen option
+        }).toList();
+
+        // Emit one group per combo unit.
         for (int u = 0; u < c.quantity; u++) {
           final suffix = c.quantity > 1 ? ' #${u + 1}' : '';
-          for (final ci in c.comboMenu!.comboMenuItems) {
+          for (final ci in effectiveItems) {
             final mi = ci.menuItem;
             if (mi == null) continue;
             items.add({
@@ -423,7 +451,7 @@ class Cart extends _$Cart {
             });
           }
           // The last item of each group carries the full combo price.
-          if (c.comboMenu!.comboMenuItems.isNotEmpty) {
+          if (effectiveItems.isNotEmpty) {
             items.last['unit_price'] = c.comboMenu!.price;
           }
         }

@@ -252,6 +252,9 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   /// Map of menuItemId → quantity for items included in the combo.
   late Map<String, int> _selectedItems;
 
+  /// Map of menuItemId → choice group name (nullable = fixed item).
+  late Map<String, String?> _choiceGroups;
+
   @override
   void initState() {
     super.initState();
@@ -262,9 +265,11 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
     _imageUrl = e?.imageUrl;
 
     _selectedItems = {};
+    _choiceGroups = {};
     if (e != null) {
       for (final ci in e.comboMenuItems) {
         _selectedItems[ci.menuItemId] = ci.quantity;
+        _choiceGroups[ci.menuItemId] = ci.choiceGroup;
       }
     }
   }
@@ -302,7 +307,11 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
 
     setState(() => _saving = true);
     final items = _selectedItems.entries
-        .map((e) => {'menu_item_id': e.key, 'quantity': e.value})
+        .map((e) => {
+              'menu_item_id': e.key,
+              'quantity': e.value,
+              if (_choiceGroups[e.key] != null) 'choice_group': _choiceGroups[e.key],
+            })
         .toList();
 
     try {
@@ -444,22 +453,32 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                 final item = activeItems[i];
                 final qty = _selectedItems[item.id];
                 final isSelected = qty != null;
+                final choiceGroup = _choiceGroups[item.id];
                 return GestureDetector(
                   onTap: () {
                     setState(() {
                       if (isSelected) {
                         _selectedItems.remove(item.id);
+                        _choiceGroups.remove(item.id);
                       } else {
                         _selectedItems[item.id] = 1;
                       }
                     });
                   },
+                  onLongPress: isSelected
+                      ? () => _showChoiceGroupDialog(item.id)
+                      : null,
                   child: Container(
                     decoration: BoxDecoration(
                       color: theme.cardColor,
                       borderRadius: BorderRadius.circular(14),
                       border: isSelected
-                          ? Border.all(color: theme.colorScheme.primary, width: 2)
+                          ? Border.all(
+                              color: choiceGroup != null
+                                  ? theme.colorScheme.tertiary
+                                  : theme.colorScheme.primary,
+                              width: 2,
+                            )
                           : null,
                       boxShadow: [
                         BoxShadow(
@@ -506,6 +525,28 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              // Choice group badge
+                              if (isSelected && choiceGroup != null)
+                                Positioned(
+                                  top: 6,
+                                  left: 6,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.tertiary,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      choiceGroup,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.onTertiary,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -576,6 +617,24 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               },
             ),
 
+            // Choice group hint
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: theme.hintColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Long press a selected item to assign a choice group (e.g. "drink"). '
+                      'Items with the same group name become pick-one options.',
+                      style: TextStyle(fontSize: 11, color: theme.hintColor),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 24),
 
             // Save button
@@ -599,6 +658,83 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
             const SizedBox(height: 8),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Shows a dialog to assign or remove a choice group for a selected item.
+  void _showChoiceGroupDialog(String menuItemId) {
+    final ctrl = TextEditingController(text: _choiceGroups[menuItemId] ?? '');
+
+    // Collect existing group names as quick suggestions.
+    final existingGroups = _choiceGroups.values
+        .whereType<String>()
+        .toSet()
+        .toList()
+      ..sort();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Choice group'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Items sharing the same group name become pick-one choices '
+              'for the customer. Leave empty for a fixed (always included) item.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              decoration: const InputDecoration(
+                labelText: 'Group name',
+                hintText: 'e.g. drink, dessert…',
+              ),
+              autofocus: true,
+              textCapitalization: TextCapitalization.none,
+            ),
+            if (existingGroups.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: existingGroups
+                    .map((g) => ActionChip(
+                          label: Text(g),
+                          onPressed: () {
+                            ctrl.text = g;
+                          },
+                        ))
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() => _choiceGroups.remove(menuItemId));
+              Navigator.pop(ctx);
+            },
+            child: const Text('Remove group'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = ctrl.text.trim();
+              setState(() {
+                if (value.isEmpty) {
+                  _choiceGroups.remove(menuItemId);
+                } else {
+                  _choiceGroups[menuItemId] = value;
+                }
+              });
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
