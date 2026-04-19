@@ -163,6 +163,40 @@ class OrderRepository {
         .update({'status': OrderStatus.cancelled.name}).eq('id', orderId);
   }
 
+  /// Replaces the items of an existing order in-place and recalculates the total.
+  Future<Order> updateOrderItems({
+    required String orderId,
+    required List<Map<String, dynamic>> items,
+    String? tableLabel,
+    String? note,
+  }) async {
+    // Compute new total from items list.
+    final newTotal = items.fold<double>(
+      0,
+      (sum, i) => sum + (i['unit_price'] as double) * (i['quantity'] as int),
+    );
+
+    // Update the order header (label, note, total).
+    await _client.from('orders').update({
+      'table_label': tableLabel,
+      'note': note,
+      'total': newTotal,
+    }).eq('id', orderId);
+
+    // Replace all existing items.
+    await _client.from('order_items').delete().eq('order_id', orderId);
+    await _client.from('order_items').insert(
+      items.map((i) => {...i, 'order_id': orderId}).toList(),
+    );
+
+    final full = await _client
+        .from('orders')
+        .select('*, order_items(*, order_notes(*))')
+        .eq('id', orderId)
+        .single();
+    return Order.fromJson(full);
+  }
+
   Future<Map<String, dynamic>> getShiftSummary(String shiftId) async {
     final orders = await _client
         .from('orders')

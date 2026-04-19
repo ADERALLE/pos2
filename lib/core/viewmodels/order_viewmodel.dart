@@ -493,28 +493,18 @@ class Cart extends _$Cart {
 
   double get total => state.fold(0, (sum, c) => sum + c.subtotal);
 
-  /// Returns true if the order was queued offline.
-  Future<bool> submitOrder({
-    required String shopId,
-    required String cashierId,
-    String? shiftId,
-    String? tableLabel,
-    String? note,
-  }) async {
-    final online = ref.read(isOnlineProvider);
-
+  /// Builds the flat items list from the current cart state (shared by
+  /// both [submitOrder] and [updateExistingOrder]).
+  List<Map<String, dynamic>> _buildItemsPayload() {
     final items = <Map<String, dynamic>>[];
     for (final c in state) {
       if (c.isCombo) {
-        // Determine which items to include: fixed items (no choiceGroup)
-        // plus the one selected item per choice group.
         final selectedIds = c.selectedChoices.values.toSet();
         final effectiveItems = c.comboMenu!.comboMenuItems.where((ci) {
-          if (ci.choiceGroup == null) return true; // fixed item
-          return selectedIds.contains(ci.menuItemId); // chosen option
+          if (ci.choiceGroup == null) return true;
+          return selectedIds.contains(ci.menuItemId);
         }).toList();
 
-        // Emit one group per combo unit.
         for (int u = 0; u < c.quantity; u++) {
           final suffix = c.quantity > 1 ? ' #${u + 1}' : '';
           for (final ci in effectiveItems) {
@@ -527,9 +517,6 @@ class Cart extends _$Cart {
               'quantity': ci.quantity,
             });
           }
-          // The last item of each group carries the full combo price.
-          // Divide by quantity so that unit_price × quantity = combo.price,
-          // regardless of how many units that item contains.
           if (effectiveItems.isNotEmpty) {
             final lastQty = (items.last['quantity'] as int).clamp(1, double.maxFinite.toInt());
             items.last['unit_price'] = c.comboMenu!.price / lastQty;
@@ -544,6 +531,35 @@ class Cart extends _$Cart {
         });
       }
     }
+    return items;
+  }
+
+  /// Updates an existing order in-place (same id, same status).
+  Future<void> updateExistingOrder({
+    required String orderId,
+    String? tableLabel,
+    String? note,
+  }) async {
+    final items = _buildItemsPayload();
+    await ref.read(orderRepositoryProvider).updateOrderItems(
+      orderId: orderId,
+      items: items,
+      tableLabel: tableLabel,
+      note: note,
+    );
+    clear();
+  }
+
+  /// Returns true if the order was queued offline.
+  Future<bool> submitOrder({
+    required String shopId,
+    required String cashierId,
+    String? shiftId,
+    String? tableLabel,
+    String? note,
+  }) async {
+    final online = ref.read(isOnlineProvider);
+    final items = _buildItemsPayload();
 
     if (online) {
       await ref.read(orderRepositoryProvider).createOrder(

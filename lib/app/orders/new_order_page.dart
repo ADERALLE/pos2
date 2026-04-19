@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/order.dart';
-import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
@@ -481,38 +480,31 @@ class _CartContentState extends ConsumerState<CartContent> {
     final staff = ref.read(currentStaffProvider);
     final shift = ref.read(activeShiftProvider(staff!.id)).value;
     final editingOrder = ref.read(editingOrderProvider);
+    final tableLabel = _tableLabelController.text.trim().isEmpty ? null : _tableLabelController.text.trim();
+    final note = _noteController.text.trim().isEmpty ? null : _noteController.text.trim();
 
-    // If editing an existing order, cancel it first then create a replacement.
     if (editingOrder != null) {
-      final isManager = staff.role == StaffRole.manager;
-      if (isManager) {
-        await ref
-            .read(activeOrdersProvider(AppConstants.shopId).notifier)
-            .cancel(editingOrder.id, AppConstants.shopId);
-      } else {
-        await ref
-            .read(myActiveOrdersProvider(staff.id).notifier)
-            .cancel(editingOrder.id, staff.id);
-      }
-    }
-
-    await ref.read(cartProvider.notifier).submitOrder(
-      shopId: AppConstants.shopId,
-      cashierId: staff.id,
-      shiftId: shift?.id,
-      tableLabel: _tableLabelController.text.trim().isEmpty ? null : _tableLabelController.text.trim(),
-      note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
-    );
-
-    // Clear edit state
-    if (editingOrder != null) {
+      // Update the existing order in-place (same id, same status).
+      await ref.read(cartProvider.notifier).updateExistingOrder(
+        orderId: editingOrder.id,
+        tableLabel: tableLabel,
+        note: note,
+      );
       ref.read(editingOrderProvider.notifier).state = null;
+    } else {
+      await ref.read(cartProvider.notifier).submitOrder(
+        shopId: AppConstants.shopId,
+        cashierId: staff.id,
+        shiftId: shift?.id,
+        tableLabel: tableLabel,
+        note: note,
+      );
     }
 
-    // Refreshing state
+    // Refresh active orders and shift orders.
     ref.invalidate(activeOrdersProvider(AppConstants.shopId));
     ref.read(activeOrdersProvider(AppConstants.shopId).notifier).refresh(AppConstants.shopId);
-     ref.read(myActiveOrdersProvider(staff.id).notifier).refresh(staff.id);
+    ref.read(myActiveOrdersProvider(staff.id).notifier).refresh(staff.id);
     if (shift != null) ref.invalidate(shiftOrdersProvider(shift.id));
 
     if (mounted) {
