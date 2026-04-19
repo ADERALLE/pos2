@@ -1,0 +1,27 @@
+-- Table des menus composés
+CREATE TABLE public.combo_menus (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  shop_id uuid NOT NULL REFERENCES public.shops(id),
+  name text NOT NULL,
+  description text,
+  price numeric NOT NULL CHECK (price >= 0),
+  image_url text,
+  is_active boolean NOT NULL DEFAULT true,
+  sort_order smallint NOT NULL DEFAULT 0,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  updated_at timestamp with time zone NOT NULL DEFAULT now()
+);
+
+-- Table de liaison entre combos et items (relation many-to-many)
+CREATE TABLE public.combo_menu_items (
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  combo_menu_id uuid NOT NULL REFERENCES public.combo_menus(id) ON DELETE CASCADE,
+  menu_item_id uuid NOT NULL REFERENCES public.menu_items(id) ON DELETE CASCADE,
+  quantity smallint NOT NULL DEFAULT 1 CHECK (quantity > 0),
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  UNIQUE(combo_menu_id, menu_item_id)
+);
+
+-- Index pour performance
+CREATE INDEX idx_combo_menus_shop_id ON public.combo_menus(shop_id);
+CREATE INDEX idx_combo_menu_items_combo_id ON public.combo_menu_items(combo_menu_id);

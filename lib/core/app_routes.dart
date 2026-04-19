@@ -14,6 +14,7 @@ import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import '../app/app_routes_shell.dart';
 import '../app/home/home_page.dart';
 import '../app/orders/orders_page.dart';
+import '../app/settings/combo_menu/combo_menu_page.dart';
 import '../app/settings/menu/menu_page.dart';
 import '../app/settings/settings.dart';
 import '../app/settings/staff/stafflist.dart';
@@ -112,6 +113,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'menu',
                     builder: (context, state) => const MenuPage(),
+                  ),
+                  GoRoute(
+                    path: 'combo-menus',
+                    builder: (context, state) => const ComboMenuPage(),
                   ),
                   GoRoute(
                     path: 'staff-dashboard',

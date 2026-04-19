@@ -4,15 +4,22 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
+import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
 import '../../core/models/size_config.dart';
 
 // ── State Provider for Category Filtering ────────────────────────────────────
 final selectedCategoryIdProvider = StateProvider<String?>((ref) => null);
+
+/// Controls which tab is active in the New Order grid.
+enum OrderViewTab { items, combos }
+
+final orderViewTabProvider = StateProvider<OrderViewTab>((ref) => OrderViewTab.items);
 
 class NewOrderPage extends ConsumerWidget {
   const NewOrderPage({super.key});
@@ -22,10 +29,12 @@ class NewOrderPage extends ConsumerWidget {
     SizeConfig().init(context);
     final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
     final itemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
+    final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final cart = ref.watch(cartProvider);
 
     // Watch the filter state
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
+    final activeTab = ref.watch(orderViewTabProvider);
 
     // Responsive breakpoints
     final screenWidth = MediaQuery.of(context).size.width;
@@ -54,78 +63,138 @@ class NewOrderPage extends ConsumerWidget {
                 ),
             ],
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(60),
-              child: categoriesAsync.maybeWhen(
-                data: (cats) => Container(
-                  height: 60,
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
+              preferredSize: const Size.fromHeight(108),
+              child: Column(
+                children: [
+                  // ── Items / Combos toggle ──
+                  Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: cats.length + 1, // +1 for "All"
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemBuilder: (_, i) {
-                      if (i == 0) {
-                        final isSelected = selectedCategoryId == null;
-                        return _CategoryChip(
-                          label: 'All',
-                          isSelected: isSelected,
-                          onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state = null,
-                        );
-                      }
-
-                      final category = cats[i - 1];
-                      final isSelected = selectedCategoryId == category.id;
-                      return _CategoryChip(
-                        label: category.label,
-                        isSelected: isSelected,
-                        onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state =
-                        isSelected ? null : category.id,
-                      );
-                    },
+                    child: Row(
+                      children: [
+                        _TabChip(
+                          label: 'Items',
+                          isSelected: activeTab == OrderViewTab.items,
+                          onPressed: () => ref.read(orderViewTabProvider.notifier).state = OrderViewTab.items,
+                        ),
+                        const SizedBox(width: 8),
+                        _TabChip(
+                          label: 'Combos',
+                          isSelected: activeTab == OrderViewTab.combos,
+                          onPressed: () => ref.read(orderViewTabProvider.notifier).state = OrderViewTab.combos,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                orElse: () => const SizedBox(),
+                  const SizedBox(height: 4),
+                  // ── Category chips (only visible in Items tab) ──
+                  if (activeTab == OrderViewTab.items)
+                    categoriesAsync.maybeWhen(
+                      data: (cats) => Container(
+                        height: 48,
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: cats.length + 1,
+                          separatorBuilder: (_, __) => const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            if (i == 0) {
+                              final isSelected = selectedCategoryId == null;
+                              return _CategoryChip(
+                                label: 'All',
+                                isSelected: isSelected,
+                                onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state = null,
+                              );
+                            }
+                            final category = cats[i - 1];
+                            final isSelected = selectedCategoryId == category.id;
+                            return _CategoryChip(
+                              label: category.label,
+                              isSelected: isSelected,
+                              onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state =
+                                  isSelected ? null : category.id,
+                            );
+                          },
+                        ),
+                      ),
+                      orElse: () => const SizedBox(height: 48),
+                    )
+                  else
+                    const SizedBox(height: 48),
+                ],
               ),
             ),
           ),
-          itemsAsync.when(
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
-            ),
-            error: (e, _) => SliverFillRemaining(
-              child: Center(child: Text('Error loading menu: $e')),
-            ),
-            data: (items) {
-              // Apply category filter and active status filter
-              final filteredItems = items.where((i) {
-                final matchesCategory = selectedCategoryId == null || i.categoryId == selectedCategoryId;
-                return i.isActive && matchesCategory;
-              }).toList();
+          // ── Grid content: items OR combos ──
+          if (activeTab == OrderViewTab.items)
+            itemsAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(child: Text('Error loading menu: $e')),
+              ),
+              data: (items) {
+                final filteredItems = items.where((i) {
+                  final matchesCategory = selectedCategoryId == null || i.categoryId == selectedCategoryId;
+                  return i.isActive && matchesCategory;
+                }).toList();
 
-              if (filteredItems.isEmpty) {
-                return const SliverFillRemaining(
-                  child: Center(child: Text('No items found in this category')),
+                if (filteredItems.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(child: Text('No items found in this category')),
+                  );
+                }
+
+                return SliverPadding(
+                  padding: const EdgeInsets.all(12),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: 0.80,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                          (context, i) => _MenuItemCard(item: filteredItems[i]),
+                      childCount: filteredItems.length,
+                    ),
+                  ),
                 );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.all(12),
-                sliver: SliverGrid(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.80,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
+              },
+            )
+          else
+            combosAsync.when(
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(child: Text('Error loading combos: $e')),
+              ),
+              data: (combos) {
+                final activeCombos = combos.where((c) => c.isActive).toList();
+                if (activeCombos.isEmpty) {
+                  return const SliverFillRemaining(
+                    child: Center(child: Text('No combos available')),
+                  );
+                }
+                return SliverPadding(
+                  padding: const EdgeInsets.all(12),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: 0.72,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                          (context, i) => _ComboMenuCard(combo: activeCombos[i]),
+                      childCount: activeCombos.length,
+                    ),
                   ),
-                  delegate: SliverChildBuilderDelegate(
-                        (context, i) => _MenuItemCard(item: filteredItems[i]),
-                    childCount: filteredItems.length,
-                  ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
     );
@@ -214,7 +283,7 @@ class _MenuItemCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final inCart = ref.watch(cartProvider).where((c) => c.menuItem.id == item.id).firstOrNull;
+    final inCart = ref.watch(cartProvider).where((c) => c.cartKey == item.id).firstOrNull;
     final theme = Theme.of(context);
 
     return GestureDetector(
@@ -405,19 +474,29 @@ class _CartContentState extends ConsumerState<CartContent> {
                 final c = cart[index];
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(c.menuItem.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('${(c.menuItem.price * c.quantity).toStringAsFixed(2)} MAD'),
+                  leading: c.isCombo
+                      ? Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.tertiaryContainer,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(Icons.restaurant_menu, size: 18),
+                        )
+                      : null,
+                  title: Text(c.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text('${c.subtotal.toStringAsFixed(2)} MAD'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () => ref.read(cartProvider.notifier).updateQuantity(c.menuItem.id, c.quantity - 1),
+                        onPressed: () => ref.read(cartProvider.notifier).updateQuantity(c.cartKey, c.quantity - 1),
                       ),
                       Text('${c.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => ref.read(cartProvider.notifier).updateQuantity(c.menuItem.id, c.quantity + 1),
+                        onPressed: () => ref.read(cartProvider.notifier).updateQuantity(c.cartKey, c.quantity + 1),
                       ),
                     ],
                   ),
@@ -458,6 +537,165 @@ class _CartContentState extends ConsumerState<CartContent> {
             ),
           ]
         ],
+      ),
+    );
+  }
+}
+
+// ── tab chip (Items / Combos toggle) ─────────────────────────────────────────
+
+class _TabChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onPressed;
+
+  const _TabChip({
+    required this.label,
+    required this.isSelected,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: theme.colorScheme.primaryContainer,
+      labelStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+        color: isSelected ? theme.colorScheme.onPrimaryContainer : null,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      onSelected: (_) => onPressed(),
+    );
+  }
+}
+
+// ── combo menu card ──────────────────────────────────────────────────────────
+
+class _ComboMenuCard extends ConsumerWidget {
+  const _ComboMenuCard({required this.combo});
+  final ComboMenu combo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cartKey = 'combo_${combo.id}';
+    final inCart = ref.watch(cartProvider).where((c) => c.cartKey == cartKey).firstOrNull;
+    final theme = Theme.of(context);
+
+    // Build a short summary of included items
+    final itemSummary = combo.comboMenuItems
+        .where((ci) => ci.menuItem != null)
+        .map((ci) => ci.quantity > 1 ? '${ci.quantity}x ${ci.menuItem!.name}' : ci.menuItem!.name)
+        .join(', ');
+
+    return GestureDetector(
+      onTap: () => ref.read(cartProvider.notifier).addCombo(combo),
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image area
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  combo.imageUrl != null && combo.imageUrl!.isNotEmpty
+                      ? CachedMenuImage(url: combo.imageUrl!)
+                      : Container(
+                          color: theme.colorScheme.tertiaryContainer.withOpacity(0.4),
+                          child: Center(
+                            child: Icon(Icons.restaurant_menu, size: 40,
+                                color: theme.colorScheme.tertiary.withOpacity(0.6)),
+                          ),
+                        ),
+                  // COMBO badge
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.tertiary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'COMBO',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onTertiary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (inCart != null)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${inCart.quantity}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Text area
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(combo.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  if (itemSummary.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      itemSummary,
+                      style: TextStyle(fontSize: 11, color: theme.hintColor),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  Text(
+                    '${combo.price.toStringAsFixed(2)} MAD',
+                    style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

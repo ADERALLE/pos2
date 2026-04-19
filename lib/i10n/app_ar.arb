@@ -1,9 +1,19 @@
 {
   "@@locale": "ar",
   "appTitle": "Coffee POS",
-  "menu": "Menu",
-  "orders": "Orders",
-  "cart": "Cart",
-  "settings": "Settings",
-  "search": "Search coffee..."
+  "menu": "القائمة",
+  "orders": "الطلبات",
+  "cart": "السلة",
+  "settings": "الإعدادات",
+  "search": "ابحث عن قهوة...",
+  "comboMenus": "القوائم المركبة",
+  "newCombo": "كومبو جديد",
+  "editCombo": "تعديل الكومبو",
+  "comboName": "اسم الكومبو",
+  "comboPrice": "السعر (درهم)",
+  "includedItems": "العناصر المضمنة",
+  "createCombo": "إنشاء الكومبو",
+  "saveChanges": "حفظ التغييرات",
+  "items": "العناصر",
+  "combos": "الكومبوهات"
 }

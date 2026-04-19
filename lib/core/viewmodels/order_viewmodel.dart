@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
+import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
@@ -324,11 +325,12 @@ class Cart extends _$Cart {
   List<CartItem> build() => [];
 
   void addItem(MenuItem item) {
-    final existing = state.where((c) => c.menuItem.id == item.id).firstOrNull;
+    final key = item.id;
+    final existing = state.where((c) => c.cartKey == key).firstOrNull;
     if (existing != null) {
       state = [
         for (final c in state)
-          if (c.menuItem.id == item.id)
+          if (c.cartKey == key)
             CartItem(menuItem: c.menuItem, quantity: c.quantity + 1, note: c.note)
           else
             c,
@@ -338,26 +340,52 @@ class Cart extends _$Cart {
     }
   }
 
-  void removeItem(String menuItemId) {
-    state = state.where((c) => c.menuItem.id != menuItemId).toList();
+  void addCombo(ComboMenu combo) {
+    final key = 'combo_${combo.id}';
+    final existing = state.where((c) => c.cartKey == key).firstOrNull;
+    if (existing != null) {
+      state = [
+        for (final c in state)
+          if (c.cartKey == key)
+            CartItem(comboMenu: c.comboMenu, quantity: c.quantity + 1, note: c.note)
+          else
+            c,
+      ];
+    } else {
+      state = [...state, CartItem(comboMenu: combo)];
+    }
   }
 
-  void updateQuantity(String menuItemId, int quantity) {
-    if (quantity <= 0) return removeItem(menuItemId);
+  void removeItem(String cartKey) {
+    state = state.where((c) => c.cartKey != cartKey).toList();
+  }
+
+  void updateQuantity(String cartKey, int quantity) {
+    if (quantity <= 0) return removeItem(cartKey);
     state = [
       for (final c in state)
-        if (c.menuItem.id == menuItemId)
-          CartItem(menuItem: c.menuItem, quantity: quantity, note: c.note)
+        if (c.cartKey == cartKey)
+          CartItem(
+            menuItem: c.menuItem,
+            comboMenu: c.comboMenu,
+            quantity: quantity,
+            note: c.note,
+          )
         else
           c,
     ];
   }
 
-  void updateNote(String menuItemId, String? note) {
+  void updateNote(String cartKey, String? note) {
     state = [
       for (final c in state)
-        if (c.menuItem.id == menuItemId)
-          CartItem(menuItem: c.menuItem, quantity: c.quantity, note: note)
+        if (c.cartKey == cartKey)
+          CartItem(
+            menuItem: c.menuItem,
+            comboMenu: c.comboMenu,
+            quantity: c.quantity,
+            note: note,
+          )
         else
           c,
     ];
@@ -377,14 +405,34 @@ class Cart extends _$Cart {
   }) async {
     final online = ref.read(isOnlineProvider);
 
-    final items = state
-        .map((c) => {
-      'menu_item_id': c.menuItem.id,
-      'name': c.menuItem.name,
-      'unit_price': c.menuItem.price,
-      'quantity': c.quantity,
-    })
-        .toList();
+    final items = <Map<String, dynamic>>[];
+    for (final c in state) {
+      if (c.isCombo) {
+        // Decompose combo into individual order items so the kitchen
+        // sees every product and the DB schema stays unchanged.
+        for (final ci in c.comboMenu!.comboMenuItems) {
+          final mi = ci.menuItem;
+          if (mi == null) continue;
+          items.add({
+            'menu_item_id': mi.id,
+            'name': '${c.comboMenu!.name} – ${mi.name}',
+            'unit_price': 0.0, // individual price is 0; combo price is on the first line
+            'quantity': ci.quantity * c.quantity,
+          });
+        }
+        // Add a summary line carrying the combo price for correct totalling.
+        if (c.comboMenu!.comboMenuItems.isNotEmpty) {
+          items.last['unit_price'] = c.comboMenu!.price / c.quantity;
+        }
+      } else {
+        items.add({
+          'menu_item_id': c.menuItem!.id,
+          'name': c.menuItem!.name,
+          'unit_price': c.menuItem!.price,
+          'quantity': c.quantity,
+        });
+      }
+    }
 
     if (online) {
       await ref.read(orderRepositoryProvider).createOrder(

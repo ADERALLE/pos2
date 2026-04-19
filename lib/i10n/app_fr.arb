@@ -2,8 +2,18 @@
   "@@locale": "fr",
   "appTitle": "Coffee POS",
   "menu": "Menu",
-  "orders": "Orders",
-  "cart": "Cart",
-  "settings": "Settings",
-  "search": "Search coffee..."
+  "orders": "Commandes",
+  "cart": "Panier",
+  "settings": "Paramètres",
+  "search": "Rechercher un café...",
+  "comboMenus": "Menus Composés",
+  "newCombo": "Nouveau Combo",
+  "editCombo": "Modifier le Combo",
+  "comboName": "Nom du combo",
+  "comboPrice": "Prix (MAD)",
+  "includedItems": "Articles inclus",
+  "createCombo": "Créer le Combo",
+  "saveChanges": "Enregistrer",
+  "items": "Articles",
+  "combos": "Combos"
 }

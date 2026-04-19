@@ -5,5 +5,15 @@
   "orders": "Orders",
   "cart": "Cart",
   "settings": "Settings",
-  "search": "Search coffee..."
+  "search": "Search coffee...",
+  "comboMenus": "Combo Menus",
+  "newCombo": "New Combo",
+  "editCombo": "Edit Combo",
+  "comboName": "Combo name",
+  "comboPrice": "Price (MAD)",
+  "includedItems": "Included items",
+  "createCombo": "Create Combo",
+  "saveChanges": "Save Changes",
+  "items": "Items",
+  "combos": "Combos"
 }
