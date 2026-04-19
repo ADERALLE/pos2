@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_v1/core/services/connectivity_service.dart';
 import 'package:pos_v1/core/services/sync_service.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 /// Drop this anywhere above your page body (e.g. inside a Column above the
 /// main content) to show an offline / syncing banner automatically.
@@ -21,19 +22,22 @@ class OfflineBanner extends ConsumerWidget {
     if (online && pending == 0) return const SizedBox.shrink();
 
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    final opWord = pending == 1 ? l10n.operation : l10n.operations;
 
     final (bg, icon, label) = online
         ? (
     Colors.blue.shade700,
     Icons.sync_rounded,
-    'Back online — syncing $pending operation${pending == 1 ? '' : 's'}…',
+    '${l10n.backOnlineSyncing} $pending $opWord…',
     )
         : (
     Colors.orange.shade700,
     Icons.wifi_off_rounded,
     pending == 0
-        ? 'Offline — orders will sync when reconnected'
-        : 'Offline — $pending operation${pending == 1 ? '' : 's'} queued',
+        ? l10n.offlineNoQueue
+        : '${l10n.offline} $pending $opWord ${l10n.queued}',
     );
 
     return AnimatedContainer(

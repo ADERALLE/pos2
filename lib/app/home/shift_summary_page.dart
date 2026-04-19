@@ -5,6 +5,7 @@ import '../../core/models/order.dart';
 import '../../core/models/order_item.dart';
 import '../../core/models/shift.dart';
 import '../../core/repositories/order_repository.dart';
+import '../../i10n/app_localizations.dart';
 
 class ShiftSummaryPage extends ConsumerWidget {
   const ShiftSummaryPage({super.key, required this.shift});
@@ -20,13 +21,13 @@ class ShiftSummaryPage extends ConsumerWidget {
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverAppBar(
-                title: const Text('Shift summary'),
+                title: Text(AppLocalizations.of(context)!.shiftSummary),
                 pinned: true,
                 automaticallyImplyLeading: false,
                 actions: [
                   TextButton.icon(
                     icon: const Icon(Icons.home_rounded),
-                    label: const Text('Dashboard'),
+                    label: Text(AppLocalizations.of(context)!.dashboard),
                     onPressed: () => context.go('/home'),
                   ),
                 ],
@@ -49,7 +50,7 @@ class ShiftSummaryPage extends ConsumerWidget {
                       _StatsRow(data: snapshot.data!),
                       const SizedBox(height: 24),
                       if ((snapshot.data!['orders'] as List<Order>).isNotEmpty) ...[
-                        _SectionLabel(label: 'Orders (${(snapshot.data!['orders'] as List<Order>).length})'),
+                        _SectionLabel(label: '${AppLocalizations.of(context)!.ordersCount} (${(snapshot.data!['orders'] as List<Order>).length})'),
                         const SizedBox(height: 8),
                         ...(snapshot.data!['orders'] as List<Order>)
                             .map((o) => _OrderTile(order: o)),
@@ -103,7 +104,7 @@ class _ShiftInfoCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
                     const SizedBox(width: 4),
-                    Text('Shift closed',
+                    Text(AppLocalizations.of(context)!.shiftClosed,
                         style: TextStyle(
                           color: Colors.green.shade700,
                           fontWeight: FontWeight.w600,
@@ -126,7 +127,7 @@ class _ShiftInfoCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _TimeBlock(
-                  label: 'Started',
+                  label: AppLocalizations.of(context)!.started,
                   time: _fmt(openedAt),
                   icon: Icons.play_arrow_rounded,
                   color: Colors.green,
@@ -135,7 +136,7 @@ class _ShiftInfoCard extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _TimeBlock(
-                  label: 'Closed',
+                  label: AppLocalizations.of(context)!.closed,
                   time: shift.closedAt != null ? _fmt(closedAt) : '--:--',
                   icon: Icons.stop_rounded,
                   color: scheme.error,
@@ -148,7 +149,7 @@ class _ShiftInfoCard extends StatelessWidget {
             _NoteRow(
               icon: Icons.rotate_right_rounded,
               color: Colors.orange,
-              note: 'Passation: ${shift.passationAmount.toStringAsFixed(2)} MAD',
+              note: '${AppLocalizations.of(context)!.passation}: ${shift.passationAmount.toStringAsFixed(2)} MAD',
             ),
           ],
           if (shift.openingNote != null || shift.closingNote != null) ...[
@@ -248,17 +249,18 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
           children: [
-            Expanded(child: _StatCard(label: 'Total', value: '${data['totalOrders']}',
+            Expanded(child: _StatCard(label: l10n.total, value: '${data['totalOrders']}',
                 icon: Icons.receipt_long_rounded, color: Colors.grey)),
             const SizedBox(width: 8),
-            Expanded(child: _StatCard(label: 'Done', value: '${data['doneOrders']}',
+            Expanded(child: _StatCard(label: l10n.done, value: '${data['doneOrders']}',
                 icon: Icons.check_circle_rounded, color: Colors.green)),
             const SizedBox(width: 8),
-            Expanded(child: _StatCard(label: 'Cancelled', value: '${data['cancelledOrders']}',
+            Expanded(child: _StatCard(label: l10n.cancelled, value: '${data['cancelledOrders']}',
                 icon: Icons.cancel_rounded, color: Colors.red)),
           ],
         ),
@@ -266,21 +268,21 @@ class _StatsRow extends StatelessWidget {
         Row(
           children: [
             Expanded(child: _StatCard(
-              label: 'Cash',
+              label: l10n.cash,
               value: '${(data['cashRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
               icon: Icons.payments_rounded,
               color: Colors.green,
             )),
             const SizedBox(width: 8),
             Expanded(child: _StatCard(
-              label: 'Card',
+              label: l10n.card,
               value: '${(data['cardRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
               icon: Icons.credit_card_rounded,
               color: Colors.blue,
             )),
             const SizedBox(width: 8),
             Expanded(child: _StatCard(
-              label: 'Total revenue',
+              label: l10n.totalRevenue,
               value: '${(data['totalRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
               icon: Icons.account_balance_wallet_rounded,
               color: Colors.orange,
@@ -292,7 +294,7 @@ class _StatsRow extends StatelessWidget {
           children: [
             if ((data['passationAmount'] as num).toDouble() > 0) ...[
               Expanded(child: _StatCard(
-                label: 'Passation',
+                label: l10n.passation,
                 value: '${(data['passationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
                 icon: Icons.rotate_right_rounded,
                 color: Colors.orange,
@@ -301,7 +303,7 @@ class _StatsRow extends StatelessWidget {
             ],
             if ((data['totalTips'] as num).toDouble() > 0) ...[
               Expanded(child: _StatCard(
-                label: 'Tips (card)',
+                label: l10n.tipsCard,
                 value: '${(data['totalTips'] as num).toDouble().toStringAsFixed(2)} MAD',
                 icon: Icons.volunteer_activism_rounded,
                 color: Colors.purple,
@@ -311,7 +313,7 @@ class _StatsRow extends StatelessWidget {
             Expanded(
               flex: 2,
               child: _StatCard(
-                label: 'Cash to hand over',
+                label: l10n.cashToHandOver,
                 value: '${(data['cashToHandOver'] as num).toDouble().toStringAsFixed(2)} MAD',
                 icon: Icons.savings_rounded,
                 color: Colors.green,
@@ -422,7 +424,7 @@ class _OrderTile extends StatelessWidget {
           child: Icon(Icons.receipt_long_rounded, color: statusColor, size: 18),
         ),
         title: Text(
-          order.tableLabel ?? 'Take away',
+          order.tableLabel ?? AppLocalizations.of(context)!.takeaway,
           style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
         ),
         subtitle: Text(

@@ -11,6 +11,7 @@ import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -72,7 +73,12 @@ class _HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
-    final greeting = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+    final l10n = AppLocalizations.of(context)!;
+    final greeting = hour < 12
+        ? l10n.goodMorning
+        : hour < 17
+            ? l10n.goodAfternoon
+            : l10n.goodEvening;
     final now = DateTime.now();
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     const days   = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
@@ -86,7 +92,7 @@ class _HomeAppBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Good $greeting, ${staff.name.split(' ').first}',
+            '$greeting, ${staff.name.split(' ').first}',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           Text(
@@ -117,6 +123,7 @@ class _NoShiftCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -132,17 +139,17 @@ class _NoShiftCard extends ConsumerWidget {
             child: Icon(Icons.coffee_outlined, size: 36, color: scheme.onSurfaceVariant),
           ),
           const SizedBox(height: 20),
-          Text('No active shift',
+          Text(l10n.noActiveShift,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           Text(
-            'Start a shift to begin taking orders',
+            l10n.startShiftSubtitle,
             style: TextStyle(color: scheme.onSurface.withOpacity(0.5)),
           ),
           const SizedBox(height: 28),
           FilledButton.icon(
             icon: const Icon(Icons.play_arrow_rounded),
-            label: const Text('Start shift'),
+            label: Text(l10n.startShift),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -150,8 +157,8 @@ class _NoShiftCard extends ConsumerWidget {
             onPressed: () => _ShiftDialog.show(
               context: context,
               ref: ref,
-              title: 'Start shift',
-              confirmLabel: 'Start',
+              title: l10n.startShift,
+              confirmLabel: l10n.start,
               showPassation: true,
               onConfirm: (note, passation) async {
                 await ref
@@ -183,6 +190,7 @@ class _ActiveShiftContent extends ConsumerWidget {
     final shiftAsync = ref.watch(activeShiftProvider(staff.id));
     final ordersAsync = ref.watch(shiftOrdersProvider(shiftId));
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final shift = shiftAsync.value!;
     final duration = DateTime.now().difference(shift.openedAt);
@@ -222,7 +230,7 @@ class _ActiveShiftContent extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          Text('Shift active',
+                          Text('${l10n.shiftActive}',
                               style: TextStyle(
                                 color: scheme.onPrimaryContainer,
                                 fontWeight: FontWeight.w600,
@@ -231,7 +239,7 @@ class _ActiveShiftContent extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Text('${hours}h ${minutes}m elapsed',
+                      Text('${hours}h ${minutes}m ${l10n.elapsed}',
                           style: TextStyle(
                             color: scheme.onPrimaryContainer.withOpacity(0.7),
                             fontSize: 12,
@@ -240,7 +248,7 @@ class _ActiveShiftContent extends ConsumerWidget {
                   ),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.stop_rounded, size: 16),
-                    label: const Text('Close'),
+                    label: Text(l10n.close),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: scheme.error,
                       side: BorderSide(color: scheme.error.withOpacity(0.5)),
@@ -268,7 +276,7 @@ class _ActiveShiftContent extends ConsumerWidget {
         // new order button
         FilledButton.icon(
           icon: const Icon(Icons.add_rounded),
-          label: const Text('New order'),
+          label: Text(l10n.newOrder),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(48),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -281,7 +289,7 @@ class _ActiveShiftContent extends ConsumerWidget {
         // orders header
         Row(
           children: [
-            Text("Today's orders",
+            Text(l10n.todaysOrders,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3,
@@ -315,7 +323,7 @@ class _ActiveShiftContent extends ConsumerWidget {
               ? Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
             child: Center(
-              child: Text('No orders yet',
+              child: Text(l10n.noOrdersYet,
                   style: TextStyle(color: scheme.onSurface.withOpacity(0.4))),
             ),
           )
@@ -341,21 +349,21 @@ class _ActiveShiftContent extends ConsumerWidget {
     final uncompleted = shiftOrders
         .where((o) => o.status == OrderStatus.pending || o.status == OrderStatus.inprogress)
         .toList();
+    final l10n = AppLocalizations.of(context)!;
 
     if (uncompleted.isNotEmpty) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Uncompleted orders', style: TextStyle(fontWeight: FontWeight.w600)),
+          title: Text(l10n.uncompletedOrdersTitle, style: const TextStyle(fontWeight: FontWeight.w600)),
           content: Text(
-            '${uncompleted.length} order(s) are still pending or in progress.\n'
-                'Mark them as done or cancel before closing.',
+            '${uncompleted.length} ${l10n.uncompletedOrdersMessage}',
           ),
           actions: [
             FilledButton(
               onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              child: const Text('OK'),
+              child: Text(l10n.ok),
             ),
           ],
         ),
@@ -366,8 +374,8 @@ class _ActiveShiftContent extends ConsumerWidget {
     _ShiftDialog.show(
       context: context,
       ref: ref,
-      title: 'Close shift',
-      confirmLabel: 'Close',
+      title: l10n.closeShift,
+      confirmLabel: l10n.close,
       isDestructive: true,
       onConfirm: (note, _) async {
         final shiftNotifier = ref.read(activeShiftProvider(staff.id).notifier);
@@ -464,7 +472,7 @@ class _ShiftOrderTile extends ConsumerWidget {
                 IconButton(
                   icon: Icon(Icons.edit_rounded,
                       color: Colors.orange.shade600, size: 20),
-                  tooltip: 'Edit Order',
+                  tooltip: AppLocalizations.of(context)!.editOrder,
                   onPressed: () {
                     ref.read(editingOrderProvider.notifier).state = order;
                     context.go('/home/new-order');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 /// Result of a completed payment dialog.
 class PaymentResult {
@@ -145,10 +146,11 @@ class _PaymentDialogState extends State<PaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Complete order', style: TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(l10n.completeOrder, style: const TextStyle(fontWeight: FontWeight.w600)),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -156,7 +158,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
           children: [
             // total
             Text(
-              'Total: ${widget.total.toStringAsFixed(2)} MAD',
+              '${l10n.total}: ${widget.total.toStringAsFixed(2)} MAD',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: scheme.primary),
               textAlign: TextAlign.center,
             ),
@@ -165,30 +167,30 @@ class _PaymentDialogState extends State<PaymentDialog> {
             // mode selector (3 buttons)
             Row(
               children: [
-                Expanded(child: _ModeButton(label: 'Cash',  icon: Icons.payments_rounded,     mode: 'cash',  selected: _mode == 'cash',  color: Colors.green, onTap: () => setState(() { _mode = 'cash';  _cardConfirmed = false; }))),
+                Expanded(child: _ModeButton(label: l10n.cash,  icon: Icons.payments_rounded,     mode: 'cash',  selected: _mode == 'cash',  color: Colors.green, onTap: () => setState(() { _mode = 'cash';  _cardConfirmed = false; }))),
                 const SizedBox(width: 8),
-                Expanded(child: _ModeButton(label: 'Card',  icon: Icons.credit_card_rounded,  mode: 'card',  selected: _mode == 'card',  color: Colors.blue,  onTap: () => setState(() { _mode = 'card';  _cardConfirmed = false; }))),
+                Expanded(child: _ModeButton(label: l10n.card,  icon: Icons.credit_card_rounded,  mode: 'card',  selected: _mode == 'card',  color: Colors.blue,  onTap: () => setState(() { _mode = 'card';  _cardConfirmed = false; }))),
                 const SizedBox(width: 8),
-                Expanded(child: _ModeButton(label: 'Split', icon: Icons.call_split_rounded,   mode: 'split', selected: _mode == 'split', color: Colors.purple, onTap: () { _prefillSplit(); setState(() { _mode = 'split'; _cardConfirmed = false; }); })),
+                Expanded(child: _ModeButton(label: l10n.split, icon: Icons.call_split_rounded,   mode: 'split', selected: _mode == 'split', color: Colors.purple, onTap: () { _prefillSplit(); setState(() { _mode = 'split'; _cardConfirmed = false; }); })),
               ],
             ),
 
             // ── card fields ──
             if (_mode == 'card') ...[
               const SizedBox(height: 14),
-              _TipField(controller: _tipCtrl, onChanged: (_) => setState(() {})),
+              _TipField(controller: _tipCtrl, label: l10n.tipCardSide, onChanged: (_) => setState(() {})),
               const SizedBox(height: 12),
-              _CardConfirmBox(value: _cardConfirmed, onChanged: (v) => setState(() => _cardConfirmed = v!)),
+              _CardConfirmBox(value: _cardConfirmed, label: l10n.cardConfirmed, onChanged: (v) => setState(() => _cardConfirmed = v!)),
             ],
 
             // ── split fields ──
             if (_mode == 'split') ...[
               const SizedBox(height: 14),
               Row(children: [
-                Expanded(child: _AmountField(label: 'Cash', controller: _cashCtrl, color: Colors.green,
+                Expanded(child: _AmountField(label: l10n.cash, controller: _cashCtrl, color: Colors.green,
                     onChanged: _onCashChanged)),
                 const SizedBox(width: 10),
-                Expanded(child: _AmountField(label: 'Card', controller: _cardCtrl, color: Colors.blue,
+                Expanded(child: _AmountField(label: l10n.card, controller: _cardCtrl, color: Colors.blue,
                     onChanged: _onCardChanged)),
               ]),
               const SizedBox(height: 6),
@@ -201,7 +203,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
                 firstChild: Row(children: [
                   const Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
                   const SizedBox(width: 4),
-                  Text('Amounts match total', style: TextStyle(fontSize: 12, color: Colors.green.shade700)),
+                  Text(AppLocalizations.of(context)!.amountsMatchTotal, style: TextStyle(fontSize: 12, color: Colors.green.shade700)),
                 ]),
                 secondChild: Row(children: [
                   Icon(Icons.warning_amber_rounded, size: 14, color: scheme.error),
@@ -213,20 +215,20 @@ class _PaymentDialogState extends State<PaymentDialog> {
                 ]),
               ),
               const SizedBox(height: 12),
-              _TipField(controller: _tipCtrl, onChanged: (_) => setState(() {})),
+              _TipField(controller: _tipCtrl, label: AppLocalizations.of(context)!.tipCardSide, onChanged: (_) => setState(() {})),
               const SizedBox(height: 12),
-              _CardConfirmBox(value: _cardConfirmed, onChanged: (v) => setState(() => _cardConfirmed = v!)),
+              _CardConfirmBox(value: _cardConfirmed, label: AppLocalizations.of(context)!.cardConfirmed, onChanged: (v) => setState(() => _cardConfirmed = v!)),
             ],
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(onPressed: () => Navigator.pop(context), child: Text(AppLocalizations.of(context)!.cancel)),
         FilledButton(
           onPressed: _canSubmit ? _submit : null,
           child: _loading
               ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Mark done'),
+              : Text(AppLocalizations.of(context)!.markDone),
         ),
       ],
     );
@@ -306,8 +308,9 @@ class _AmountField extends StatelessWidget {
 }
 
 class _TipField extends StatelessWidget {
-  const _TipField({required this.controller, required this.onChanged});
+  const _TipField({required this.controller, required this.label, required this.onChanged});
   final TextEditingController controller;
+  final String label;
   final ValueChanged<String> onChanged;
 
   @override
@@ -317,7 +320,7 @@ class _TipField extends StatelessWidget {
       onChanged: onChanged,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       decoration: InputDecoration(
-        labelText: 'Tip (card side)',
+        labelText: label,
         suffixText: 'MAD',
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -327,8 +330,9 @@ class _TipField extends StatelessWidget {
 }
 
 class _CardConfirmBox extends StatelessWidget {
-  const _CardConfirmBox({required this.value, required this.onChanged});
+  const _CardConfirmBox({required this.value, required this.label, required this.onChanged});
   final bool value;
+  final String label;
   final ValueChanged<bool?> onChanged;
 
   @override
@@ -343,7 +347,7 @@ class _CardConfirmBox extends StatelessWidget {
       child: Row(
         children: [
           Checkbox(value: value, onChanged: onChanged, activeColor: Colors.blue),
-          const Expanded(child: Text('Card payment confirmed on terminal', style: TextStyle(fontSize: 13))),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 13))),
         ],
       ),
     );

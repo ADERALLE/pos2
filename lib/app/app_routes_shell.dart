@@ -6,6 +6,7 @@ import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/services/sync_service.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/notification_viewmodel.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class ScaffoldWithNestedNavigation extends ConsumerWidget {
   const ScaffoldWithNestedNavigation({
@@ -107,14 +108,14 @@ class _ScaffoldWithNavigationBar extends ConsumerWidget {
               icon: Icon(Icons.home_outlined, color: scheme.onSurfaceVariant),
               selectedIcon:
               Icon(Icons.home_rounded, color: scheme.onPrimaryContainer),
-              label: 'Home',
+              label: AppLocalizations.of(context)!.navHome,
             ),
             NavigationDestination(
               icon: Icon(Icons.receipt_long_outlined,
                   color: scheme.onSurfaceVariant),
               selectedIcon:
               Icon(Icons.receipt_long, color: scheme.onPrimaryContainer),
-              label: 'Orders',
+              label: AppLocalizations.of(context)!.navOrders,
             ),
             if (!isCashier)
              ...[
@@ -129,13 +130,13 @@ class _ScaffoldWithNavigationBar extends ConsumerWidget {
                    label: Text(unread > 99 ? '99+' : '$unread'),
                    child: Icon(Icons.notifications_rounded, color: scheme.onPrimaryContainer),
                  ),
-                 label: 'Alerts',
+                 label: AppLocalizations.of(context)!.navAlerts,
                ),
                NavigationDestination(
                 icon: Icon(Icons.tune_outlined, color: scheme.onSurfaceVariant),
                 selectedIcon:
                 Icon(Icons.tune, color: scheme.onPrimaryContainer),
-                label: 'Settings',
+                label: AppLocalizations.of(context)!.navSettings,
               ),
              ]
           ],
@@ -269,14 +270,14 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                             color: scheme.onSurfaceVariant),
                         selectedIcon: Icon(Icons.home_rounded,
                             color: scheme.onPrimaryContainer),
-                        label: const Text('Home'),
+                        label: Text(AppLocalizations.of(context)!.navHome),
                       ),
                       NavigationRailDestination(
                         icon: Icon(Icons.receipt_long_outlined,
                             color: scheme.onSurfaceVariant),
                         selectedIcon: Icon(Icons.receipt_long,
                             color: scheme.onPrimaryContainer),
-                        label: const Text('Orders'),
+                        label: Text(AppLocalizations.of(context)!.navOrders),
                       ),
                       if (!isCashier)
                         ...[
@@ -292,14 +293,14 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                               label: Text(unread > 99 ? '99+' : '$unread'),
                               child: Icon(Icons.notifications_rounded, color: scheme.onPrimaryContainer),
                             ),
-                            label: const Text('Alerts'),
+                            label: Text(AppLocalizations.of(context)!.navAlerts),
                           ),
                           NavigationRailDestination(
                             icon: Icon(Icons.tune_outlined,
                                 color: scheme.onSurfaceVariant),
                             selectedIcon: Icon(Icons.tune,
                                 color: scheme.onPrimaryContainer),
-                            label: const Text('Settings'),
+                            label: Text(AppLocalizations.of(context)!.navSettings),
                           ),
                         ]
                     ],

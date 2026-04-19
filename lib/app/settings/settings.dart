@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/locale_provider.dart';
+import 'package:pos_v1/core/viewmodels/theme_provider.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 import '../../core/models/size_config.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -34,13 +37,14 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     SizeConfig().init(context);
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const SliverAppBar(
-            title: Text('Settings'),
+          SliverAppBar(
+            title: Text(l10n.settings),
             floating: true,
             pinned: true,
           ),
@@ -53,21 +57,21 @@ class SettingsPage extends ConsumerWidget {
               delegate: SliverChildListDelegate([
 
                 // ── ANALYTICS SECTION ──
-                _SectionHeader(title: 'Analytics & Reports'),
+                _SectionHeader(title: l10n.analyticsReports),
                 _SettingsCard(
                   children: [
                     _SettingsTile(
                       icon: Icons.calendar_month_rounded,
-                      title: 'Daily Shop Dashboard',
-                      subtitle: 'View revenue, trends, and top items by date',
+                      title: l10n.dailyShopDashboard,
+                      subtitle: l10n.dailyShopDashboardSubtitle,
                       iconColor: scheme.primary,
                       onTap: () => _pickDateAndGoToDashboard(context),
                     ),
                     const Divider(height: 1, indent: 64),
                     _SettingsTile(
                       icon: Icons.bar_chart_rounded,
-                      title: 'Staff Dashboard',
-                      subtitle: 'Track shifts and revenue by team member',
+                      title: l10n.staffDashboard,
+                      subtitle: l10n.staffDashboardSubtitle,
                       iconColor: Colors.blue,
                       onTap: () => context.go('/settings/staff-dashboard'),
                     ),
@@ -76,29 +80,29 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ── MANAGEMENT SECTION ──
-                _SectionHeader(title: 'Management'),
+                _SectionHeader(title: l10n.management),
                 _SettingsCard(
                   children: [
                     _SettingsTile(
                       icon: Icons.people_alt_rounded,
-                      title: 'Staff',
-                      subtitle: 'Manage your team and roles',
+                      title: l10n.staff,
+                      subtitle: l10n.staffSubtitle,
                       iconColor: Colors.orange,
                       onTap: () => context.go('/settings/staff'),
                     ),
                     const Divider(height: 1, indent: 64),
                     _SettingsTile(
                       icon: Icons.restaurant_menu_rounded,
-                      title: 'Menu',
-                      subtitle: 'Edit items, categories, and pricing',
+                      title: l10n.menu,
+                      subtitle: l10n.menuSubtitle,
                       iconColor: Colors.green,
                       onTap: () => context.go('/settings/menu'),
                     ),
                     const Divider(height: 1, indent: 64),
                     _SettingsTile(
                       icon: Icons.fastfood_rounded,
-                      title: 'Combo Menus',
-                      subtitle: 'Create and manage combo meals',
+                      title: l10n.comboMenus,
+                      subtitle: l10n.comboMenusSubtitle,
                       iconColor: Colors.teal,
                       onTap: () => context.go('/settings/combo-menus'),
                     ),
@@ -107,12 +111,30 @@ class SettingsPage extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // ── SYSTEM SECTION ──
-                _SectionHeader(title: 'System'),
+                _SectionHeader(title: l10n.system),
                 _SettingsCard(
                   children: [
                     _SettingsTile(
+                      icon: Icons.language_rounded,
+                      title: l10n.language,
+                      subtitle: l10n.languageSubtitle,
+                      iconColor: Colors.indigo,
+                      hideChevron: false,
+                      onTap: () => _showLanguagePicker(context, ref),
+                    ),
+                    const Divider(height: 1, indent: 64),
+                    _SettingsTile(
+                      icon: Icons.brightness_6_rounded,
+                      title: l10n.appearance,
+                      subtitle: l10n.appearanceSubtitle,
+                      iconColor: Colors.amber,
+                      hideChevron: true,
+                      onTap: () => ref.read(themeModeProvider.notifier).toggleTheme(),
+                    ),
+                    const Divider(height: 1, indent: 64),
+                    _SettingsTile(
                       icon: Icons.logout_rounded,
-                      title: 'Logout',
+                      title: l10n.logout,
                       textColor: scheme.error,
                       iconColor: scheme.error,
                       hideChevron: true,
@@ -130,6 +152,19 @@ class SettingsPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showLanguagePicker(BuildContext context, WidgetRef ref) {
+    final current = ref.read(localeProvider);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => _LanguageSheet(current: current, onSelect: (locale) {
+        ref.read(localeProvider.notifier).setLocale(locale);
+      }),
     );
   }
 }
@@ -249,6 +284,78 @@ class _SettingsTile extends StatelessWidget {
                 Icons.chevron_right_rounded,
                 color: scheme.onSurface.withOpacity(0.3),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Language picker bottom sheet ─────────────────────────────────────────────
+
+class _LanguageSheet extends StatelessWidget {
+  const _LanguageSheet({required this.current, required this.onSelect});
+  final Locale current;
+  final ValueChanged<Locale> onSelect;
+
+  static const _languages = [
+    (locale: Locale('fr'), flag: '🇫🇷', name: 'Français'),
+    (locale: Locale('en'), flag: '🇺🇸', name: 'English'),
+    (locale: Locale('ar'), flag: '🇦🇪', name: 'العربية'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final scheme = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    l10n.language,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            ..._languages.map((lang) {
+              final selected = current.languageCode == lang.locale.languageCode;
+              return ListTile(
+                leading: Text(lang.flag, style: const TextStyle(fontSize: 24)),
+                title: Text(lang.name),
+                trailing: selected
+                    ? Icon(Icons.check_rounded, color: scheme.primary)
+                    : null,
+                tileColor: selected ? scheme.primary.withOpacity(0.06) : null,
+                onTap: () {
+                  onSelect(lang.locale);
+                  Navigator.pop(context);
+                },
+              );
+            }),
           ],
         ),
       ),

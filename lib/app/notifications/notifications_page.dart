@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pos_v1/core/models/notification.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/all_notifications_viewmodel.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class NotificationsPage extends ConsumerStatefulWidget {
   const NotificationsPage({super.key});
@@ -59,7 +60,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(AppLocalizations.of(context)!.notifications),
         centerTitle: false,
         actions: [
           if (unreadCount > 0)
@@ -68,7 +69,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   .read(allNotificationsProvider(shopId).notifier)
                   .markAllRead(shopId),
               icon: const Icon(Icons.done_all_rounded, size: 18),
-              label: const Text('Mark all read'),
+              label: Text(AppLocalizations.of(context)!.markAllRead),
             ),
           const SizedBox(width: 8),
         ],
@@ -82,13 +83,13 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
               Icon(Icons.error_outline_rounded,
                   size: 48, color: scheme.error.withOpacity(0.6)),
               const SizedBox(height: 12),
-              Text('Failed to load notifications',
+              Text(AppLocalizations.of(context)!.failedToLoadNotifications,
                   style: TextStyle(color: scheme.onSurface.withOpacity(0.6))),
               const SizedBox(height: 8),
               FilledButton.tonal(
                 onPressed: () =>
                     ref.invalidate(allNotificationsProvider(shopId)),
-                child: const Text('Retry'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
@@ -103,7 +104,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                       size: 64, color: scheme.onSurface.withOpacity(0.2)),
                   const SizedBox(height: 12),
                   Text(
-                    'No notifications yet',
+                    AppLocalizations.of(context)!.noNotificationsYet,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: scheme.onSurface.withOpacity(0.5),
                       fontWeight: FontWeight.w600,

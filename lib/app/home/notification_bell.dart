@@ -5,6 +5,7 @@ import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/notification.dart';
 import 'package:pos_v1/core/viewmodels/notification_viewmodel.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class NotificationBell extends ConsumerWidget {
   const NotificationBell({super.key, required this.shopId});
@@ -120,7 +121,7 @@ class _NotificationsSheetState extends ConsumerState<_NotificationsSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Notifications',
+                Text(AppLocalizations.of(context)!.notifications,
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
@@ -131,7 +132,7 @@ class _NotificationsSheetState extends ConsumerState<_NotificationsSheet> {
                     onPressed: () => ref
                         .read(notificationsProvider(widget.shopId).notifier)
                         .markAllRead(widget.shopId),
-                    child: const Text('Mark all read'),
+                    child: Text(AppLocalizations.of(context)!.markAllRead),
                   )
                       : const SizedBox(),
                   orElse: () => const SizedBox(),
@@ -153,7 +154,7 @@ class _NotificationsSheetState extends ConsumerState<_NotificationsSheet> {
                         size: 48,
                         color: scheme.onSurface.withOpacity(0.3)),
                     const SizedBox(height: 8),
-                    Text('No unread notifications',
+                    Text(AppLocalizations.of(context)!.noUnreadNotifications,
                         style: TextStyle(
                             color: scheme.onSurface.withOpacity(0.4))),
                   ],

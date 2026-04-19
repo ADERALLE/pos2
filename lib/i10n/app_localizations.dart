@@ -135,6 +135,119 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search coffee...'**
   String get search;
+
+  // ── navigation ──────────────────────────────────────────────────────────────
+  String get navHome;
+  String get navOrders;
+  String get navAlerts;
+  String get navSettings;
+
+  // ── login ────────────────────────────────────────────────────────────────────
+  String get welcome;
+  String get enterPinFor;
+  String get wrongPin;
+
+  // ── home ─────────────────────────────────────────────────────────────────────
+  String get goodMorning;
+  String get goodAfternoon;
+  String get goodEvening;
+  String get noActiveShift;
+  String get startShiftSubtitle;
+  String get startShift;
+  String get shiftActive;
+  String get elapsed;
+  String get close;
+  String get newOrder;
+  String get todaysOrders;
+  String get noOrdersYet;
+  String get uncompletedOrdersTitle;
+  String get uncompletedOrdersMessage;
+  String get ok;
+  String get editOrder;
+  String get markDone;
+  String get start;
+  String get closeShift;
+
+  // ── orders ───────────────────────────────────────────────────────────────────
+  String get activeOrders;
+  String get history;
+  String get noActiveOrders;
+  String get noOrderHistory;
+  String get searchOrders;
+  String get cancelOrder;
+  String get comboLabel;
+
+  // ── notifications ────────────────────────────────────────────────────────────
+  String get notifications;
+  String get markAllRead;
+  String get failedToLoadNotifications;
+  String get retry;
+  String get noNotificationsYet;
+  String get noUnreadNotifications;
+
+  // ── payment dialog ───────────────────────────────────────────────────────────
+  String get completeOrder;
+  String get total;
+  String get cash;
+  String get card;
+  String get split;
+  String get tipCardSide;
+  String get amountsMatchTotal;
+  String get cancel;
+  String get cardConfirmed;
+
+  // ── offline banner ───────────────────────────────────────────────────────────
+  String get backOnlineSyncing;
+  String get operation;
+  String get operations;
+  String get offlineNoQueue;
+  String get offline;
+  String get queued;
+
+  // ── settings ─────────────────────────────────────────────────────────────────
+  String get analyticsReports;
+  String get dailyShopDashboard;
+  String get dailyShopDashboardSubtitle;
+  String get staffDashboard;
+  String get staffDashboardSubtitle;
+  String get management;
+  String get staff;
+  String get staffSubtitle;
+  String get menuSubtitle;
+  String get comboMenusSubtitle;
+  String get system;
+  String get logout;
+  String get language;
+  String get languageSubtitle;
+  String get appearance;
+  String get appearanceSubtitle;
+
+  // ── combo menu (already existed) ─────────────────────────────────────────────
+  String get comboMenus;
+  String get newCombo;
+  String get editCombo;
+  String get comboName;
+  String get comboPrice;
+  String get includedItems;
+  String get createCombo;
+  String get saveChanges;
+  String get items;
+  String get combos;
+
+  // ── shift summary ────────────────────────────────────────────────────────────
+  String get shiftSummary;
+  String get dashboard;
+  String get shiftClosed;
+  String get started;
+  String get closed;
+  String get passation;
+  String get done;
+  String get cancelled;
+  String get totalRevenue;
+  String get tipsCard;
+  String get cashToHandOver;
+  String get takeaway;
+  String get ordersCount;
 }
 
 class _AppLocalizationsDelegate

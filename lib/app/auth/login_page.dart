@@ -8,6 +8,7 @@ import 'package:pos_v1/core/viewmodels/staff_viewmodel.dart';
 import 'package:pos_v1/core/models/staff.dart';
 import '../../core/models/size_config.dart';
 import '../../core/viewmodels/auth_viewmodel.dart';
+import '../../i10n/app_localizations.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -57,6 +58,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
+    final l10n = AppLocalizations.of(context)!;
     final staffAsync =
     ref.watch(staffListProvider(AppConstants.shopId));
 
@@ -67,8 +69,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              const SliverAppBar(
-                title: Text('Welcome'),
+              SliverAppBar(
+                title: Text(l10n.welcome),
                 pinned: true,
               ),
               SliverToBoxAdapter(
@@ -105,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     const SizedBox(height: 32),
                     if (_selectedStaff != null) ...[
                       Text(
-                        'Enter PIN for ${_selectedStaff!.name}',
+                        '${l10n.enterPinFor} ${_selectedStaff!.name}',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
@@ -131,8 +133,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       if (_error) ...[
                         const SizedBox(height: 8),
-                        const Text('Wrong PIN',
-                            style: TextStyle(color: Colors.red)),
+                        Text(l10n.wrongPin,
+                            style: const TextStyle(color: Colors.red)),
                       ],
                       const SizedBox(height: 24),
                       // PIN pad

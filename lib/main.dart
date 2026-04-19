@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/app_routes.dart';
 import 'core/models/themes.dart';
 import 'core/viewmodels/theme_provider.dart';
+import 'core/viewmodels/locale_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ class CoffeePosApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'Coffee POS',
@@ -36,6 +38,7 @@ class CoffeePosApp extends ConsumerWidget {
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
       routerConfig: router,
+      locale: locale,
 
       // i18n setup
       localizationsDelegates: const [

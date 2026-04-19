@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/models/order_item.dart';
 import '../../core/models/size_config.dart';
+import '../../i10n/app_localizations.dart';
 
 class OrdersPage extends ConsumerStatefulWidget {
   const OrdersPage({super.key});
@@ -39,6 +40,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Container(
@@ -47,7 +49,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverAppBar(
-              title: const Text('Orders', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(l10n.orders, style: const TextStyle(fontWeight: FontWeight.bold)),
               pinned: true,
               floating: true,
               elevation: 0,
@@ -55,7 +57,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
               actions: [
                 IconButton(
                   icon: const Icon(Icons.search_rounded),
-                  tooltip: 'Search orders',
+                  tooltip: l10n.searchOrders,
                   onPressed: () {
                     final staff = ref.read(currentStaffProvider)!;
                     final isManager = staff.role == StaffRole.manager;
@@ -89,9 +91,9 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
                       labelColor: scheme.onPrimary,
                       unselectedLabelColor: scheme.onSurfaceVariant,
                       dividerColor: Colors.transparent,
-                      tabs: const [
-                        Tab(text: 'Active Orders'),
-                        Tab(text: 'History'),
+                      tabs: [
+                        Tab(text: l10n.activeOrders),
+                        Tab(text: l10n.history),
                       ],
                     ),
                   ),
@@ -138,7 +140,7 @@ class _ActiveOrdersTab extends ConsumerWidget {
         child: Text(e is PostgrestException ? e.message : 'Error'),
       ),
       data: (orders) => orders.isEmpty
-          ? const _EmptyState(icon: Icons.receipt_long, message: 'No active orders')
+          ? _EmptyState(icon: Icons.receipt_long, message: AppLocalizations.of(context)!.noActiveOrders)
           : ListView.builder(
         padding: EdgeInsets.zero,
         itemCount: orders.length,
@@ -202,10 +204,9 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
         child: Text(e is PostgrestException ? e.message : 'Error'),
       ),
       data: (orders) => orders.isEmpty
-          ? const Center(child: Text('No order history'))
+          ? Center(child: Text(AppLocalizations.of(context)!.noOrderHistory))
           : ListView.separated(
         controller: _scrollController,
-        itemCount: orders.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
         itemBuilder: (_, i) => _OrderCard(order: orders[i], readonly: true),
       ),
@@ -338,7 +339,7 @@ class _OrderCard extends ConsumerWidget {
                   backgroundColor: Colors.orange.withOpacity(0.1),
                 ),
                 icon: Icon(Icons.edit_rounded, color: Colors.orange.shade700, size: 20),
-                tooltip: 'Edit Order',
+                tooltip: AppLocalizations.of(context)!.editOrder,
                 onPressed: () {
                   ref.read(editingOrderProvider.notifier).state = order;
                   context.go('/home/new-order');
@@ -350,7 +351,7 @@ class _OrderCard extends ConsumerWidget {
                   backgroundColor: Colors.green.withOpacity(0.1),
                 ),
                 icon: Icon(Icons.check_rounded, color: Colors.green.shade700, size: 20),
-                tooltip: 'Mark Done',
+                tooltip: AppLocalizations.of(context)!.markDone,
                 onPressed: () => PaymentDialog.show(
                   context: context,
                   total: order.total,
@@ -379,7 +380,7 @@ class _OrderCard extends ConsumerWidget {
                     backgroundColor: Colors.red.withOpacity(0.1),
                   ),
                   icon: Icon(Icons.close_rounded, color: Colors.red.shade700, size: 20),
-                  tooltip: 'Cancel Order',
+                tooltip: AppLocalizations.of(context)!.cancelOrder,
                   onPressed: () {
                     if (isManager) {
                       ref.read(activeOrdersProvider(AppConstants.shopId).notifier)
