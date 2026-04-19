@@ -504,6 +504,7 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
                   width: 20,
                   child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(isEdit ? 'Save' : 'Add'),
+            ),
             const SizedBox(height: 8),
           ],
         ),
@@ -717,4 +718,5 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
     );
     labelCtrl.dispose();
   }
+}
 }
