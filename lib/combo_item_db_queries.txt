@@ -39,3 +39,18 @@ ALTER TABLE shifts RENAME COLUMN rotation_amount TO passation_amount;
 
 ALTER TABLE public.combo_menus
   ADD COLUMN IF NOT EXISTS category_id uuid REFERENCES public.categories(id);
+
+
+----------------------------------------------
+
+CREATE TABLE public.combo_categories (
+  id   uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  shop_id uuid NOT NULL REFERENCES public.shops(id),
+  label text NOT NULL,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.combo_menus
+  DROP COLUMN IF EXISTS category_id,
+  ADD COLUMN category_id uuid REFERENCES public.combo_categories(id);

@@ -6,6 +6,7 @@ import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/combo_category_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
@@ -40,6 +41,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
+    final comboCategoriesAsync = ref.watch(comboCategoryListProvider(AppConstants.shopId));
     final itemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final cart = ref.watch(cartProvider);
@@ -166,7 +168,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                       orElse: () => const SizedBox(height: 48),
                     )
                   else
-                    categoriesAsync.maybeWhen(
+                    comboCategoriesAsync.maybeWhen(
                       data: (cats) => Container(
                         height: 48,
                         padding: const EdgeInsets.only(bottom: 8),

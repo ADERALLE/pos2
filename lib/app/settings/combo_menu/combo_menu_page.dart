@@ -11,6 +11,7 @@ import '../../../core/models/category.dart';
 import '../../../core/models/combo_menu.dart';
 import '../../../core/models/menu_item.dart';
 import '../../../core/models/size_config.dart';
+import '../../../core/viewmodels/combo_category_viewmodel.dart';
 import '../../../core/viewmodels/combo_menu_viewmodel.dart';
 import '../../../core/viewmodels/menu_viewmodel.dart';
 
@@ -22,7 +23,7 @@ class ComboMenuPage extends ConsumerWidget {
     SizeConfig().init(context);
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final menuItemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
-    final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
+    final categoriesAsync = ref.watch(comboCategoryListProvider(AppConstants.shopId));
 
     return Scaffold(
       body: Center(
@@ -37,6 +38,15 @@ class ComboMenuPage extends ConsumerWidget {
                 floating: true,
                 pinned: true,
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.category_outlined),
+                    tooltip: 'Manage combo categories',
+                    onPressed: () => _showComboCategoriesSheet(
+                      context,
+                      ref,
+                      categoriesAsync.value ?? [],
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.add),
                     onPressed: () => _showComboForm(
@@ -76,6 +86,21 @@ class ComboMenuPage extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showComboCategoriesSheet(
+    BuildContext context,
+    WidgetRef ref,
+    List<Category> categories,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => _ComboCategoriesSheet(
+        ref: ref,
+        categories: categories,
       ),
     );
   }
@@ -773,6 +798,103 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               Navigator.pop(ctx);
             },
             child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Combo categories management sheet ───────────────────────────────────────
+
+class _ComboCategoriesSheet extends StatefulWidget {
+  const _ComboCategoriesSheet({required this.ref, required this.categories});
+  final WidgetRef ref;
+  final List<Category> categories;
+
+  @override
+  State<_ComboCategoriesSheet> createState() => _ComboCategoriesSheetState();
+}
+
+class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
+  final _controller = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _add() async {
+    if (_controller.text.trim().isEmpty) return;
+    setState(() => _loading = true);
+    await widget.ref
+        .read(comboCategoryListProvider(AppConstants.shopId).notifier)
+        .create(shopId: AppConstants.shopId, label: _controller.text.trim());
+    _controller.clear();
+    setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categoriesAsync =
+        widget.ref.watch(comboCategoryListProvider(AppConstants.shopId));
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('Combo Categories',
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  decoration:
+                      const InputDecoration(hintText: 'New category name'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: _loading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.add),
+                onPressed: _loading ? null : _add,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          categoriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => const SizedBox(),
+            data: (cats) => Column(
+              children: cats
+                  .map((c) => ListTile(
+                        title: Text(c.label),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
+                          onPressed: () => widget.ref
+                              .read(comboCategoryListProvider(
+                                      AppConstants.shopId)
+                                  .notifier)
+                              .deleteCategory(
+                                categoryId: c.id,
+                                shopId: AppConstants.shopId,
+                              ),
+                        ),
+                      ))
+                  .toList(),
+            ),
           ),
         ],
       ),
