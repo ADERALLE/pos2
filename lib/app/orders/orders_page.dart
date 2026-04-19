@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -332,6 +335,23 @@ class _OrderCard extends ConsumerWidget {
               : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.orange.withOpacity(0.1),
+                ),
+                icon: Icon(Icons.edit_rounded, color: Colors.orange.shade700, size: 20),
+                tooltip: 'Edit Order',
+                onPressed: () {
+                  final menuItems =
+                      ref.read(menuItemListProvider(AppConstants.shopId)).value ?? [];
+                  final combos =
+                      ref.read(comboMenuListProvider(AppConstants.shopId)).value ?? [];
+                  ref.read(cartProvider.notifier).loadOrderForEdit(order, menuItems, combos);
+                  ref.read(editingOrderProvider.notifier).state = order;
+                  context.go('/home/new-order');
+                },
+              ),
+              const SizedBox(width: 8),
               IconButton(
                 style: IconButton.styleFrom(
                   backgroundColor: Colors.green.withOpacity(0.1),

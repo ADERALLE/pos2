@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
 import 'package:pos_v1/core/models/order.dart';
+import 'package:pos_v1/core/models/order_item.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
 import 'package:pos_v1/core/services/connectivity_service.dart';
 import 'package:pos_v1/core/services/offline_queue_service.dart';
@@ -317,6 +319,11 @@ class ShiftOrders extends _$ShiftOrders {
   }
 }
 
+// ── editing order ─────────────────────────────────────────────────────────────
+
+/// Holds the active order currently being edited. Null when not in edit mode.
+final editingOrderProvider = StateProvider<Order?>((ref) => null);
+
 // ── cart (offline-aware) ──────────────────────────────────────────────────────
 
 @riverpod
@@ -413,6 +420,76 @@ class Cart extends _$Cart {
   }
 
   void clear() => state = [];
+
+  /// Reconstructs the cart from an existing [order] so it can be edited.
+  /// Standalone items are matched by [menuItemId]; combo groups are matched
+  /// by name (stripping the " #N" unit-suffix added at submit time).
+  void loadOrderForEdit(
+    Order order,
+    List<MenuItem> menuItems,
+    List<ComboMenu> comboMenus,
+  ) {
+    const sep = ' \u2013 '; // " – " used in submitOrder
+    final comboSuffixRegex = RegExp(r' #\d+$');
+
+    final cartItems = <CartItem>[];
+    final Map<String, List<OrderItem>> comboGroups = {};
+
+    for (final item in order.orderItems) {
+      final sepIdx = item.name.indexOf(sep);
+      if (sepIdx > 0) {
+        final groupName = item.name.substring(0, sepIdx);
+        comboGroups.putIfAbsent(groupName, () => []).add(item);
+      } else {
+        final menuItem =
+            menuItems.where((m) => m.id == item.menuItemId).firstOrNull;
+        if (menuItem != null) {
+          cartItems.add(CartItem(menuItem: menuItem, quantity: item.quantity));
+        }
+      }
+    }
+
+    for (final entry in comboGroups.entries) {
+      final groupName = entry.key; // e.g. "Combo A" or "Combo A #2"
+      final items = entry.value;
+
+      // Strip " #N" suffix to recover the real combo name.
+      final baseName = groupName.replaceAll(comboSuffixRegex, '').trim();
+      final combo =
+          comboMenus.where((c) => c.name == baseName).firstOrNull;
+      if (combo == null) continue;
+
+      // Reconstruct selected choices for this unit.
+      final selectedChoices = <String, String>{};
+      for (final item in items) {
+        final ci = combo.comboMenuItems
+            .where((ci) =>
+                ci.menuItemId == item.menuItemId && ci.choiceGroup != null)
+            .firstOrNull;
+        if (ci != null) {
+          selectedChoices[ci.choiceGroup!] = ci.menuItemId;
+        }
+      }
+
+      // If we already have this combo+choices combination, increment quantity.
+      final tempItem =
+          CartItem(comboMenu: combo, selectedChoices: Map.of(selectedChoices));
+      final key = tempItem.cartKey;
+      final existingIdx =
+          cartItems.indexWhere((c) => c.isCombo && c.cartKey == key);
+      if (existingIdx >= 0) {
+        cartItems[existingIdx].quantity++;
+      } else {
+        cartItems.add(CartItem(
+          comboMenu: combo,
+          quantity: 1,
+          selectedChoices: Map.of(selectedChoices),
+        ));
+      }
+    }
+
+    state = List.of(cartItems);
+  }
 
   double get total => state.fold(0, (sum, c) => sum + c.subtotal);
 

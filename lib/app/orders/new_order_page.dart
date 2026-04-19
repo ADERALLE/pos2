@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/appconstants.dart';
+import 'package:pos_v1/core/models/order.dart';
+import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
@@ -32,6 +35,7 @@ class NewOrderPage extends ConsumerWidget {
     final itemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final cart = ref.watch(cartProvider);
+    final editingOrder = ref.watch(editingOrderProvider);
 
     // Watch the filter state
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
@@ -51,12 +55,25 @@ class NewOrderPage extends ConsumerWidget {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            title: const Text('New Order', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              editingOrder != null ? 'Edit Order' : 'New Order',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             pinned: true,
             floating: true,
             elevation: 0,
             scrolledUnderElevation: 2,
             actions: [
+              if (editingOrder != null)
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Cancel edit',
+                  onPressed: () {
+                    ref.read(editingOrderProvider.notifier).state = null;
+                    ref.read(cartProvider.notifier).clear();
+                    context.go('/orders');
+                  },
+                ),
               if (!showSideCart && cart.isNotEmpty)
                 _CartBadgeButton(
                     count: cart.length,
@@ -423,6 +440,21 @@ class _CartContentState extends ConsumerState<CartContent> {
     setState(() => _loading = true);
     final staff = ref.read(currentStaffProvider);
     final shift = ref.read(activeShiftProvider(staff!.id)).value;
+    final editingOrder = ref.read(editingOrderProvider);
+
+    // If editing an existing order, cancel it first then create a replacement.
+    if (editingOrder != null) {
+      final isManager = staff.role == StaffRole.manager;
+      if (isManager) {
+        await ref
+            .read(activeOrdersProvider(AppConstants.shopId).notifier)
+            .cancel(editingOrder.id, AppConstants.shopId);
+      } else {
+        await ref
+            .read(myActiveOrdersProvider(staff.id).notifier)
+            .cancel(editingOrder.id, staff.id);
+      }
+    }
 
     await ref.read(cartProvider.notifier).submitOrder(
       shopId: AppConstants.shopId,
@@ -431,6 +463,11 @@ class _CartContentState extends ConsumerState<CartContent> {
       tableLabel: _tableLabelController.text.trim().isEmpty ? null : _tableLabelController.text.trim(),
       note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
     );
+
+    // Clear edit state
+    if (editingOrder != null) {
+      ref.read(editingOrderProvider.notifier).state = null;
+    }
 
     // Refreshing state
     ref.invalidate(activeOrdersProvider(AppConstants.shopId));
@@ -448,6 +485,15 @@ class _CartContentState extends ConsumerState<CartContent> {
 
   @override
   Widget build(BuildContext context) {
+    // Pre-fill table label and note when entering edit mode.
+    ref.listen<Order?>(editingOrderProvider, (previous, next) {
+      if (next != null && previous?.id != next.id) {
+        _tableLabelController.text = next.tableLabel ?? '';
+        _noteController.text = next.note ?? '';
+      }
+    });
+
+    final editingOrder = ref.watch(editingOrderProvider);
     final cart = ref.watch(cartProvider);
     final total = ref.read(cartProvider.notifier).total;
     final theme = Theme.of(context);
@@ -548,7 +594,10 @@ class _CartContentState extends ConsumerState<CartContent> {
               ),
               child: _loading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Place Order', style: TextStyle(fontWeight: FontWeight.bold)),
+                  : Text(
+                      editingOrder != null ? 'Update Order' : 'Place Order',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
             ),
           ]
         ],
