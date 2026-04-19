@@ -637,22 +637,23 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           title: const Text('Edit category'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: labelCtrl,
-                decoration: const InputDecoration(labelText: 'Name'),
-                autofocus: true,
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Supplement category'),
-                value: isSupp,
-                onChanged: (v) => setDialogState(() => isSupp = v),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: labelCtrl,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Supplement category'),
+                  value: isSupp,
+                  onChanged: (v) => setDialogState(() => isSupp = v),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
