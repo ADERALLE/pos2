@@ -509,7 +509,8 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
 
