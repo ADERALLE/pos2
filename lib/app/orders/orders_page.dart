@@ -5,8 +5,6 @@ import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
-import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
-import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -342,11 +340,6 @@ class _OrderCard extends ConsumerWidget {
                 icon: Icon(Icons.edit_rounded, color: Colors.orange.shade700, size: 20),
                 tooltip: 'Edit Order',
                 onPressed: () {
-                  final menuItems =
-                      ref.read(menuItemListProvider(AppConstants.shopId)).value ?? [];
-                  final combos =
-                      ref.read(comboMenuListProvider(AppConstants.shopId)).value ?? [];
-                  ref.read(cartProvider.notifier).loadOrderForEdit(order, menuItems, combos);
                   ref.read(editingOrderProvider.notifier).state = order;
                   context.go('/home/new-order');
                 },

@@ -460,6 +460,16 @@ class _ShiftOrderTile extends ConsumerWidget {
             ),
             if (order.status != OrderStatus.done && order.status != OrderStatus.cancelled) ...[
               const SizedBox(width: 4),
+              if (order.status == OrderStatus.pending)
+                IconButton(
+                  icon: Icon(Icons.edit_rounded,
+                      color: Colors.orange.shade600, size: 20),
+                  tooltip: 'Edit Order',
+                  onPressed: () {
+                    ref.read(editingOrderProvider.notifier).state = order;
+                    context.go('/home/new-order');
+                  },
+                ),
               IconButton(
                 icon: Icon(Icons.check_circle_outline_rounded,
                     color: Colors.green.shade600, size: 22),

@@ -25,17 +25,44 @@ enum OrderViewTab { items, combos }
 
 final orderViewTabProvider = StateProvider<OrderViewTab>((ref) => OrderViewTab.items);
 
-class NewOrderPage extends ConsumerWidget {
+class NewOrderPage extends ConsumerStatefulWidget {
   const NewOrderPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NewOrderPage> createState() => _NewOrderPageState();
+}
+
+class _NewOrderPageState extends ConsumerState<NewOrderPage> {
+  /// Tracks whether we've already populated the cart for the current editing order.
+  String? _editPopulatedForOrderId;
+
+  @override
+  Widget build(BuildContext context) {
     SizeConfig().init(context);
     final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
     final itemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final cart = ref.watch(cartProvider);
     final editingOrder = ref.watch(editingOrderProvider);
+
+    // When both menu data is available and an order is being edited, populate
+    // the cart exactly once per editing session.
+    if (editingOrder != null && _editPopulatedForOrderId != editingOrder.id) {
+      itemsAsync.whenData((items) {
+        combosAsync.whenData((combos) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            ref.read(cartProvider.notifier).loadOrderForEdit(editingOrder, items, combos);
+            setState(() => _editPopulatedForOrderId = editingOrder.id);
+          });
+        });
+      });
+    }
+
+    // Reset flag when edit mode is cleared.
+    if (editingOrder == null && _editPopulatedForOrderId != null) {
+      _editPopulatedForOrderId = null;
+    }
 
     // Watch the filter state
     final selectedCategoryId = ref.watch(selectedCategoryIdProvider);
@@ -428,6 +455,19 @@ class _CartContentState extends ConsumerState<CartContent> {
   final _tableLabelController = TextEditingController();
   final _noteController = TextEditingController();
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill immediately if already in edit mode when this widget is first created.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final order = ref.read(editingOrderProvider);
+      if (order != null) {
+        _tableLabelController.text = order.tableLabel ?? '';
+        _noteController.text = order.note ?? '';
+      }
+    });
+  }
 
   @override
   void dispose() {
