@@ -48,12 +48,14 @@ class MenuRepository {
   Future<Category> updateCategory({
     required String categoryId,
     String? label,
+    bool? isSupp,
     int? sortOrder,
   }) async {
     final data = await _client
         .from('categories')
         .update({
       if (label != null) 'label': label,
+      if (isSupp != null) 'is_supp': isSupp,
       if (sortOrder != null) 'sort_order': sortOrder,
     })
         .eq('id', categoryId)

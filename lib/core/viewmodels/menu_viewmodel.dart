@@ -56,10 +56,11 @@ class CategoryList extends _$CategoryList {
     required String categoryId,
     required String shopId,
     String? label,
+    bool? isSupp,
   }) async {
     await ref
         .read(menuRepositoryProvider)
-        .updateCategory(categoryId: categoryId, label: label);
+        .updateCategory(categoryId: categoryId, label: label, isSupp: isSupp);
     await _refresh(shopId);
   }
 

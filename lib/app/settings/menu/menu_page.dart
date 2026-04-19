@@ -598,16 +598,25 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
                             ],
                           ],
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: Colors.red),
-                          onPressed: () => widget.ref
-                              .read(categoryListProvider(AppConstants.shopId)
-                                  .notifier)
-                              .deleteCategory(
-                                categoryId: c.id,
-                                shopId: AppConstants.shopId,
-                              ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_outlined),
+                              onPressed: () => _showEditDialog(context, c),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.red),
+                              onPressed: () => widget.ref
+                                  .read(categoryListProvider(AppConstants.shopId)
+                                      .notifier)
+                                  .deleteCategory(
+                                    categoryId: c.id,
+                                    shopId: AppConstants.shopId,
+                                  ),
+                            ),
+                          ],
                         ),
                       ))
                   .toList(),
@@ -616,5 +625,68 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
         ],
       ),
     );
+  }
+
+  Future<void> _showEditDialog(BuildContext context, Category category) async {
+    final labelCtrl = TextEditingController(text: category.label);
+    bool isSupp = category.isSupp;
+    bool saving = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: const Text('Edit category'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: labelCtrl,
+                decoration: const InputDecoration(labelText: 'Name'),
+                autofocus: true,
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Supplement category'),
+                value: isSupp,
+                onChanged: (v) => setDialogState(() => isSupp = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: saving
+                  ? null
+                  : () async {
+                      if (labelCtrl.text.trim().isEmpty) return;
+                      setDialogState(() => saving = true);
+                      await widget.ref
+                          .read(categoryListProvider(AppConstants.shopId)
+                              .notifier)
+                          .editCategory(
+                            categoryId: category.id,
+                            shopId: AppConstants.shopId,
+                            label: labelCtrl.text.trim(),
+                            isSupp: isSupp,
+                          );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                    },
+              child: saving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+    labelCtrl.dispose();
   }
 }
