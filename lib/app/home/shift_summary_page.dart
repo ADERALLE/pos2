@@ -444,16 +444,18 @@ class _OrderTile extends StatelessWidget {
             ),
           ),
         ),
-        children: order.orderItems.where((item) => !item.name.contains(' \u2013 ')).map((item) => ListTile(
-          dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-          title: Text(item.name, style: const TextStyle(fontSize: 13)),
-          trailing: Text(
-            '${item.quantity} \u00d7 ${item.unitPrice.toStringAsFixed(2)} MAD',
-            style: const TextStyle(fontSize: 12),
-          ),
-        )).toList()
-          ..addAll(_buildComboGroupTiles(order)),
+        children: <Widget>[
+          ...order.orderItems.where((item) => !item.name.contains(' – ')).map((item) => ListTile(
+            dense: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+            title: Text(item.name, style: const TextStyle(fontSize: 13)),
+            trailing: Text(
+              '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)} MAD',
+              style: const TextStyle(fontSize: 12),
+            ),
+          )),
+          ..._buildComboGroupTiles(order),
+        ],
       ),
     );
   }
