@@ -95,6 +95,14 @@ class _PaymentDialogState extends State<PaymentDialog> {
     setState(() {});
   }
 
+  /// Rebalance cash amount whenever card changes so sum == total.
+  void _onCardChanged(String val) {
+    final card = double.tryParse(val) ?? 0.0;
+    final cash = (widget.total - card).clamp(0.0, widget.total);
+    _cashCtrl.text = cash.toStringAsFixed(2);
+    setState(() {});
+  }
+
   Future<void> _submit() async {
     setState(() => _loading = true);
     final tip = _mode != 'cash'
@@ -181,7 +189,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
                     onChanged: _onCashChanged)),
                 const SizedBox(width: 10),
                 Expanded(child: _AmountField(label: 'Card', controller: _cardCtrl, color: Colors.blue,
-                    onChanged: (_) => setState(() {}))),
+                    onChanged: _onCardChanged)),
               ]),
               const SizedBox(height: 6),
               // balance indicator
