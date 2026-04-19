@@ -14,6 +14,9 @@ import '../../../core/models/size_config.dart';
 import '../../../core/viewmodels/combo_menu_viewmodel.dart';
 import '../../../core/viewmodels/menu_viewmodel.dart';
 
+// ── Category filter for the combo list ───────────────────────────────────────
+final _comboListCategoryFilterProvider = StateProvider<String?>((ref) => null);
+
 class ComboMenuPage extends ConsumerWidget {
   const ComboMenuPage({super.key});
 
@@ -23,6 +26,8 @@ class ComboMenuPage extends ConsumerWidget {
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final menuItemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
     final categoriesAsync = ref.watch(comboCategoryListProvider(AppConstants.shopId));
+    final itemCategoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
+    final selectedCategoryId = ref.watch(_comboListCategoryFilterProvider);
 
     return Scaffold(
       body: Center(
@@ -53,9 +58,50 @@ class ComboMenuPage extends ConsumerWidget {
                       ref,
                       menuItemsAsync.value ?? [],
                       categories: categoriesAsync.value ?? [],
+                      itemCategories: itemCategoriesAsync.value ?? [],
                     ),
                   ),
                 ],
+              ),
+              // ── Category filter chips ──────────────────────────────────────
+              categoriesAsync.maybeWhen(
+                data: (cats) {
+                  if (cats.isEmpty) return const SliverToBoxAdapter(child: SizedBox());
+                  return SliverToBoxAdapter(
+                    child: Container(
+                      height: 48,
+                      margin: const EdgeInsets.only(bottom: 4),
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        itemCount: cats.length + 1,
+                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        itemBuilder: (_, i) {
+                          if (i == 0) {
+                            final isSelected = selectedCategoryId == null;
+                            return ChoiceChip(
+                              label: const Text('All'),
+                              selected: isSelected,
+                              onSelected: (_) => ref
+                                  .read(_comboListCategoryFilterProvider.notifier)
+                                  .state = null,
+                            );
+                          }
+                          final cat = cats[i - 1];
+                          final isSelected = selectedCategoryId == cat.id;
+                          return ChoiceChip(
+                            label: Text(cat.label),
+                            selected: isSelected,
+                            onSelected: (_) => ref
+                                .read(_comboListCategoryFilterProvider.notifier)
+                                .state = isSelected ? null : cat.id,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+                orElse: () => const SliverToBoxAdapter(child: SizedBox()),
               ),
               combosAsync.when(
                 loading: () => const SliverFillRemaining(
@@ -65,7 +111,10 @@ class ComboMenuPage extends ConsumerWidget {
                   child: Center(child: Text('Error: $e')),
                 ),
                 data: (combos) {
-                  if (combos.isEmpty) {
+                  final filtered = combos.where((c) =>
+                      selectedCategoryId == null ||
+                      c.categoryId == selectedCategoryId).toList();
+                  if (filtered.isEmpty) {
                     return const SliverFillRemaining(
                       child: Center(child: Text('No combos yet. Tap + to create one.')),
                     );
@@ -73,11 +122,12 @@ class ComboMenuPage extends ConsumerWidget {
                   return SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, i) => _ComboTile(
-                        combo: combos[i],
+                        combo: filtered[i],
                         menuItems: menuItemsAsync.value ?? [],
                         categories: categoriesAsync.value ?? [],
+                        itemCategories: itemCategoriesAsync.value ?? [],
                       ),
-                      childCount: combos.length,
+                      childCount: filtered.length,
                     ),
                   );
                 },
@@ -109,6 +159,7 @@ class ComboMenuPage extends ConsumerWidget {
     WidgetRef ref,
     List<MenuItem> menuItems, {
     List<Category> categories = const [],
+    List<Category> itemCategories = const [],
     ComboMenu? existing,
   }) {
     showModalBottomSheet(
@@ -118,6 +169,7 @@ class ComboMenuPage extends ConsumerWidget {
         ref: ref,
         menuItems: menuItems,
         categories: categories,
+        itemCategories: itemCategories,
         existing: existing,
       ),
     );
@@ -131,10 +183,12 @@ class _ComboTile extends ConsumerWidget {
     required this.combo,
     required this.menuItems,
     required this.categories,
+    this.itemCategories = const [],
   });
   final ComboMenu combo;
   final List<MenuItem> menuItems;
   final List<Category> categories;
+  final List<Category> itemCategories;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -211,6 +265,7 @@ class _ComboTile extends ConsumerWidget {
                   ref: ref,
                   menuItems: menuItems,
                   categories: categories,
+                  itemCategories: itemCategories,
                   existing: combo,
                 ),
               );
@@ -266,12 +321,14 @@ class _ComboFormSheet extends StatefulWidget {
     required this.ref,
     required this.menuItems,
     this.categories = const [],
+    this.itemCategories = const [],
     this.existing,
   });
 
   final WidgetRef ref;
   final List<MenuItem> menuItems;
   final List<Category> categories;
+  final List<Category> itemCategories;
   final ComboMenu? existing;
 
   @override
@@ -287,6 +344,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   bool _uploading = false;
   bool _saving = false;
   String? _selectedCategoryId;
+  String? _itemCategoryFilter;
 
   /// Map of menuItemId → quantity for items included in the combo.
   late Map<String, int> _selectedItems;
@@ -392,6 +450,9 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final activeItems = widget.menuItems.where((i) => i.isActive).toList();
+    final filteredItems = _itemCategoryFilter == null
+        ? activeItems
+        : activeItems.where((i) => i.categoryId == _itemCategoryFilter).toList();
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -500,6 +561,36 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                     style: TextStyle(color: theme.hintColor, fontSize: 13)),
               ],
             ),
+            // Item category filter chips
+            if (widget.itemCategories.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 36,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: widget.itemCategories.length + 1,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (_, i) {
+                    if (i == 0) {
+                      return ChoiceChip(
+                        label: const Text('All'),
+                        selected: _itemCategoryFilter == null,
+                        onSelected: (_) =>
+                            setState(() => _itemCategoryFilter = null),
+                      );
+                    }
+                    final cat = widget.itemCategories[i - 1];
+                    final isSelected = _itemCategoryFilter == cat.id;
+                    return ChoiceChip(
+                      label: Text(cat.label),
+                      selected: isSelected,
+                      onSelected: (_) => setState(() =>
+                          _itemCategoryFilter = isSelected ? null : cat.id),
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
 
             // Item grid – mirrors the New Order visual style
@@ -512,9 +603,9 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
-              itemCount: activeItems.length,
+              itemCount: filteredItems.length,
               itemBuilder: (context, i) {
-                final item = activeItems[i];
+                final item = filteredItems[i];
                 final qty = _selectedItems[item.id];
                 final isSelected = qty != null;
                 final choiceGroup = _choiceGroups[item.id];
