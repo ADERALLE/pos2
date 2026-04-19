@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/models/order.dart';
+import '../../core/models/order_item.dart';
 import '../../core/models/shift.dart';
 import '../../core/repositories/order_repository.dart';
 
@@ -443,18 +444,49 @@ class _OrderTile extends StatelessWidget {
             ),
           ),
         ),
-        children: order.orderItems
-            .map((item) => ListTile(
+        children: order.orderItems.where((item) => !item.name.contains(' \u2013 ')).map((item) => ListTile(
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           title: Text(item.name, style: const TextStyle(fontSize: 13)),
           trailing: Text(
-            '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)} MAD',
+            '${item.quantity} \u00d7 ${item.unitPrice.toStringAsFixed(2)} MAD',
             style: const TextStyle(fontSize: 12),
           ),
-        ))
-            .toList(),
+        )).toList()
+          ..addAll(_buildComboGroupTiles(order)),
       ),
     );
+  }
+
+  static const _sep = ' \u2013 ';
+
+  List<Widget> _buildComboGroupTiles(Order order) {
+    final Map<String, List<OrderItem>> groups = {};
+    for (final item in order.orderItems) {
+      final idx = item.name.indexOf(_sep);
+      if (idx > 0) {
+        final comboName = item.name.substring(0, idx);
+        groups.putIfAbsent(comboName, () => []).add(item);
+      }
+    }
+    if (groups.isEmpty) return [];
+    return groups.entries.map((e) {
+      final comboPrice = e.value.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
+      final subItems = e.value.map((i) {
+        final sub = i.name.substring(i.name.indexOf(_sep) + _sep.length);
+        return '${i.quantity}x $sub';
+      }).join(', ');
+      return ListTile(
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        leading: const Icon(Icons.restaurant_menu, size: 16),
+        title: Text(e.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        subtitle: Text(subItems, style: const TextStyle(fontSize: 11)),
+        trailing: Text(
+          '${comboPrice.toStringAsFixed(2)} MAD',
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        ),
+      );
+    }).toList();
   }
 }

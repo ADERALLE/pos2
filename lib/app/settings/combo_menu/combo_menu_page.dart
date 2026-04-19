@@ -429,64 +429,152 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
             ),
             const SizedBox(height: 8),
 
-            // Item list
-            ...activeItems.map((item) {
-              final qty = _selectedItems[item.id];
-              final isSelected = qty != null;
-              return Card(
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: isSelected
-                      ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
-                      : BorderSide.none,
-                ),
-                child: ListTile(
-                  dense: true,
-                  leading: Checkbox(
-                    value: isSelected,
-                    onChanged: (checked) {
-                      setState(() {
-                        if (checked == true) {
-                          _selectedItems[item.id] = 1;
-                        } else {
-                          _selectedItems.remove(item.id);
-                        }
-                      });
-                    },
-                  ),
-                  title: Text(item.name),
-                  subtitle: Text('${item.price.toStringAsFixed(2)} MAD'),
-                  trailing: isSelected
-                      ? SizedBox(
-                          width: 110,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+            // Item grid – mirrors the New Order visual style
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 0.72,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: activeItems.length,
+              itemBuilder: (context, i) {
+                final item = activeItems[i];
+                final qty = _selectedItems[item.id];
+                final isSelected = qty != null;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedItems.remove(item.id);
+                      } else {
+                        _selectedItems[item.id] = 1;
+                      }
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.cardColor,
+                      borderRadius: BorderRadius.circular(14),
+                      border: isSelected
+                          ? Border.all(color: theme.colorScheme.primary, width: 2)
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Stack(
+                            fit: StackFit.expand,
                             children: [
-                              IconButton(
-                                icon: const Icon(Icons.remove_circle_outline,
-                                    size: 20),
-                                onPressed: qty! > 1
-                                    ? () => setState(
-                                        () => _selectedItems[item.id] = qty - 1)
-                                    : null,
-                              ),
-                              Text('$qty',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold)),
-                              IconButton(
-                                icon:
-                                    const Icon(Icons.add_circle_outline, size: 20),
-                                onPressed: () => setState(
-                                    () => _selectedItems[item.id] = qty + 1),
-                              ),
+                              item.imageUrl != null && item.imageUrl!.isNotEmpty
+                                  ? CachedMenuImage(url: item.imageUrl!)
+                                  : Container(
+                                      color: theme.colorScheme
+                                          .surfaceContainerHighest
+                                          .withOpacity(0.5),
+                                      child: Center(
+                                        child: Icon(Icons.fastfood,
+                                            size: 32,
+                                            color: theme.colorScheme.primary
+                                                .withOpacity(0.4)),
+                                      ),
+                                    ),
+                              if (isSelected)
+                                Positioned(
+                                  top: 6,
+                                  right: 6,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '$qty',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
-                        )
-                      : null,
-                ),
-              );
-            }),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 6),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(item.name,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold, fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 2),
+                              Text('${item.price.toStringAsFixed(2)} MAD',
+                                  style: TextStyle(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11)),
+                            ],
+                          ),
+                        ),
+                        // Quantity stepper (visible only when selected)
+                        if (isSelected)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer
+                                  .withOpacity(0.3),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(14),
+                                bottomRight: Radius.circular(14),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.remove, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  onPressed: qty! > 1
+                                      ? () => setState(() =>
+                                          _selectedItems[item.id] = qty - 1)
+                                      : null,
+                                ),
+                                Text('$qty',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14)),
+                                IconButton(
+                                  icon: const Icon(Icons.add, size: 18),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  onPressed: () => setState(
+                                      () => _selectedItems[item.id] = qty + 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
 
             const SizedBox(height: 24),
 

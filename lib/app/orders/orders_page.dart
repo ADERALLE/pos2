@@ -8,6 +8,7 @@ import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pos_v1/core/models/order.dart';
+import 'package:pos_v1/core/models/order_item.dart';
 import '../../core/models/size_config.dart';
 
 class OrdersPage extends ConsumerStatefulWidget {
@@ -390,53 +391,7 @@ class _OrderCard extends ConsumerWidget {
             Container(
               color: scheme.surfaceContainerHighest.withOpacity(0.3),
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Column(
-                children: order.orderItems
-                    .map((item) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${item.quantity}x',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: scheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.name,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                            if (item.orderNotes.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  'Notes: ${item.orderNotes.map((n) => n.note).join(', ')}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontStyle: FontStyle.italic,
-                                    color: scheme.onSurface.withOpacity(0.6),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        '${(item.unitPrice * item.quantity).toStringAsFixed(2)} MAD',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ))
-                    .toList(),
-              ),
+              child: _OrderItemsGrouped(orderItems: order.orderItems),
             ),
           ],
         ),
@@ -444,6 +399,182 @@ class _OrderCard extends ConsumerWidget {
     );
   }
 }
+
+// ── grouped order items (combo-aware) ─────────────────────────────────────────
+
+const _comboSeparator = ' \u2013 '; // " – " used in order_viewmodel
+
+class _OrderItemsGrouped extends StatelessWidget {
+  const _OrderItemsGrouped({required this.orderItems});
+  final List<OrderItem> orderItems;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    // Partition items: those whose name contains " – " belong to a combo,
+    // others are standalone.
+    final List<Widget> rows = [];
+    final Map<String, List<OrderItem>> comboGroups = {};
+    final List<OrderItem> standaloneItems = [];
+
+    for (final item in orderItems) {
+      final sepIdx = item.name.indexOf(_comboSeparator);
+      if (sepIdx > 0) {
+        final comboName = item.name.substring(0, sepIdx);
+        comboGroups.putIfAbsent(comboName, () => []).add(item);
+      } else {
+        standaloneItems.add(item);
+      }
+    }
+
+    // Render combo groups
+    for (final entry in comboGroups.entries) {
+      final comboName = entry.key;
+      final items = entry.value;
+      // The combo price is stored on the last item of the group (see order_viewmodel).
+      final comboPrice = items.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
+
+      rows.add(
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: scheme.tertiary.withOpacity(0.35)),
+            color: scheme.tertiaryContainer.withOpacity(0.1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Combo header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: scheme.tertiary,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'COMBO',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onTertiary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        comboName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '${comboPrice.toStringAsFixed(2)} MAD',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: scheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1, indent: 14, endIndent: 14),
+              // Individual items inside the combo
+              ...items.map((item) {
+                final subName = item.name.substring(
+                    item.name.indexOf(_comboSeparator) + _comboSeparator.length);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                  child: Row(
+                    children: [
+                      Text(
+                        '${item.quantity}x',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: scheme.primary.withOpacity(0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          subName,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              const SizedBox(height: 6),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Render standalone items
+    for (final item in standaloneItems) {
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${item.quantity}x',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    if (item.orderNotes.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          'Notes: ${item.orderNotes.map((n) => n.note).join(', ')}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                            color: scheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Text(
+                '${(item.unitPrice * item.quantity).toStringAsFixed(2)} MAD',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(children: rows);
+  }
+}
+
 // ── search delegate ───────────────────────────────────────────────────────────
 
 class _OrderSearchDelegate extends SearchDelegate<Order?> {
