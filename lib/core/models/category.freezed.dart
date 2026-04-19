@@ -20,6 +20,8 @@ mixin _$Category {
   String get label;
   @JsonKey(name: 'sort_order')
   int get sortOrder;
+  @JsonKey(name: 'is_supp')
+  bool get isSupp;
   @JsonKey(name: 'created_at')
   DateTime get createdAt;
 
@@ -50,11 +52,11 @@ mixin _$Category {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, id, shopId, label, sortOrder, createdAt);
+      Object.hash(runtimeType, id, shopId, label, sortOrder, isSupp, createdAt);
 
   @override
   String toString() {
-    return 'Category(id: $id, shopId: $shopId, label: $label, sortOrder: $sortOrder, createdAt: $createdAt)';
+    return 'Category(id: $id, shopId: $shopId, label: $label, sortOrder: $sortOrder, isSupp: $isSupp, createdAt: $createdAt)';
   }
 }
 
@@ -68,6 +70,7 @@ abstract mixin class $CategoryCopyWith<$Res> {
       @JsonKey(name: 'shop_id') String shopId,
       String label,
       @JsonKey(name: 'sort_order') int sortOrder,
+      @JsonKey(name: 'is_supp') bool isSupp,
       @JsonKey(name: 'created_at') DateTime createdAt});
 }
 
@@ -87,6 +90,7 @@ class _$CategoryCopyWithImpl<$Res> implements $CategoryCopyWith<$Res> {
     Object? shopId = null,
     Object? label = null,
     Object? sortOrder = null,
+    Object? isSupp = null,
     Object? createdAt = null,
   }) {
     return _then(_self.copyWith(
@@ -106,6 +110,10 @@ class _$CategoryCopyWithImpl<$Res> implements $CategoryCopyWith<$Res> {
           ? _self.sortOrder
           : sortOrder // ignore: cast_nullable_to_non_nullable
               as int,
+      isSupp: null == isSupp
+          ? _self.isSupp
+          : isSupp // ignore: cast_nullable_to_non_nullable
+              as bool,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -212,6 +220,7 @@ extension CategoryPatterns on Category {
             @JsonKey(name: 'shop_id') String shopId,
             String label,
             @JsonKey(name: 'sort_order') int sortOrder,
+            @JsonKey(name: 'is_supp') bool isSupp,
             @JsonKey(name: 'created_at') DateTime createdAt)?
         $default, {
     required TResult orElse(),
@@ -220,7 +229,7 @@ extension CategoryPatterns on Category {
     switch (_that) {
       case _Category() when $default != null:
         return $default(_that.id, _that.shopId, _that.label, _that.sortOrder,
-            _that.createdAt);
+            _that.isSupp, _that.createdAt);
       case _:
         return orElse();
     }
@@ -246,6 +255,7 @@ extension CategoryPatterns on Category {
             @JsonKey(name: 'shop_id') String shopId,
             String label,
             @JsonKey(name: 'sort_order') int sortOrder,
+            @JsonKey(name: 'is_supp') bool isSupp,
             @JsonKey(name: 'created_at') DateTime createdAt)
         $default,
   ) {
@@ -253,11 +263,11 @@ extension CategoryPatterns on Category {
     switch (_that) {
       case _Category():
         return $default(_that.id, _that.shopId, _that.label, _that.sortOrder,
-            _that.createdAt);
+            _that.isSupp, _that.createdAt);
       case _:
         throw StateError('Unexpected subclass');
     }
-  }
+  }}
 
   /// A variant of `when` that fallback to returning `null`
   ///
@@ -278,6 +288,7 @@ extension CategoryPatterns on Category {
             @JsonKey(name: 'shop_id') String shopId,
             String label,
             @JsonKey(name: 'sort_order') int sortOrder,
+            @JsonKey(name: 'is_supp') bool isSupp,
             @JsonKey(name: 'created_at') DateTime createdAt)?
         $default,
   ) {
@@ -285,6 +296,7 @@ extension CategoryPatterns on Category {
     switch (_that) {
       case _Category() when $default != null:
         return $default(_that.id, _that.shopId, _that.label, _that.sortOrder,
+            _that.isSupp, _that.createdAt);
             _that.createdAt);
       case _:
         return null;
@@ -300,6 +312,7 @@ class _Category implements Category {
       @JsonKey(name: 'shop_id') required this.shopId,
       required this.label,
       @JsonKey(name: 'sort_order') required this.sortOrder,
+      @JsonKey(name: 'is_supp') this.isSupp = false,
       @JsonKey(name: 'created_at') required this.createdAt});
   factory _Category.fromJson(Map<String, dynamic> json) =>
       _$CategoryFromJson(json);
@@ -314,6 +327,9 @@ class _Category implements Category {
   @override
   @JsonKey(name: 'sort_order')
   final int sortOrder;
+  @override
+  @JsonKey(name: 'is_supp')
+  final bool isSupp;
   @override
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
@@ -343,18 +359,21 @@ class _Category implements Category {
             (identical(other.label, label) || other.label == label) &&
             (identical(other.sortOrder, sortOrder) ||
                 other.sortOrder == sortOrder) &&
+            (identical(other.isSupp, isSupp) || other.isSupp == isSupp) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
   int get hashCode =>
-      Object.hash(runtimeType, id, shopId, label, sortOrder, createdAt);
+      Object.hash(runtimeType, id, shopId, label, sortOrder, isSupp, createdAt);
 
   @override
   String toString() {
-    return 'Category(id: $id, shopId: $shopId, label: $label, sortOrder: $sortOrder, createdAt: $createdAt)';
+    return 'Category(id: $id, shopId: $shopId, label: $label, sortOrder: $sortOrder, isSupp: $isSupp, createdAt: $createdAt)';
   }
 }
 
@@ -370,6 +389,7 @@ abstract mixin class _$CategoryCopyWith<$Res>
       @JsonKey(name: 'shop_id') String shopId,
       String label,
       @JsonKey(name: 'sort_order') int sortOrder,
+      @JsonKey(name: 'is_supp') bool isSupp,
       @JsonKey(name: 'created_at') DateTime createdAt});
 }
 
@@ -389,6 +409,7 @@ class __$CategoryCopyWithImpl<$Res> implements _$CategoryCopyWith<$Res> {
     Object? shopId = null,
     Object? label = null,
     Object? sortOrder = null,
+    Object? isSupp = null,
     Object? createdAt = null,
   }) {
     return _then(_Category(
@@ -408,6 +429,10 @@ class __$CategoryCopyWithImpl<$Res> implements _$CategoryCopyWith<$Res> {
           ? _self.sortOrder
           : sortOrder // ignore: cast_nullable_to_non_nullable
               as int,
+      isSupp: null == isSupp
+          ? _self.isSupp
+          : isSupp // ignore: cast_nullable_to_non_nullable
+              as bool,
       createdAt: null == createdAt
           ? _self.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable

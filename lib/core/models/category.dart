@@ -10,6 +10,7 @@ abstract class Category with _$Category {
     @JsonKey(name: 'shop_id') required String shopId,
     required String label,
     @JsonKey(name: 'sort_order') required int sortOrder,
+    @JsonKey(name: 'is_supp') @Default(false) bool isSupp,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _Category;
 

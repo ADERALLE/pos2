@@ -29,11 +29,17 @@ class MenuRepository {
   Future<Category> createCategory({
     required String shopId,
     required String label,
+    bool isSupp = false,
     int sortOrder = 0,
   }) async {
     final data = await _client
         .from('categories')
-        .insert({'shop_id': shopId, 'label': label, 'sort_order': sortOrder})
+        .insert({
+          'shop_id': shopId,
+          'label': label,
+          'is_supp': isSupp,
+          'sort_order': sortOrder,
+        })
         .select()
         .single();
     return Category.fromJson(data);

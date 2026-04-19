@@ -43,10 +43,11 @@ class CategoryList extends _$CategoryList {
     }
   }
 
-  Future<void> create({required String shopId, required String label}) async {
+  Future<void> create({required String shopId, required String label, bool isSupp = false}) async {
     await ref.read(menuRepositoryProvider).createCategory(
       shopId: shopId,
       label: label,
+      isSupp: isSupp,
     );
     await _refresh(shopId);
   }

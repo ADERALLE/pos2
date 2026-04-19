@@ -136,34 +136,43 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                   // ── Category chips (items tab OR combos tab) ──
                   if (activeTab == OrderViewTab.items)
                     categoriesAsync.maybeWhen(
-                      data: (cats) => Container(
-                        height: 48,
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: cats.length + 1,
-                          separatorBuilder: (_, __) => const SizedBox(width: 8),
-                          itemBuilder: (_, i) {
-                            if (i == 0) {
-                              final isSelected = selectedCategoryId == null;
+                      data: (cats) {
+                        // Supp categories never appear in the All filter — only non-supp items show there.
+                        // Supp category chips are shown separately with a distinct color.
+                        final nonSuppCats = cats.where((c) => !c.isSupp).toList();
+                        final suppCats = cats.where((c) => c.isSupp).toList();
+                        final allCats = [...nonSuppCats, ...suppCats];
+                        return Container(
+                          height: 48,
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            // +1 for the All chip
+                            itemCount: allCats.length + 1,
+                            separatorBuilder: (_, __) => const SizedBox(width: 8),
+                            itemBuilder: (_, i) {
+                              if (i == 0) {
+                                final isSelected = selectedCategoryId == null;
+                                return _CategoryChip(
+                                  label: 'All',
+                                  isSelected: isSelected,
+                                  onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state = null,
+                                );
+                              }
+                              final category = allCats[i - 1];
+                              final isSelected = selectedCategoryId == category.id;
                               return _CategoryChip(
-                                label: 'All',
+                                label: category.label,
                                 isSelected: isSelected,
-                                onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state = null,
+                                isSupp: category.isSupp,
+                                onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state =
+                                    isSelected ? null : category.id,
                               );
-                            }
-                            final category = cats[i - 1];
-                            final isSelected = selectedCategoryId == category.id;
-                            return _CategoryChip(
-                              label: category.label,
-                              isSelected: isSelected,
-                              onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state =
-                                  isSelected ? null : category.id,
-                            );
-                          },
-                        ),
-                      ),
+                            },
+                          ),
+                        );
+                      },
                       orElse: () => const SizedBox(height: 48),
                     )
                   else
@@ -212,9 +221,15 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 child: Center(child: Text('Error loading menu: $e')),
               ),
               data: (items) {
+                final cats = categoriesAsync.value ?? [];
+                final suppCatIds = cats.where((c) => c.isSupp).map((c) => c.id).toSet();
                 final filteredItems = items.where((i) {
-                  final matchesCategory = selectedCategoryId == null || i.categoryId == selectedCategoryId;
-                  return i.isActive && matchesCategory;
+                  if (!i.isActive) return false;
+                  // When "All" is selected, exclude supp-category items.
+                  if (selectedCategoryId == null) {
+                    return !suppCatIds.contains(i.categoryId);
+                  }
+                  return i.categoryId == selectedCategoryId;
                 }).toList();
 
                 if (filteredItems.isEmpty) {
@@ -329,28 +344,45 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
 class _CategoryChip extends StatelessWidget {
   final String label;
   final bool isSelected;
+  final bool isSupp;
   final VoidCallback onPressed;
 
   const _CategoryChip({
     required this.label,
     required this.isSelected,
-    required this.onPressed
+    required this.onPressed,
+    this.isSupp = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final Color bgColor;
+    final Color labelColor;
+    final Color borderColor;
+
+    if (isSupp) {
+      bgColor = isSelected
+          ? theme.colorScheme.error
+          : theme.colorScheme.errorContainer.withOpacity(0.4);
+      labelColor = isSelected
+          ? theme.colorScheme.onError
+          : theme.colorScheme.onErrorContainer;
+      borderColor = theme.colorScheme.error.withOpacity(0.4);
+    } else {
+      bgColor = isSelected ? theme.colorScheme.primary : Colors.transparent;
+      labelColor = isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+      borderColor = theme.dividerColor.withOpacity(0.2);
+    }
+
     return ActionChip(
       label: Text(label),
-      backgroundColor: isSelected ? theme.colorScheme.primary : null,
-      labelStyle: TextStyle(
-        fontWeight: FontWeight.w600,
-        color: isSelected ? theme.colorScheme.onPrimary : null,
-      ),
+      backgroundColor: bgColor,
+      labelStyle: TextStyle(fontWeight: FontWeight.w600, color: labelColor),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: isSelected ? BorderSide.none : BorderSide(color: theme.dividerColor.withOpacity(0.2)),
+        side: isSelected ? BorderSide.none : BorderSide(color: borderColor),
       ),
       onPressed: onPressed,
     );
@@ -568,6 +600,13 @@ class _CartContentState extends ConsumerState<CartContent> {
     final total = ref.read(cartProvider.notifier).total;
     final theme = Theme.of(context);
 
+    // Detect if ALL non-combo cart items belong to supp categories only.
+    final categories = ref.watch(categoryListProvider(AppConstants.shopId)).value ?? [];
+    final suppCatIds = categories.where((c) => c.isSupp).map((c) => c.id).toSet();
+    final hasOnlySupps = cart.isNotEmpty &&
+        cart.every((c) =>
+            c.isCombo || suppCatIds.contains(c.menuItem?.categoryId));
+
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 24, 24, widget.isSheet ? MediaQuery.of(context).viewInsets.bottom + 24 : 24),
       child: Column(
@@ -656,8 +695,20 @@ class _CartContentState extends ConsumerState<CartContent> {
               ],
             ),
             const SizedBox(height: 16),
+            if (hasOnlySupps)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Add at least one non-supplement item to place this order.',
+                  style: TextStyle(
+                    color: theme.colorScheme.error,
+                    fontSize: 13,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ElevatedButton(
-              onPressed: _loading ? null : _submit,
+              onPressed: (_loading || hasOnlySupps) ? null : _submit,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

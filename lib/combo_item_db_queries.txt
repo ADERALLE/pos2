@@ -54,3 +54,9 @@ CREATE TABLE public.combo_categories (
 ALTER TABLE public.combo_menus
   DROP COLUMN IF EXISTS category_id,
   ADD COLUMN category_id uuid REFERENCES public.combo_categories(id);
+
+
+------------------------------------------------
+
+ALTER TABLE public.categories
+  ADD COLUMN IF NOT EXISTS is_supp boolean NOT NULL DEFAULT false;

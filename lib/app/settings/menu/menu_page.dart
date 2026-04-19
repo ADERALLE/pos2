@@ -499,6 +499,7 @@ class _CategoriesSheet extends StatefulWidget {
 class _CategoriesSheetState extends State<_CategoriesSheet> {
   final _controller = TextEditingController();
   bool _loading = false;
+  bool _isSupp = false;
 
   @override
   void dispose() {
@@ -511,15 +512,23 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
     setState(() => _loading = true);
     await widget.ref
         .read(categoryListProvider(AppConstants.shopId).notifier)
-        .create(shopId: AppConstants.shopId, label: _controller.text.trim());
+        .create(
+          shopId: AppConstants.shopId,
+          label: _controller.text.trim(),
+          isSupp: _isSupp,
+        );
     _controller.clear();
-    setState(() => _loading = false);
+    setState(() {
+      _loading = false;
+      _isSupp = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final categoriesAsync =
-    widget.ref.watch(categoryListProvider(AppConstants.shopId));
+        widget.ref.watch(categoryListProvider(AppConstants.shopId));
+    final theme = Theme.of(context);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -528,7 +537,7 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Categories', style: Theme.of(context).textTheme.titleLarge),
+          Text('Categories', style: theme.textTheme.titleLarge),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -536,20 +545,27 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
                 child: TextField(
                   controller: _controller,
                   decoration:
-                  const InputDecoration(hintText: 'New category name'),
+                      const InputDecoration(hintText: 'New category name'),
                 ),
               ),
               const SizedBox(width: 8),
               IconButton(
                 icon: _loading
                     ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2))
                     : const Icon(Icons.add),
                 onPressed: _loading ? null : _add,
               ),
             ],
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Supplement category'),
+            subtitle: const Text('Items in this category cannot be ordered alone'),
+            value: _isSupp,
+            onChanged: (v) => setState(() => _isSupp = v),
           ),
           const SizedBox(height: 12),
           categoriesAsync.when(
@@ -558,19 +574,42 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
             data: (cats) => Column(
               children: cats
                   .map((c) => ListTile(
-                title: Text(c.label),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.red),
-                  onPressed: () => widget.ref
-                      .read(categoryListProvider(AppConstants.shopId)
-                      .notifier)
-                      .deleteCategory(
-                    categoryId: c.id,
-                    shopId: AppConstants.shopId,
-                  ),
-                ),
-              ))
+                        title: Row(
+                          children: [
+                            Text(c.label),
+                            if (c.isSupp) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.errorContainer,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'SUPP',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.onErrorContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
+                          onPressed: () => widget.ref
+                              .read(categoryListProvider(AppConstants.shopId)
+                                  .notifier)
+                              .deleteCategory(
+                                categoryId: c.id,
+                                shopId: AppConstants.shopId,
+                              ),
+                        ),
+                      ))
                   .toList(),
             ),
           ),
