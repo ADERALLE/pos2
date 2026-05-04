@@ -1556,7 +1556,7 @@ class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
                                                     .delete_outline_rounded,
                                                 size: 20,
                                                 color: scheme.error),
-                                            onPressed: () => widget.ref
+                                            onPressed: () async => await widget.ref
                                                 .read(comboCategoryListProvider(
                                                 AppConstants.shopId)
                                                 .notifier)

@@ -4,6 +4,7 @@ import '../models/category.dart';
 import '../models/menu_item.dart';
 import '../repositories/menu_repository.dart';
 import '../services/menu_cache_service.dart'; // Ensure this path is correct
+import 'combo_menu_viewmodel.dart';
 
 part 'menu_viewmodel.g.dart';
 
@@ -106,6 +107,7 @@ class ComboCategoryList extends _$ComboCategoryList {
   }) async {
     await ref.read(menuRepositoryProvider).deleteComboCategory(categoryId);
     await _refresh(shopId);
+    ref.invalidate(comboMenuListProvider(shopId));
   }
 
   Future<void> _refresh(String shopId) async {
