@@ -93,6 +93,12 @@ class MenuRepository {
   }
 
   Future<void> deleteComboCategory(String categoryId) async {
+    // Nullify the category_id on all combo menus referencing this category
+    // to avoid a foreign key violation before deleting.
+    await _client
+        .from('combo_menus')
+        .update({'category_id': null})
+        .eq('category_id', categoryId);
     await _client.from('combo_categories').delete().eq('id', categoryId);
   }
 
