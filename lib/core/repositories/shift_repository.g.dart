@@ -12,18 +12,20 @@ part of 'shift_repository.dart';
 @ProviderFor(shiftRepository)
 final shiftRepositoryProvider = ShiftRepositoryProvider._();
 
-final class ShiftRepositoryProvider extends $FunctionalProvider<ShiftRepository,
-    ShiftRepository, ShiftRepository> with $Provider<ShiftRepository> {
+final class ShiftRepositoryProvider
+    extends
+        $FunctionalProvider<ShiftRepository, ShiftRepository, ShiftRepository>
+    with $Provider<ShiftRepository> {
   ShiftRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shiftRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shiftRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shiftRepositoryHash();

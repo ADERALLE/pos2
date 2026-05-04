@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';

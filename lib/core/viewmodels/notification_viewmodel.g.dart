@@ -14,15 +14,16 @@ final notificationsProvider = NotificationsFamily._();
 
 final class NotificationsProvider
     extends $AsyncNotifierProvider<Notifications, List<AppNotification>> {
-  NotificationsProvider._(
-      {required NotificationsFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'notificationsProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  NotificationsProvider._({
+    required NotificationsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'notificationsProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$notificationsHash();
@@ -53,20 +54,23 @@ String _$notificationsHash() => r'3736cee8ccbf5cea5ff9ed6cda4db2f966e4f86e';
 
 final class NotificationsFamily extends $Family
     with
-        $ClassFamilyOverride<Notifications, AsyncValue<List<AppNotification>>,
-            List<AppNotification>, FutureOr<List<AppNotification>>, String> {
+        $ClassFamilyOverride<
+          Notifications,
+          AsyncValue<List<AppNotification>>,
+          List<AppNotification>,
+          FutureOr<List<AppNotification>>,
+          String
+        > {
   NotificationsFamily._()
-      : super(
-          retry: null,
-          name: r'notificationsProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: false,
-        );
+    : super(
+        retry: null,
+        name: r'notificationsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
 
-  NotificationsProvider call(
-    String shopId,
-  ) =>
+  NotificationsProvider call(String shopId) =>
       NotificationsProvider._(argument: shopId, from: this);
 
   @override
@@ -77,23 +81,24 @@ abstract class _$Notifications extends $AsyncNotifier<List<AppNotification>> {
   late final _$args = ref.$arg as String;
   String get shopId => _$args;
 
-  FutureOr<List<AppNotification>> build(
-    String shopId,
-  );
+  FutureOr<List<AppNotification>> build(String shopId);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref
-        as $Ref<AsyncValue<List<AppNotification>>, List<AppNotification>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<List<AppNotification>>, List<AppNotification>>,
-        AsyncValue<List<AppNotification>>,
-        Object?,
-        Object?>;
-    element.handleCreate(
-        ref,
-        () => build(
-              _$args,
-            ));
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<List<AppNotification>>, List<AppNotification>>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<AppNotification>>,
+                List<AppNotification>
+              >,
+              AsyncValue<List<AppNotification>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
   }
 }

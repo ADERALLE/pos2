@@ -12,20 +12,24 @@ part of 'storage_repository.dart';
 @ProviderFor(storageRepository)
 final storageRepositoryProvider = StorageRepositoryProvider._();
 
-final class StorageRepositoryProvider extends $FunctionalProvider<
-    StorageRepository,
-    StorageRepository,
-    StorageRepository> with $Provider<StorageRepository> {
+final class StorageRepositoryProvider
+    extends
+        $FunctionalProvider<
+          StorageRepository,
+          StorageRepository,
+          StorageRepository
+        >
+    with $Provider<StorageRepository> {
   StorageRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'storageRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'storageRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$storageRepositoryHash();
@@ -33,8 +37,8 @@ final class StorageRepositoryProvider extends $FunctionalProvider<
   @$internal
   @override
   $ProviderElement<StorageRepository> $createElement(
-          $ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   StorageRepository create(Ref ref) {

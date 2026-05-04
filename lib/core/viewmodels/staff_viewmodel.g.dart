@@ -14,15 +14,16 @@ final staffListProvider = StaffListFamily._();
 
 final class StaffListProvider
     extends $AsyncNotifierProvider<StaffList, List<Staff>> {
-  StaffListProvider._(
-      {required StaffListFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'staffListProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  StaffListProvider._({
+    required StaffListFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'staffListProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$staffListHash();
@@ -53,20 +54,23 @@ String _$staffListHash() => r'cafa6e8583f2d7eb7e80e4da41b763eddf20a8c2';
 
 final class StaffListFamily extends $Family
     with
-        $ClassFamilyOverride<StaffList, AsyncValue<List<Staff>>, List<Staff>,
-            FutureOr<List<Staff>>, String> {
+        $ClassFamilyOverride<
+          StaffList,
+          AsyncValue<List<Staff>>,
+          List<Staff>,
+          FutureOr<List<Staff>>,
+          String
+        > {
   StaffListFamily._()
-      : super(
-          retry: null,
-          name: r'staffListProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'staffListProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  StaffListProvider call(
-    String shopId,
-  ) =>
+  StaffListProvider call(String shopId) =>
       StaffListProvider._(argument: shopId, from: this);
 
   @override
@@ -77,22 +81,19 @@ abstract class _$StaffList extends $AsyncNotifier<List<Staff>> {
   late final _$args = ref.$arg as String;
   String get shopId => _$args;
 
-  FutureOr<List<Staff>> build(
-    String shopId,
-  );
+  FutureOr<List<Staff>> build(String shopId);
   @$mustCallSuper
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<Staff>>, List<Staff>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<List<Staff>>, List<Staff>>,
-        AsyncValue<List<Staff>>,
-        Object?,
-        Object?>;
-    element.handleCreate(
-        ref,
-        () => build(
-              _$args,
-            ));
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Staff>>, List<Staff>>,
+              AsyncValue<List<Staff>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
   }
 }

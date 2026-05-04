@@ -14,15 +14,16 @@ final activeShiftProvider = ActiveShiftFamily._();
 
 final class ActiveShiftProvider
     extends $AsyncNotifierProvider<ActiveShift, Shift?> {
-  ActiveShiftProvider._(
-      {required ActiveShiftFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'activeShiftProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  ActiveShiftProvider._({
+    required ActiveShiftFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'activeShiftProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$activeShiftHash();
@@ -49,24 +50,27 @@ final class ActiveShiftProvider
   }
 }
 
-String _$activeShiftHash() => r'5735b488fa1705795f3e5ba2012ef1b7141249e4';
+String _$activeShiftHash() => r'7355fd05a492e070b4a8486dfe51b6bfb9c931ca';
 
 final class ActiveShiftFamily extends $Family
     with
-        $ClassFamilyOverride<ActiveShift, AsyncValue<Shift?>, Shift?,
-            FutureOr<Shift?>, String> {
+        $ClassFamilyOverride<
+          ActiveShift,
+          AsyncValue<Shift?>,
+          Shift?,
+          FutureOr<Shift?>,
+          String
+        > {
   ActiveShiftFamily._()
-      : super(
-          retry: null,
-          name: r'activeShiftProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'activeShiftProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  ActiveShiftProvider call(
-    String staffId,
-  ) =>
+  ActiveShiftProvider call(String staffId) =>
       ActiveShiftProvider._(argument: staffId, from: this);
 
   @override
@@ -77,23 +81,20 @@ abstract class _$ActiveShift extends $AsyncNotifier<Shift?> {
   late final _$args = ref.$arg as String;
   String get staffId => _$args;
 
-  FutureOr<Shift?> build(
-    String staffId,
-  );
+  FutureOr<Shift?> build(String staffId);
   @$mustCallSuper
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<Shift?>, Shift?>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<Shift?>, Shift?>,
-        AsyncValue<Shift?>,
-        Object?,
-        Object?>;
-    element.handleCreate(
-        ref,
-        () => build(
-              _$args,
-            ));
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<Shift?>, Shift?>,
+              AsyncValue<Shift?>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
   }
 }
 
@@ -102,15 +103,16 @@ final shopShiftsProvider = ShopShiftsFamily._();
 
 final class ShopShiftsProvider
     extends $AsyncNotifierProvider<ShopShifts, List<Shift>> {
-  ShopShiftsProvider._(
-      {required ShopShiftsFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'shopShiftsProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  ShopShiftsProvider._({
+    required ShopShiftsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'shopShiftsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$shopShiftsHash();
@@ -141,20 +143,23 @@ String _$shopShiftsHash() => r'8956f63fa7fd10d27270f863c198b82b08308edb';
 
 final class ShopShiftsFamily extends $Family
     with
-        $ClassFamilyOverride<ShopShifts, AsyncValue<List<Shift>>, List<Shift>,
-            FutureOr<List<Shift>>, String> {
+        $ClassFamilyOverride<
+          ShopShifts,
+          AsyncValue<List<Shift>>,
+          List<Shift>,
+          FutureOr<List<Shift>>,
+          String
+        > {
   ShopShiftsFamily._()
-      : super(
-          retry: null,
-          name: r'shopShiftsProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'shopShiftsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  ShopShiftsProvider call(
-    String shopId,
-  ) =>
+  ShopShiftsProvider call(String shopId) =>
       ShopShiftsProvider._(argument: shopId, from: this);
 
   @override
@@ -165,23 +170,20 @@ abstract class _$ShopShifts extends $AsyncNotifier<List<Shift>> {
   late final _$args = ref.$arg as String;
   String get shopId => _$args;
 
-  FutureOr<List<Shift>> build(
-    String shopId,
-  );
+  FutureOr<List<Shift>> build(String shopId);
   @$mustCallSuper
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<Shift>>, List<Shift>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<List<Shift>>, List<Shift>>,
-        AsyncValue<List<Shift>>,
-        Object?,
-        Object?>;
-    element.handleCreate(
-        ref,
-        () => build(
-              _$args,
-            ));
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Shift>>, List<Shift>>,
+              AsyncValue<List<Shift>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
   }
 }
 
@@ -190,15 +192,16 @@ final staffShiftsProvider = StaffShiftsFamily._();
 
 final class StaffShiftsProvider
     extends $AsyncNotifierProvider<StaffShifts, List<Shift>> {
-  StaffShiftsProvider._(
-      {required StaffShiftsFamily super.from, required String super.argument})
-      : super(
-          retry: null,
-          name: r'staffShiftsProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  StaffShiftsProvider._({
+    required StaffShiftsFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'staffShiftsProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$staffShiftsHash();
@@ -229,20 +232,23 @@ String _$staffShiftsHash() => r'10ae5ae88d58d8ea956bd97cd54f0e923687f06a';
 
 final class StaffShiftsFamily extends $Family
     with
-        $ClassFamilyOverride<StaffShifts, AsyncValue<List<Shift>>, List<Shift>,
-            FutureOr<List<Shift>>, String> {
+        $ClassFamilyOverride<
+          StaffShifts,
+          AsyncValue<List<Shift>>,
+          List<Shift>,
+          FutureOr<List<Shift>>,
+          String
+        > {
   StaffShiftsFamily._()
-      : super(
-          retry: null,
-          name: r'staffShiftsProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'staffShiftsProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  StaffShiftsProvider call(
-    String staffId,
-  ) =>
+  StaffShiftsProvider call(String staffId) =>
       StaffShiftsProvider._(argument: staffId, from: this);
 
   @override
@@ -253,22 +259,19 @@ abstract class _$StaffShifts extends $AsyncNotifier<List<Shift>> {
   late final _$args = ref.$arg as String;
   String get staffId => _$args;
 
-  FutureOr<List<Shift>> build(
-    String staffId,
-  );
+  FutureOr<List<Shift>> build(String staffId);
   @$mustCallSuper
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<List<Shift>>, List<Shift>>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<List<Shift>>, List<Shift>>,
-        AsyncValue<List<Shift>>,
-        Object?,
-        Object?>;
-    element.handleCreate(
-        ref,
-        () => build(
-              _$args,
-            ));
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<List<Shift>>, List<Shift>>,
+              AsyncValue<List<Shift>>,
+              Object?,
+              Object?
+            >;
+    element.handleCreate(ref, () => build(_$args));
   }
 }

@@ -7,8 +7,45 @@ shop_id uuid NOT NULL,
 label text NOT NULL,
 sort_order smallint NOT NULL DEFAULT 0,
 created_at timestamp with time zone NOT NULL DEFAULT now(),
+is_supp boolean NOT NULL DEFAULT false,
 CONSTRAINT categories_pkey PRIMARY KEY (id),
 CONSTRAINT categories_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id)
+);
+CREATE TABLE public.combo_categories (
+id uuid NOT NULL DEFAULT gen_random_uuid(),
+shop_id uuid NOT NULL,
+label text NOT NULL,
+sort_order integer NOT NULL DEFAULT 0,
+created_at timestamp with time zone DEFAULT now(),
+CONSTRAINT combo_categories_pkey PRIMARY KEY (id),
+CONSTRAINT combo_categories_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id)
+);
+CREATE TABLE public.combo_menu_items (
+id uuid NOT NULL DEFAULT uuid_generate_v4(),
+combo_menu_id uuid NOT NULL,
+menu_item_id uuid NOT NULL,
+quantity smallint NOT NULL DEFAULT 1 CHECK (quantity > 0),
+created_at timestamp with time zone NOT NULL DEFAULT now(),
+choice_group text,
+CONSTRAINT combo_menu_items_pkey PRIMARY KEY (id),
+CONSTRAINT combo_menu_items_combo_menu_id_fkey FOREIGN KEY (combo_menu_id) REFERENCES public.combo_menus(id),
+CONSTRAINT combo_menu_items_menu_item_id_fkey FOREIGN KEY (menu_item_id) REFERENCES public.menu_items(id)
+);
+CREATE TABLE public.combo_menus (
+id uuid NOT NULL DEFAULT uuid_generate_v4(),
+shop_id uuid NOT NULL,
+name text NOT NULL,
+description text,
+price numeric NOT NULL CHECK (price >= 0::numeric),
+image_url text,
+is_active boolean NOT NULL DEFAULT true,
+sort_order smallint NOT NULL DEFAULT 0,
+created_at timestamp with time zone NOT NULL DEFAULT now(),
+updated_at timestamp with time zone NOT NULL DEFAULT now(),
+category_id uuid,
+CONSTRAINT combo_menus_pkey PRIMARY KEY (id),
+CONSTRAINT combo_menus_shop_id_fkey FOREIGN KEY (shop_id) REFERENCES public.shops(id),
+CONSTRAINT combo_menus_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.combo_categories(id)
 );
 CREATE TABLE public.menu_items (
 id uuid NOT NULL DEFAULT uuid_generate_v4(),

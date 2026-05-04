@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/repositories/storage_repository.dart';
@@ -23,148 +24,161 @@ class ComboMenuPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     SizeConfig().init(context);
+    final scheme = Theme.of(context).colorScheme;
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
-    final menuItemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
-    final categoriesAsync = ref.watch(comboCategoryListProvider(AppConstants.shopId));
-    final itemCategoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
-    final selectedCategoryId = ref.watch(_comboListCategoryFilterProvider);
+    final menuItemsAsync =
+    ref.watch(menuItemListProvider(AppConstants.shopId));
+    final categoriesAsync =
+    ref.watch(comboCategoryListProvider(AppConstants.shopId));
+    final itemCategoriesAsync =
+    ref.watch(categoryListProvider(AppConstants.shopId));
+    final selectedCategoryId =
+    ref.watch(_comboListCategoryFilterProvider);
 
     return Scaffold(
-      body: Center(
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: SizeConfig().cardPadd(25)),
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverAppBar(
-                title: const Text('Combo Menus',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                floating: true,
-                pinned: true,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.category_outlined),
-                    tooltip: 'Manage combo categories',
-                    onPressed: () => _showComboCategoriesSheet(
-                      context,
-                      ref,
-                      categoriesAsync.value ?? [],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.add),
-                    onPressed: () => _showComboForm(
-                      context,
-                      ref,
-                      menuItemsAsync.value ?? [],
-                      categories: categoriesAsync.value ?? [],
-                      itemCategories: itemCategoriesAsync.value ?? [],
-                    ),
-                  ),
-                ],
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverAppBar(
+            title: const Text('Combo Menus'),
+            floating: true,
+            pinned: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.category_outlined),
+                tooltip: 'Manage combo categories',
+                onPressed: () => _showComboCategoriesSheet(
+                    context, ref, categoriesAsync.value ?? []),
               ),
-              // ── Category filter chips ──────────────────────────────────────
-              categoriesAsync.maybeWhen(
-                data: (cats) {
-                  if (cats.isEmpty) return const SliverToBoxAdapter(child: SizedBox());
-                  return SliverToBoxAdapter(
-                    child: Container(
-                      height: 48,
-                      margin: const EdgeInsets.only(bottom: 4),
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        itemCount: cats.length + 1,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (_, i) {
-                          if (i == 0) {
-                            final isSelected = selectedCategoryId == null;
-                            return ChoiceChip(
-                              label: const Text('All'),
-                              selected: isSelected,
-                              onSelected: (_) => ref
-                                  .read(_comboListCategoryFilterProvider.notifier)
-                                  .state = null,
-                            );
-                          }
-                          final cat = cats[i - 1];
-                          final isSelected = selectedCategoryId == cat.id;
-                          return ChoiceChip(
-                            label: Text(cat.label),
-                            selected: isSelected,
-                            onSelected: (_) => ref
-                                .read(_comboListCategoryFilterProvider.notifier)
-                                .state = isSelected ? null : cat.id,
-                          );
-                        },
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilledButton.icon(
+                  onPressed: () => _showComboForm(
+                    context, ref,
+                    menuItemsAsync.value ?? [],
+                    categories: categoriesAsync.value ?? [],
+                    itemCategories: itemCategoriesAsync.value ?? [],
+                  ),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('New Combo'),
+                  style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact),
+                ),
+              ),
+            ],
+          ),
+
+          // ── Category filter chips ──────────────────────────────────────────
+          categoriesAsync.maybeWhen(
+            data: (cats) {
+              if (cats.isEmpty) {
+                return const SliverToBoxAdapter(child: SizedBox());
+              }
+              return SliverToBoxAdapter(
+                child: _CategoryChips(
+                  categories: cats,
+                  selectedId: selectedCategoryId,
+                  onSelect: (id) => ref
+                      .read(_comboListCategoryFilterProvider.notifier)
+                      .state = id,
+                ),
+              );
+            },
+            orElse: () => const SliverToBoxAdapter(child: SizedBox()),
+          ),
+
+          // ── Combo list ─────────────────────────────────────────────────────
+          SliverPadding(
+            padding: EdgeInsets.symmetric(
+              horizontal: SizeConfig().cardPadd(25),
+              vertical: 8,
+            ),
+            sliver: combosAsync.when(
+              loading: () => const SliverFillRemaining(
+                  child: Center(child: CircularProgressIndicator())),
+              error: (e, _) => SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.error_outline_rounded,
+                          size: 48, color: scheme.error),
+                      const SizedBox(height: 12),
+                      Text('Error: $e',
+                          style:
+                          TextStyle(color: scheme.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+              ),
+              data: (combos) {
+                final filtered = combos
+                    .where((c) =>
+                selectedCategoryId == null ||
+                    c.categoryId == selectedCategoryId)
+                    .toList();
+
+                if (filtered.isEmpty) {
+                  return SliverFillRemaining(
+                    child: _EmptyState(
+                      onAdd: () => _showComboForm(
+                        context, ref,
+                        menuItemsAsync.value ?? [],
+                        categories: categoriesAsync.value ?? [],
+                        itemCategories: itemCategoriesAsync.value ?? [],
                       ),
                     ),
                   );
-                },
-                orElse: () => const SliverToBoxAdapter(child: SizedBox()),
-              ),
-              combosAsync.when(
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (e, _) => SliverFillRemaining(
-                  child: Center(child: Text('Error: $e')),
-                ),
-                data: (combos) {
-                  final filtered = combos.where((c) =>
-                      selectedCategoryId == null ||
-                      c.categoryId == selectedCategoryId).toList();
-                  if (filtered.isEmpty) {
-                    return const SliverFillRemaining(
-                      child: Center(child: Text('No combos yet. Tap + to create one.')),
-                    );
-                  }
-                  return SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) => _ComboTile(
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                        (context, i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _ComboCard(
                         combo: filtered[i],
                         menuItems: menuItemsAsync.value ?? [],
                         categories: categoriesAsync.value ?? [],
                         itemCategories: itemCategoriesAsync.value ?? [],
                       ),
-                      childCount: filtered.length,
                     ),
-                  );
-                },
-              ),
-            ],
+                    childCount: filtered.length,
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+          const SliverToBoxAdapter(child: SizedBox(height: 32)),
+        ],
       ),
     );
   }
 
   void _showComboCategoriesSheet(
-    BuildContext context,
-    WidgetRef ref,
-    List<Category> categories,
-  ) {
+      BuildContext context, WidgetRef ref, List<Category> categories) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (_) => _ComboCategoriesSheet(
-        ref: ref,
-        categories: categories,
-      ),
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) =>
+          _ComboCategoriesSheet(ref: ref, categories: categories),
     );
   }
 
   void _showComboForm(
-    BuildContext context,
-    WidgetRef ref,
-    List<MenuItem> menuItems, {
-    List<Category> categories = const [],
-    List<Category> itemCategories = const [],
-    ComboMenu? existing,
-  }) {
+      BuildContext context, WidgetRef ref, List<MenuItem> menuItems, {
+        List<Category> categories = const [],
+        List<Category> itemCategories = const [],
+        ComboMenu? existing,
+      }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _ComboFormSheet(
         ref: ref,
         menuItems: menuItems,
@@ -176,10 +190,195 @@ class ComboMenuPage extends ConsumerWidget {
   }
 }
 
-// ── Combo list tile ──────────────────────────────────────────────────────────
+// ── Shared helpers ────────────────────────────────────────────────────────────
 
-class _ComboTile extends ConsumerWidget {
-  const _ComboTile({
+class _CategoryChips extends StatelessWidget {
+  const _CategoryChips({
+    required this.categories,
+    required this.selectedId,
+    required this.onSelect,
+  });
+  final List<Category> categories;
+  final String? selectedId;
+  final void Function(String?) onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(
+            horizontal: SizeConfig().cardPadd(25), vertical: 8),
+        itemCount: categories.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          if (i == 0) {
+            final selected = selectedId == null;
+            return _FilterChip(
+              label: 'All',
+              selected: selected,
+              onTap: () => onSelect(null),
+            );
+          }
+          final cat = categories[i - 1];
+          final selected = selectedId == cat.id;
+          return _FilterChip(
+            label: cat.label,
+            selected: selected,
+            onTap: () => onSelect(selected ? null : cat.id),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip(
+      {required this.label,
+        required this.selected,
+        required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? scheme.primary : scheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? scheme.primary
+                : scheme.outlineVariant.withOpacity(0.4),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: selected ? scheme.onPrimary : scheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+InputDecoration _inputDecoration(
+    BuildContext context, {
+      required String hint,
+      required IconData icon,
+      String? suffixText,
+      Widget? prefix,
+    }) {
+  final scheme = Theme.of(context).colorScheme;
+  return InputDecoration(
+    hintText: hint,
+    suffixText: suffixText,
+    prefixIcon: Icon(icon, size: 20, color: scheme.onSurfaceVariant),
+    filled: true,
+    fillColor: scheme.surfaceContainerHighest.withOpacity(0.5),
+    contentPadding:
+    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide:
+      BorderSide(color: scheme.outlineVariant.withOpacity(0.5)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide:
+      BorderSide(color: scheme.outlineVariant.withOpacity(0.4)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: scheme.primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: scheme.error),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: scheme.error, width: 1.5),
+    ),
+  );
+}
+
+class _FormLabel extends StatelessWidget {
+  const _FormLabel({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.onAdd});
+  final VoidCallback onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.restaurant_menu_rounded,
+              size: 48, color: scheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 20),
+        Text('No combos yet',
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface)),
+        const SizedBox(height: 8),
+        Text('Create your first combo menu',
+            style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
+        const SizedBox(height: 24),
+        FilledButton.icon(
+          onPressed: onAdd,
+          icon: const Icon(Icons.add),
+          label: const Text('Create Combo'),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Combo Card ────────────────────────────────────────────────────────────────
+
+class _ComboCard extends ConsumerWidget {
+  const _ComboCard({
     required this.combo,
     required this.menuItems,
     required this.categories,
@@ -192,129 +391,178 @@ class _ComboTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final itemSummary = combo.comboMenuItems
         .where((ci) => ci.menuItem != null)
-        .map((ci) =>
-            ci.quantity > 1 ? '${ci.quantity}x ${ci.menuItem!.name}' : ci.menuItem!.name)
-        .join(', ');
+        .map((ci) => ci.quantity > 1
+        ? '${ci.quantity}× ${ci.menuItem!.name}'
+        : ci.menuItem!.name)
+        .join(' · ');
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: combo.imageUrl != null && combo.imageUrl!.isNotEmpty
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+      elevation: 0,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+            color: scheme.outlineVariant.withOpacity(0.4)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useSafeArea: true,
+          shape: const RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.vertical(top: Radius.circular(20))),
+          builder: (_) => _ComboFormSheet(
+            ref: ref,
+            menuItems: menuItems,
+            categories: categories,
+            itemCategories: itemCategories,
+            existing: combo,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              // Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
                 child: SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: CachedMenuImage(url: combo.imageUrl!),
+                  width: 64,
+                  height: 64,
+                  child: combo.imageUrl != null &&
+                      combo.imageUrl!.isNotEmpty
+                      ? CachedMenuImage(url: combo.imageUrl!)
+                      : Container(
+                    color: scheme.tertiaryContainer,
+                    child: Icon(Icons.restaurant_menu_rounded,
+                        color: scheme.onTertiaryContainer),
+                  ),
                 ),
-              )
-            : Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.restaurant_menu,
-                    color: theme.colorScheme.onTertiaryContainer),
               ),
-        title: Row(
-          children: [
-            Expanded(
-              child:
-                  Text(combo.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            if (!combo.isActive)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.errorContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text('Inactive',
-                    style: TextStyle(
-                        fontSize: 11, color: theme.colorScheme.onErrorContainer)),
-              ),
-          ],
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${combo.price.toStringAsFixed(2)} MAD',
-                style: TextStyle(
-                    fontWeight: FontWeight.w600, color: theme.colorScheme.primary)),
-            if (itemSummary.isNotEmpty)
-              Text(itemSummary,
-                  style: TextStyle(fontSize: 12, color: theme.hintColor),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) async {
-            if (value == 'edit') {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                builder: (_) => _ComboFormSheet(
-                  ref: ref,
-                  menuItems: menuItems,
-                  categories: categories,
-                  itemCategories: itemCategories,
-                  existing: combo,
-                ),
-              );
-            } else if (value == 'toggle') {
-              await ref
-                  .read(comboMenuListProvider(AppConstants.shopId).notifier)
-                  .edit(
-                    comboId: combo.id,
-                    shopId: AppConstants.shopId,
-                    isActive: !combo.isActive,
-                  );
-            } else if (value == 'delete') {
-              final confirmed = await showDialog<bool>(
-                context: context,
-                builder: (_) => AlertDialog(
-                  title: const Text('Delete combo?'),
-                  content: Text('Are you sure you want to delete "${combo.name}"?'),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Cancel')),
-                    TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete')),
+              const SizedBox(width: 14),
+              // Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            combo.name,
+                            style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        if (!combo.isActive)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color:
+                              scheme.errorContainer.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Inactive',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.error),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${combo.price.toStringAsFixed(2)} MAD',
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: scheme.primary),
+                    ),
+                    if (itemSummary.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        itemSummary,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
-              );
-              if (confirmed == true) {
-                await ref
-                    .read(comboMenuListProvider(AppConstants.shopId).notifier)
-                    .delete(comboId: combo.id, shopId: AppConstants.shopId);
-              }
-            }
-          },
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
-            PopupMenuItem(
-              value: 'toggle',
-              child: Text(combo.isActive ? 'Deactivate' : 'Activate'),
-            ),
-            const PopupMenuItem(value: 'delete', child: Text('Delete')),
-          ],
+              ),
+              // Actions
+              Column(
+                children: [
+                  Switch(
+                    value: combo.isActive,
+                    onChanged: (val) => ref
+                        .read(comboMenuListProvider(AppConstants.shopId)
+                        .notifier)
+                        .edit(
+                      comboId: combo.id,
+                      shopId: AppConstants.shopId,
+                      isActive: val,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete_outline_rounded,
+                        color: scheme.error, size: 20),
+                    onPressed: () => _confirmDelete(context, ref),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Remove combo?'),
+        content: Text(
+            'This will permanently remove "${combo.name}" from your menu.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: scheme.error),
+            onPressed: () {
+              ref
+                  .read(comboMenuListProvider(AppConstants.shopId).notifier)
+                  .delete(
+                  comboId: combo.id, shopId: AppConstants.shopId);
+              Navigator.pop(context);
+            },
+            child: const Text('Remove'),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ── Combo form bottom sheet ──────────────────────────────────────────────────
+// ── Combo Form Sheet ──────────────────────────────────────────────────────────
 
 class _ComboFormSheet extends StatefulWidget {
   const _ComboFormSheet({
@@ -345,23 +593,21 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   bool _saving = false;
   String? _selectedCategoryId;
   String? _itemCategoryFilter;
-
-  /// Map of menuItemId → quantity for items included in the combo.
   late Map<String, int> _selectedItems;
-
-  /// Map of menuItemId → choice group name (nullable = fixed item).
   late Map<String, String?> _choiceGroups;
+
+  bool get _isEdit => widget.existing != null;
 
   @override
   void initState() {
     super.initState();
     final e = widget.existing;
     _nameCtrl = TextEditingController(text: e?.name ?? '');
-    _priceCtrl = TextEditingController(text: e != null ? e.price.toString() : '');
+    _priceCtrl = TextEditingController(
+        text: e != null ? e.price.toString() : '');
     _descCtrl = TextEditingController(text: e?.description ?? '');
     _imageUrl = e?.imageUrl;
     _selectedCategoryId = e?.categoryId;
-
     _selectedItems = {};
     _choiceGroups = {};
     if (e != null) {
@@ -381,13 +627,15 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   }
 
   Future<void> _pickImage() async {
-    final xFile = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 600);
+    final xFile = await ImagePicker()
+        .pickImage(source: ImageSource.gallery, maxWidth: 600);
     if (xFile == null) return;
     setState(() => _uploading = true);
     try {
       final url = await widget.ref
           .read(storageRepositoryProvider)
-          .uploadMenuImage(file: File(xFile.path), shopId: AppConstants.shopId);
+          .uploadMenuImage(
+          file: File(xFile.path), shopId: AppConstants.shopId);
       setState(() => _imageUrl = url);
     } finally {
       setState(() => _uploading = false);
@@ -398,7 +646,13 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one item to the combo')),
+        SnackBar(
+          content:
+          const Text('Add at least one item to the combo'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return;
     }
@@ -406,23 +660,26 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
     setState(() => _saving = true);
     final items = _selectedItems.entries
         .map((e) => {
-              'menu_item_id': e.key,
-              'quantity': e.value,
-              if (_choiceGroups[e.key] != null) 'choice_group': _choiceGroups[e.key],
-            })
+      'menu_item_id': e.key,
+      'quantity': e.value,
+      if (_choiceGroups[e.key] != null)
+        'choice_group': _choiceGroups[e.key],
+    })
         .toList();
 
     try {
-      final notifier =
-          widget.ref.read(comboMenuListProvider(AppConstants.shopId).notifier);
+      final notifier = widget.ref
+          .read(comboMenuListProvider(AppConstants.shopId).notifier);
 
-      if (widget.existing != null) {
+      if (_isEdit) {
         await notifier.edit(
           comboId: widget.existing!.id,
           shopId: AppConstants.shopId,
           name: _nameCtrl.text.trim(),
           price: double.parse(_priceCtrl.text.trim()),
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+          description: _descCtrl.text.trim().isEmpty
+              ? null
+              : _descCtrl.text.trim(),
           imageUrl: _imageUrl,
           items: items,
           categoryId: _selectedCategoryId,
@@ -434,7 +691,9 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
           shopId: AppConstants.shopId,
           name: _nameCtrl.text.trim(),
           price: double.parse(_priceCtrl.text.trim()),
-          description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+          description: _descCtrl.text.trim().isEmpty
+              ? null
+              : _descCtrl.text.trim(),
           imageUrl: _imageUrl,
           items: items,
           categoryId: _selectedCategoryId,
@@ -448,399 +707,557 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final activeItems = widget.menuItems.where((i) => i.isActive).toList();
+    final scheme = Theme.of(context).colorScheme;
+    final activeItems =
+    widget.menuItems.where((i) => i.isActive).toList();
     final filteredItems = _itemCategoryFilter == null
         ? activeItems
-        : activeItems.where((i) => i.categoryId == _itemCategoryFilter).toList();
+        : activeItems
+        .where((i) => i.categoryId == _itemCategoryFilter)
+        .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existing != null ? 'Edit Combo' : 'New Combo'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          borderRadius:
+          const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        actions: [
-          _saving
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : TextButton(
-                  onPressed: _save,
-                  child: Text(
-                    widget.existing != null ? 'Save' : 'Create',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-              24, 16, 24, MediaQuery.of(context).viewInsets.bottom + 24),
+        child: Column(
           children: [
-
-            // Image picker
-            GestureDetector(
-              onTap: _uploading ? null : _pickImage,
+            // Handle
+            Center(
               child: Container(
-                height: 120,
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                width: 36,
+                height: 4,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-                ),
-                child: _uploading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _imageUrl != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: CachedMenuImage(url: _imageUrl!),
-                          )
-                        : Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.add_a_photo_outlined,
-                                    color: theme.hintColor),
-                                const SizedBox(height: 4),
-                                Text('Add image',
-                                    style: TextStyle(color: theme.hintColor)),
-                              ],
-                            ),
-                          ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Name
-            TextFormField(
-              controller: _nameCtrl,
-              decoration: const InputDecoration(labelText: 'Combo name'),
-              validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Required' : null,
-            ),
-            const SizedBox(height: 12),
-
-            // Price
-            TextFormField(
-              controller: _priceCtrl,
-              decoration: const InputDecoration(
-                  labelText: 'Price (MAD)', prefixIcon: Icon(Icons.attach_money)),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
-                if (double.tryParse(v.trim()) == null) return 'Invalid number';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-
-            // Description
-            TextFormField(
-              controller: _descCtrl,
-              decoration: const InputDecoration(labelText: 'Description (optional)'),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 12),
-
-            // Category
-            DropdownButtonFormField<String?>(
-              value: _selectedCategoryId,
-              decoration: const InputDecoration(labelText: 'Category (optional)'),
-              items: [
-                const DropdownMenuItem<String?>(
-                  value: null,
-                  child: Text('— No category —'),
-                ),
-                ...widget.categories.map(
-                  (cat) => DropdownMenuItem<String?>(
-                    value: cat.id,
-                    child: Text(cat.label),
-                  ),
-                ),
-              ],
-              onChanged: (v) => setState(() => _selectedCategoryId = v),
-            ),
-            const SizedBox(height: 20),
-
-            // Item selection header
-            Row(
-              children: [
-                const Text('Included items',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                const Spacer(),
-                Text('${_selectedItems.length} selected',
-                    style: TextStyle(color: theme.hintColor, fontSize: 13)),
-              ],
-            ),
-            // Item category filter chips
-            if (widget.itemCategories.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: widget.itemCategories.length + 1,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    if (i == 0) {
-                      return ChoiceChip(
-                        label: const Text('All'),
-                        selected: _itemCategoryFilter == null,
-                        onSelected: (_) =>
-                            setState(() => _itemCategoryFilter = null),
-                      );
-                    }
-                    final cat = widget.itemCategories[i - 1];
-                    final isSelected = _itemCategoryFilter == cat.id;
-                    return ChoiceChip(
-                      label: Text(cat.label),
-                      selected: isSelected,
-                      onSelected: (_) => setState(() =>
-                          _itemCategoryFilter = isSelected ? null : cat.id),
-                    );
-                  },
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-            ],
-            const SizedBox(height: 8),
-
-            // Item grid – mirrors the New Order visual style
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.72,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-              ),
-              itemCount: filteredItems.length,
-              itemBuilder: (context, i) {
-                final item = filteredItems[i];
-                final qty = _selectedItems[item.id];
-                final isSelected = qty != null;
-                final choiceGroup = _choiceGroups[item.id];
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedItems.remove(item.id);
-                        _choiceGroups.remove(item.id);
-                      } else {
-                        _selectedItems[item.id] = 1;
-                      }
-                    });
-                  },
-                  onLongPress: isSelected
-                      ? () => _showChoiceGroupDialog(item.id)
-                      : null,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(14),
-                      border: isSelected
-                          ? Border.all(
-                              color: choiceGroup != null
-                                  ? theme.colorScheme.tertiary
-                                  : theme.colorScheme.primary,
-                              width: 2,
-                            )
-                          : null,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              item.imageUrl != null && item.imageUrl!.isNotEmpty
-                                  ? CachedMenuImage(url: item.imageUrl!)
-                                  : Container(
-                                      color: theme.colorScheme
-                                          .surfaceContainerHighest
-                                          .withOpacity(0.5),
-                                      child: Center(
-                                        child: Icon(Icons.fastfood,
-                                            size: 32,
-                                            color: theme.colorScheme.primary
-                                                .withOpacity(0.4)),
-                                      ),
-                                    ),
-                              if (isSelected)
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      '$qty',
-                                      style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              // Choice group badge
-                              if (isSelected && choiceGroup != null)
-                                Positioned(
-                                  top: 6,
-                                  left: 6,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.tertiary,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      choiceGroup,
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.onTertiary,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item.name,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 12),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis),
-                              const SizedBox(height: 2),
-                              Text('${item.price.toStringAsFixed(2)} MAD',
-                                  style: TextStyle(
-                                      color: theme.colorScheme.primary,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 11)),
-                            ],
-                          ),
-                        ),
-                        // Quantity stepper (visible only when selected)
-                        if (isSelected)
-                          Container(
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primaryContainer
-                                  .withOpacity(0.3),
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(14),
-                                bottomRight: Radius.circular(14),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove, size: 18),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  onPressed: qty! > 1
-                                      ? () => setState(() =>
-                                          _selectedItems[item.id] = qty - 1)
-                                      : null,
-                                ),
-                                Text('$qty',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14)),
-                                IconButton(
-                                  icon: const Icon(Icons.add, size: 18),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  onPressed: () => setState(
-                                      () => _selectedItems[item.id] = qty + 1),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                );
-              },
             ),
-
-            // Choice group hint
+            // Header
             Padding(
-              padding: const EdgeInsets.only(top: 8),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 14, color: theme.hintColor),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Long press a selected item to assign a choice group (e.g. "drink"). '
-                      'Items with the same group name become pick-one options.',
-                      style: TextStyle(fontSize: 11, color: theme.hintColor),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _isEdit ? 'Edit Combo' : 'New Combo',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  _saving
+                      ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2)),
+                  )
+                      : FilledButton(
+                    onPressed: _save,
+                    child: Text(_isEdit ? 'Save' : 'Create'),
                   ),
                 ],
               ),
             ),
+            const Divider(height: 1),
 
-            const SizedBox(height: 24),
-
-            // Save button
-            ElevatedButton(
-              onPressed: _saving ? null : _save,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: _saving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : Text(
-                      widget.existing != null ? 'Save Changes' : 'Create Combo',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+            // Body
+            Flexible(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(
+                      20, 24, 20,
+                      MediaQuery.of(context).viewInsets.bottom + 32),
+                  children: [
+                    // Image picker
+                    GestureDetector(
+                      onTap: _uploading ? null : _pickImage,
+                      child: Container(
+                        height: 150,
+                        decoration: BoxDecoration(
+                          color: scheme.surfaceContainerHighest
+                              .withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color:
+                            scheme.outlineVariant.withOpacity(0.4),
+                          ),
+                          image: _imageUrl != null
+                              ? DecorationImage(
+                              image: NetworkImage(_imageUrl!),
+                              fit: BoxFit.cover)
+                              : null,
+                        ),
+                        child: _uploading
+                            ? const Center(
+                            child: CircularProgressIndicator())
+                            : _imageUrl != null
+                            ? Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Container(
+                              padding:
+                              const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.black
+                                    .withOpacity(0.5),
+                                borderRadius:
+                                BorderRadius.circular(8),
+                              ),
+                              child: const Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                  color: Colors.white),
+                            ),
+                          ),
+                        )
+                            : Column(
+                          mainAxisAlignment:
+                          MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding:
+                              const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: scheme.primary
+                                    .withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                  Icons
+                                      .add_photo_alternate_outlined,
+                                  size: 28,
+                                  color: scheme.primary),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Tap to add photo',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                    const SizedBox(height: 20),
+
+                    // Name
+                    _FormLabel(label: 'Combo Name'),
+                    TextFormField(
+                      controller: _nameCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _inputDecoration(context,
+                          hint: 'e.g. Family Meal',
+                          icon: Icons.restaurant_menu_rounded),
+                      validator: (v) =>
+                      v == null || v.trim().isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Price
+                    _FormLabel(label: 'Price'),
+                    TextFormField(
+                      controller: _priceCtrl,
+                      keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true),
+                      decoration: _inputDecoration(context,
+                          hint: '0.00',
+                          icon: Icons.payments_outlined,
+                          suffixText: 'MAD'),
+                      validator: (v) {
+                        if (v == null || v.trim().isEmpty)
+                          return 'Required';
+                        if (double.tryParse(v.trim()) == null)
+                          return 'Invalid number';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Description
+                    _FormLabel(label: 'Description (optional)'),
+                    TextFormField(
+                      controller: _descCtrl,
+                      maxLines: 2,
+                      decoration: _inputDecoration(context,
+                          hint: 'Short description…',
+                          icon: Icons.notes_rounded),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Category
+                    _FormLabel(label: 'Category (optional)'),
+                    DropdownButtonFormField<String?>(
+                      value: _selectedCategoryId,
+                      decoration: _inputDecoration(context,
+                          hint: 'No category',
+                          icon: Icons.category_outlined),
+                      items: [
+                        const DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text('— No category —')),
+                        ...widget.categories.map((cat) =>
+                            DropdownMenuItem<String?>(
+                                value: cat.id,
+                                child: Text(cat.label))),
+                      ],
+                      onChanged: (v) =>
+                          setState(() => _selectedCategoryId = v),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Items section header
+                    Row(
+                      children: [
+                        Text(
+                          'INCLUDED ITEMS',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _selectedItems.isNotEmpty
+                                ? scheme.primaryContainer
+                                : scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${_selectedItems.length} selected',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _selectedItems.isNotEmpty
+                                  ? scheme.primary
+                                  : scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Item category filter chips
+                    if (widget.itemCategories.isNotEmpty) ...[
+                      SizedBox(
+                        height: 38,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: widget.itemCategories.length + 1,
+                          separatorBuilder: (_, __) =>
+                          const SizedBox(width: 8),
+                          itemBuilder: (_, i) {
+                            if (i == 0) {
+                              return _FilterChip(
+                                label: 'All',
+                                selected: _itemCategoryFilter == null,
+                                onTap: () => setState(
+                                        () => _itemCategoryFilter = null),
+                              );
+                            }
+                            final cat = widget.itemCategories[i - 1];
+                            final sel = _itemCategoryFilter == cat.id;
+                            return _FilterChip(
+                              label: cat.label,
+                              selected: sel,
+                              onTap: () => setState(() =>
+                              _itemCategoryFilter =
+                              sel ? null : cat.id),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // Items grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 0.72,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, i) {
+                        final item = filteredItems[i];
+                        final qty = _selectedItems[item.id];
+                        final isSelected = qty != null;
+                        final choiceGroup = _choiceGroups[item.id];
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (isSelected) {
+                                _selectedItems.remove(item.id);
+                                _choiceGroups.remove(item.id);
+                              } else {
+                                _selectedItems[item.id] = 1;
+                              }
+                            });
+                          },
+                          onLongPress: isSelected
+                              ? () =>
+                              _showChoiceGroupDialog(item.id)
+                              : null,
+                          child: AnimatedContainer(
+                            duration:
+                            const Duration(milliseconds: 180),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? scheme.primaryContainer
+                                  .withOpacity(0.15)
+                                  : scheme.surfaceContainerHighest
+                                  .withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? (choiceGroup != null
+                                    ? scheme.tertiary
+                                    : scheme.primary)
+                                    : scheme.outlineVariant
+                                    .withOpacity(0.3),
+                                width: isSelected ? 2 : 1,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                BoxShadow(
+                                  color: scheme.primary
+                                      .withOpacity(0.12),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                )
+                              ]
+                                  : [],
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      item.imageUrl != null &&
+                                          item.imageUrl!.isNotEmpty
+                                          ? CachedMenuImage(
+                                          url: item.imageUrl!)
+                                          : Container(
+                                        color: scheme
+                                            .surfaceContainerHighest,
+                                        child: Icon(
+                                            Icons.fastfood_rounded,
+                                            size: 32,
+                                            color: scheme
+                                                .onSurfaceVariant
+                                                .withOpacity(0.4)),
+                                      ),
+                                      // Quantity badge
+                                      if (isSelected)
+                                        Positioned(
+                                          top: 5,
+                                          right: 5,
+                                          child: Container(
+                                            padding:
+                                            const EdgeInsets.all(5),
+                                            decoration: BoxDecoration(
+                                              color: choiceGroup != null
+                                                  ? scheme.tertiary
+                                                  : scheme.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Text(
+                                              '$qty',
+                                              style: const TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight:
+                                                  FontWeight.bold,
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      // Choice group badge
+                                      if (isSelected &&
+                                          choiceGroup != null)
+                                        Positioned(
+                                          top: 5,
+                                          left: 5,
+                                          child: Container(
+                                            padding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 5,
+                                                vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: scheme.tertiary,
+                                              borderRadius:
+                                              BorderRadius.circular(
+                                                  5),
+                                            ),
+                                            child: Text(
+                                              choiceGroup,
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.bold,
+                                                color:
+                                                scheme.onTertiary,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 5),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 11),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '${item.price.toStringAsFixed(2)} MAD',
+                                        style: TextStyle(
+                                            color: scheme.primary,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Quantity stepper
+                                if (isSelected)
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: scheme.primaryContainer
+                                          .withOpacity(0.3),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        InkWell(
+                                          onTap: qty! > 1
+                                              ? () => setState(() =>
+                                          _selectedItems[
+                                          item.id] = qty - 1)
+                                              : null,
+                                          child: Padding(
+                                            padding:
+                                            const EdgeInsets.all(6),
+                                            child: Icon(Icons.remove,
+                                                size: 16,
+                                                color: qty > 1
+                                                    ? scheme.primary
+                                                    : scheme.outlineVariant),
+                                          ),
+                                        ),
+                                        Text('$qty',
+                                            style: const TextStyle(
+                                                fontWeight:
+                                                FontWeight.bold,
+                                                fontSize: 13)),
+                                        InkWell(
+                                          onTap: () => setState(() =>
+                                          _selectedItems[item.id] =
+                                              qty + 1),
+                                          child: Padding(
+                                            padding:
+                                            const EdgeInsets.all(6),
+                                            child: Icon(Icons.add,
+                                                size: 16,
+                                                color: scheme.primary),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Choice group hint
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color:
+                        scheme.surfaceContainerHighest.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: scheme.outlineVariant.withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded,
+                              size: 15,
+                              color: scheme.onSurfaceVariant),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Long-press a selected item to assign a choice group (e.g. "drink"). Items sharing the same group become pick-one options.',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: scheme.onSurfaceVariant),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
-  void _showChoiceGroupDialog(String menuItemId) {
-    final ctrl = TextEditingController(text: _choiceGroups[menuItemId] ?? '');
 
-    // Collect existing group names as quick suggestions.
+  void _showChoiceGroupDialog(String menuItemId) {
+    final scheme = Theme.of(context).colorScheme;
+    final ctrl =
+    TextEditingController(text: _choiceGroups[menuItemId] ?? '');
     final existingGroups = _choiceGroups.values
         .whereType<String>()
         .toSet()
@@ -850,37 +1267,37 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
         title: const Text('Choice group'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Items sharing the same group name become pick-one choices '
-              'for the customer. Leave empty for a fixed (always included) item.',
-              style: TextStyle(fontSize: 13),
+            Text(
+              'Items sharing the same group name become pick-one choices. Leave empty for a fixed item.',
+              style: TextStyle(
+                  fontSize: 13, color: scheme.onSurfaceVariant),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             TextField(
               controller: ctrl,
-              decoration: const InputDecoration(
-                labelText: 'Group name',
-                hintText: 'e.g. drink, dessert…',
-              ),
               autofocus: true,
               textCapitalization: TextCapitalization.none,
+              decoration: _inputDecoration(ctx,
+                  hint: 'e.g. drink, dessert…',
+                  icon: Icons.swap_horiz_rounded),
             ),
             if (existingGroups.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
+                runSpacing: 6,
                 children: existingGroups
                     .map((g) => ActionChip(
-                          label: Text(g),
-                          onPressed: () {
-                            ctrl.text = g;
-                          },
-                        ))
+                  label: Text(g),
+                  onPressed: () => ctrl.text = g,
+                ))
                     .toList(),
               ),
             ],
@@ -914,15 +1331,17 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   }
 }
 
-// ── Combo categories management sheet ───────────────────────────────────────
+// ── Combo Categories Sheet ────────────────────────────────────────────────────
 
 class _ComboCategoriesSheet extends StatefulWidget {
-  const _ComboCategoriesSheet({required this.ref, required this.categories});
+  const _ComboCategoriesSheet(
+      {required this.ref, required this.categories});
   final WidgetRef ref;
   final List<Category> categories;
 
   @override
-  State<_ComboCategoriesSheet> createState() => _ComboCategoriesSheetState();
+  State<_ComboCategoriesSheet> createState() =>
+      _ComboCategoriesSheetState();
 }
 
 class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
@@ -940,72 +1359,232 @@ class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
     setState(() => _loading = true);
     await widget.ref
         .read(comboCategoryListProvider(AppConstants.shopId).notifier)
-        .create(shopId: AppConstants.shopId, label: _controller.text.trim());
+        .create(
+        shopId: AppConstants.shopId,
+        label: _controller.text.trim());
     _controller.clear();
     setState(() => _loading = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final categoriesAsync =
-        widget.ref.watch(comboCategoryListProvider(AppConstants.shopId));
+    widget.ref.watch(comboCategoryListProvider(AppConstants.shopId));
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-          16, 16, 16, MediaQuery.of(context).viewInsets.bottom + 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Combo Categories',
-              style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  decoration:
-                      const InputDecoration(hintText: 'New category name'),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          color: scheme.surface,
+          borderRadius:
+          const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 4),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: scheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: _loading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Icon(Icons.add),
-                onPressed: _loading ? null : _add,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          categoriesAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => const SizedBox(),
-            data: (cats) => Column(
-              children: cats
-                  .map((c) => ListTile(
-                        title: Text(c.label),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              color: Colors.red),
-                          onPressed: () => widget.ref
-                              .read(comboCategoryListProvider(
-                                      AppConstants.shopId)
-                                  .notifier)
-                              .deleteCategory(
-                                categoryId: c.id,
-                                shopId: AppConstants.shopId,
-                              ),
-                        ),
-                      ))
-                  .toList(),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 20, vertical: 12),
+              child: Row(
+                children: [
+                  Text('Combo Categories',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                    20, 20, 20,
+                    MediaQuery.of(context).viewInsets.bottom + 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Add new
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest
+                            .withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                            color:
+                            scheme.outlineVariant.withOpacity(0.4)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'NEW CATEGORY',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.2,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: _controller,
+                                  textCapitalization:
+                                  TextCapitalization.words,
+                                  decoration: _inputDecoration(context,
+                                      hint: 'Category name',
+                                      icon: Icons.label_outline_rounded),
+                                  onSubmitted: (_) => _add(),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              SizedBox(
+                                height: 50,
+                                child: FilledButton(
+                                  onPressed: _loading ? null : _add,
+                                  child: _loading
+                                      ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child:
+                                      CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white))
+                                      : const Icon(Icons.add_rounded),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Existing categories
+                    categoriesAsync.when(
+                      loading: () => const Center(
+                          child: CircularProgressIndicator()),
+                      error: (e, _) => const SizedBox(),
+                      data: (cats) {
+                        if (cats.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding:
+                              const EdgeInsets.symmetric(vertical: 16),
+                              child: Text('No categories yet',
+                                  style: TextStyle(
+                                      color: scheme.onSurfaceVariant)),
+                            ),
+                          );
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'EXISTING CATEGORIES',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.2,
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Card(
+                              elevation: 0,
+                              margin: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                    color: scheme.outlineVariant
+                                        .withOpacity(0.4)),
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Column(
+                                children: [
+                                  for (int i = 0;
+                                  i < cats.length;
+                                  i++) ...[
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            padding:
+                                            const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              color: scheme.tertiaryContainer
+                                                  .withOpacity(0.5),
+                                              borderRadius:
+                                              BorderRadius.circular(
+                                                  10),
+                                            ),
+                                            child: Icon(
+                                                Icons.label_rounded,
+                                                size: 18,
+                                                color: scheme.tertiary),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(cats[i].label,
+                                                style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight:
+                                                    FontWeight.w500)),
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                                Icons
+                                                    .delete_outline_rounded,
+                                                size: 20,
+                                                color: scheme.error),
+                                            onPressed: () => widget.ref
+                                                .read(comboCategoryListProvider(
+                                                AppConstants.shopId)
+                                                .notifier)
+                                                .deleteCategory(
+                                              categoryId: cats[i].id,
+                                              shopId:
+                                              AppConstants.shopId,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (i < cats.length - 1)
+                                      const Divider(height: 1),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

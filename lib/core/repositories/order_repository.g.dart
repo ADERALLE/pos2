@@ -12,18 +12,20 @@ part of 'order_repository.dart';
 @ProviderFor(orderRepository)
 final orderRepositoryProvider = OrderRepositoryProvider._();
 
-final class OrderRepositoryProvider extends $FunctionalProvider<OrderRepository,
-    OrderRepository, OrderRepository> with $Provider<OrderRepository> {
+final class OrderRepositoryProvider
+    extends
+        $FunctionalProvider<OrderRepository, OrderRepository, OrderRepository>
+    with $Provider<OrderRepository> {
   OrderRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'orderRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'orderRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$orderRepositoryHash();

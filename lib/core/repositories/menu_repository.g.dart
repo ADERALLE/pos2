@@ -16,15 +16,15 @@ final class MenuRepositoryProvider
     extends $FunctionalProvider<MenuRepository, MenuRepository, MenuRepository>
     with $Provider<MenuRepository> {
   MenuRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'menuRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'menuRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$menuRepositoryHash();

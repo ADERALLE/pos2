@@ -12,20 +12,24 @@ part of 'staff_dashboard_repository.dart';
 @ProviderFor(staffDashboardRepository)
 final staffDashboardRepositoryProvider = StaffDashboardRepositoryProvider._();
 
-final class StaffDashboardRepositoryProvider extends $FunctionalProvider<
-    StaffDashboardRepository,
-    StaffDashboardRepository,
-    StaffDashboardRepository> with $Provider<StaffDashboardRepository> {
+final class StaffDashboardRepositoryProvider
+    extends
+        $FunctionalProvider<
+          StaffDashboardRepository,
+          StaffDashboardRepository,
+          StaffDashboardRepository
+        >
+    with $Provider<StaffDashboardRepository> {
   StaffDashboardRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'staffDashboardRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'staffDashboardRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$staffDashboardRepositoryHash();
@@ -33,8 +37,8 @@ final class StaffDashboardRepositoryProvider extends $FunctionalProvider<
   @$internal
   @override
   $ProviderElement<StaffDashboardRepository> $createElement(
-          $ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   StaffDashboardRepository create(Ref ref) {

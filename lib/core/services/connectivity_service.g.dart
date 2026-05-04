@@ -20,15 +20,15 @@ final class ConnectivityStreamProvider
     with $FutureModifier<bool>, $StreamProvider<bool> {
   /// Emits true when at least one connectivity type is available.
   ConnectivityStreamProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'connectivityStreamProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'connectivityStreamProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$connectivityStreamHash();
@@ -58,15 +58,15 @@ final class IsOnlineProvider extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
   /// Synchronous snapshot: is the device currently online?
   IsOnlineProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'isOnlineProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'isOnlineProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$isOnlineHash();

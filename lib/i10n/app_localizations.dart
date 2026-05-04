@@ -64,7 +64,7 @@ import 'app_localizations_fr.dart';
 /// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
-      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -87,17 +87,17 @@ abstract class AppLocalizations {
   /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
-    delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-  ];
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('ar'),
     Locale('en'),
-    Locale('fr')
+    Locale('fr'),
   ];
 
   /// No description provided for @appTitle.
@@ -136,117 +136,562 @@ abstract class AppLocalizations {
   /// **'Search coffee...'**
   String get search;
 
-  // ── navigation ──────────────────────────────────────────────────────────────
-  String get navHome;
-  String get navOrders;
-  String get navAlerts;
-  String get navSettings;
-
-  // ── login ────────────────────────────────────────────────────────────────────
-  String get welcome;
-  String get enterPinFor;
-  String get wrongPin;
-
-  // ── home ─────────────────────────────────────────────────────────────────────
-  String get goodMorning;
-  String get goodAfternoon;
-  String get goodEvening;
-  String get noActiveShift;
-  String get startShiftSubtitle;
-  String get startShift;
-  String get shiftActive;
-  String get elapsed;
-  String get close;
-  String get newOrder;
-  String get todaysOrders;
-  String get noOrdersYet;
-  String get uncompletedOrdersTitle;
-  String get uncompletedOrdersMessage;
-  String get ok;
-  String get editOrder;
-  String get markDone;
-  String get start;
-  String get closeShift;
-
-  // ── orders ───────────────────────────────────────────────────────────────────
-  String get activeOrders;
-  String get history;
-  String get noActiveOrders;
-  String get noOrderHistory;
-  String get searchOrders;
-  String get cancelOrder;
-  String get comboLabel;
-
-  // ── notifications ────────────────────────────────────────────────────────────
-  String get notifications;
-  String get markAllRead;
-  String get failedToLoadNotifications;
-  String get retry;
-  String get noNotificationsYet;
-  String get noUnreadNotifications;
-
-  // ── payment dialog ───────────────────────────────────────────────────────────
-  String get completeOrder;
-  String get total;
-  String get cash;
-  String get card;
-  String get split;
-  String get tipCardSide;
-  String get amountsMatchTotal;
-  String get cancel;
-  String get cardConfirmed;
-
-  // ── offline banner ───────────────────────────────────────────────────────────
-  String get backOnlineSyncing;
-  String get operation;
-  String get operations;
-  String get offlineNoQueue;
-  String get offline;
-  String get queued;
-
-  // ── settings ─────────────────────────────────────────────────────────────────
-  String get analyticsReports;
-  String get dailyShopDashboard;
-  String get dailyShopDashboardSubtitle;
-  String get staffDashboard;
-  String get staffDashboardSubtitle;
-  String get management;
-  String get staff;
-  String get staffSubtitle;
-  String get menuSubtitle;
-  String get comboMenusSubtitle;
-  String get system;
-  String get logout;
-  String get language;
-  String get languageSubtitle;
-  String get appearance;
-  String get appearanceSubtitle;
-
-  // ── combo menu (already existed) ─────────────────────────────────────────────
+  /// No description provided for @comboMenus.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo Menus'**
   String get comboMenus;
+
+  /// No description provided for @newCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'New Combo'**
   String get newCombo;
+
+  /// No description provided for @editCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Combo'**
   String get editCombo;
+
+  /// No description provided for @comboName.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo name'**
   String get comboName;
+
+  /// No description provided for @comboPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (MAD)'**
   String get comboPrice;
+
+  /// No description provided for @includedItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Included items'**
   String get includedItems;
+
+  /// No description provided for @createCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Combo'**
   String get createCombo;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
   String get saveChanges;
+
+  /// No description provided for @items.
+  ///
+  /// In en, this message translates to:
+  /// **'Items'**
   String get items;
+
+  /// No description provided for @combos.
+  ///
+  /// In en, this message translates to:
+  /// **'Combos'**
   String get combos;
 
-  // ── shift summary ────────────────────────────────────────────────────────────
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get navOrders;
+
+  /// No description provided for @navAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts'**
+  String get navAlerts;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @welcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get welcome;
+
+  /// No description provided for @enterPinFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter PIN for'**
+  String get enterPinFor;
+
+  /// No description provided for @wrongPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong PIN'**
+  String get wrongPin;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// No description provided for @noActiveShift.
+  ///
+  /// In en, this message translates to:
+  /// **'No active shift'**
+  String get noActiveShift;
+
+  /// No description provided for @startShiftSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a shift to begin taking orders'**
+  String get startShiftSubtitle;
+
+  /// No description provided for @startShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Start shift'**
+  String get startShift;
+
+  /// No description provided for @shiftActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift active'**
+  String get shiftActive;
+
+  /// No description provided for @elapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'elapsed'**
+  String get elapsed;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @newOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'New order'**
+  String get newOrder;
+
+  /// No description provided for @todaysOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s orders'**
+  String get todaysOrders;
+
+  /// No description provided for @noOrdersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get noOrdersYet;
+
+  /// No description provided for @uncompletedOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncompleted orders'**
+  String get uncompletedOrdersTitle;
+
+  /// No description provided for @uncompletedOrdersMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'order(s) are still pending or in progress.\nMark them as done or cancel before closing.'**
+  String get uncompletedOrdersMessage;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @editOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Order'**
+  String get editOrder;
+
+  /// No description provided for @markDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done'**
+  String get markDone;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @closeShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Close shift'**
+  String get closeShift;
+
+  /// No description provided for @activeOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Orders'**
+  String get activeOrders;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @noActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No active orders'**
+  String get noActiveOrders;
+
+  /// No description provided for @noOrderHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No order history'**
+  String get noOrderHistory;
+
+  /// No description provided for @searchOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Search orders'**
+  String get searchOrders;
+
+  /// No description provided for @cancelOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Order'**
+  String get cancelOrder;
+
+  /// No description provided for @comboLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'COMBO'**
+  String get comboLabel;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @markAllRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark all read'**
+  String get markAllRead;
+
+  /// No description provided for @failedToLoadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load notifications'**
+  String get failedToLoadNotifications;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @noUnreadNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No unread notifications'**
+  String get noUnreadNotifications;
+
+  /// No description provided for @completeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete order'**
+  String get completeOrder;
+
+  /// No description provided for @total.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get total;
+
+  /// No description provided for @cash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get cash;
+
+  /// No description provided for @card.
+  ///
+  /// In en, this message translates to:
+  /// **'Card'**
+  String get card;
+
+  /// No description provided for @split.
+  ///
+  /// In en, this message translates to:
+  /// **'Split'**
+  String get split;
+
+  /// No description provided for @tipCardSide.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip (card side)'**
+  String get tipCardSide;
+
+  /// No description provided for @amountsMatchTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Amounts match total'**
+  String get amountsMatchTotal;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @cardConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Card payment confirmed on terminal'**
+  String get cardConfirmed;
+
+  /// No description provided for @backOnlineSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Back online — syncing'**
+  String get backOnlineSyncing;
+
+  /// No description provided for @operation.
+  ///
+  /// In en, this message translates to:
+  /// **'operation'**
+  String get operation;
+
+  /// No description provided for @operations.
+  ///
+  /// In en, this message translates to:
+  /// **'operations'**
+  String get operations;
+
+  /// No description provided for @offlineNoQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — orders will sync when reconnected'**
+  String get offlineNoQueue;
+
+  /// No description provided for @offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline —'**
+  String get offline;
+
+  /// No description provided for @queued.
+  ///
+  /// In en, this message translates to:
+  /// **'queued'**
+  String get queued;
+
+  /// No description provided for @analyticsReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics & Reports'**
+  String get analyticsReports;
+
+  /// No description provided for @dailyShopDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Shop Dashboard'**
+  String get dailyShopDashboard;
+
+  /// No description provided for @dailyShopDashboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View revenue, trends, and top items by date'**
+  String get dailyShopDashboardSubtitle;
+
+  /// No description provided for @staffDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff Dashboard'**
+  String get staffDashboard;
+
+  /// No description provided for @staffDashboardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track shifts and revenue by team member'**
+  String get staffDashboardSubtitle;
+
+  /// No description provided for @management.
+  ///
+  /// In en, this message translates to:
+  /// **'Management'**
+  String get management;
+
+  /// No description provided for @staff.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff'**
+  String get staff;
+
+  /// No description provided for @staffSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your team and roles'**
+  String get staffSubtitle;
+
+  /// No description provided for @menuSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit items, categories, and pricing'**
+  String get menuSubtitle;
+
+  /// No description provided for @comboMenusSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create and manage combo meals'**
+  String get comboMenusSubtitle;
+
+  /// No description provided for @system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the app language'**
+  String get languageSubtitle;
+
+  /// No description provided for @appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// No description provided for @appearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle light / dark mode'**
+  String get appearanceSubtitle;
+
+  /// No description provided for @shiftSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift summary'**
   String get shiftSummary;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
   String get dashboard;
+
+  /// No description provided for @shiftClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift closed'**
   String get shiftClosed;
+
+  /// No description provided for @started.
+  ///
+  /// In en, this message translates to:
+  /// **'Started'**
   String get started;
+
+  /// No description provided for @closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
   String get closed;
+
+  /// No description provided for @passation.
+  ///
+  /// In en, this message translates to:
+  /// **'Passation'**
   String get passation;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
   String get done;
+
+  /// No description provided for @cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
   String get cancelled;
+
+  /// No description provided for @totalRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Total revenue'**
   String get totalRevenue;
+
+  /// No description provided for @tipsCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips (card)'**
   String get tipsCard;
+
+  /// No description provided for @cashToHandOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash to hand over'**
   String get cashToHandOver;
+
+  /// No description provided for @takeaway.
+  ///
+  /// In en, this message translates to:
+  /// **'Take away'**
   String get takeaway;
+
+  /// No description provided for @ordersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
   String get ordersCount;
 }
 
@@ -279,8 +724,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

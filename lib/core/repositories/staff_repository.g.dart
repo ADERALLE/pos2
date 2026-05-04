@@ -12,18 +12,20 @@ part of 'staff_repository.dart';
 @ProviderFor(staffRepository)
 final staffRepositoryProvider = StaffRepositoryProvider._();
 
-final class StaffRepositoryProvider extends $FunctionalProvider<StaffRepository,
-    StaffRepository, StaffRepository> with $Provider<StaffRepository> {
+final class StaffRepositoryProvider
+    extends
+        $FunctionalProvider<StaffRepository, StaffRepository, StaffRepository>
+    with $Provider<StaffRepository> {
   StaffRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'staffRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'staffRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$staffRepositoryHash();

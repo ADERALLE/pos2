@@ -26,7 +26,36 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get search => 'Rechercher un café...';
 
-  // ── navigation ──────────────────────────────────────────────────────────────
+  @override
+  String get comboMenus => 'Menus Composés';
+
+  @override
+  String get newCombo => 'Nouveau Combo';
+
+  @override
+  String get editCombo => 'Modifier le Combo';
+
+  @override
+  String get comboName => 'Nom du combo';
+
+  @override
+  String get comboPrice => 'Prix (MAD)';
+
+  @override
+  String get includedItems => 'Articles inclus';
+
+  @override
+  String get createCombo => 'Créer le Combo';
+
+  @override
+  String get saveChanges => 'Enregistrer';
+
+  @override
+  String get items => 'Articles';
+
+  @override
+  String get combos => 'Combos';
+
   @override
   String get navHome => 'Accueil';
 
@@ -39,7 +68,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get navSettings => 'Paramètres';
 
-  // ── login ────────────────────────────────────────────────────────────────────
   @override
   String get welcome => 'Bienvenue';
 
@@ -49,7 +77,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get wrongPin => 'PIN incorrect';
 
-  // ── home ─────────────────────────────────────────────────────────────────────
   @override
   String get goodMorning => 'Bonjour';
 
@@ -82,7 +109,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get newOrder => 'Nouvelle commande';
 
   @override
-  String get todaysOrders => "Commandes du jour";
+  String get todaysOrders => 'Commandes du jour';
 
   @override
   String get noOrdersYet => 'Aucune commande';
@@ -109,7 +136,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get closeShift => 'Fermer le service';
 
-  // ── orders ───────────────────────────────────────────────────────────────────
   @override
   String get activeOrders => 'Commandes actives';
 
@@ -131,7 +157,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get comboLabel => 'COMBO';
 
-  // ── notifications ────────────────────────────────────────────────────────────
   @override
   String get notifications => 'Notifications';
 
@@ -151,7 +176,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get noUnreadNotifications => 'Aucune notification non lue';
 
-  // ── payment dialog ───────────────────────────────────────────────────────────
   @override
   String get completeOrder => 'Finaliser la commande';
 
@@ -179,9 +203,8 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get cardConfirmed => 'Paiement par carte confirmé sur le terminal';
 
-  // ── offline banner ───────────────────────────────────────────────────────────
   @override
-  String get backOnlineSyncing => 'Reconnecté \u2014 synchronisation de';
+  String get backOnlineSyncing => 'Reconnecté — synchronisation de';
 
   @override
   String get operation => 'opération';
@@ -191,15 +214,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get offlineNoQueue =>
-      'Hors ligne \u2014 les commandes seront synchronisées à la reconnexion';
+      'Hors ligne — les commandes seront synchronisées à la reconnexion';
 
   @override
-  String get offline => 'Hors ligne \u2014';
+  String get offline => 'Hors ligne —';
 
   @override
   String get queued => 'en file';
 
-  // ── settings ─────────────────────────────────────────────────────────────────
   @override
   String get analyticsReports => 'Analyses & Rapports';
 
@@ -242,7 +264,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get language => 'Langue';
 
   @override
-  String get languageSubtitle => "Changer la langue de l'application";
+  String get languageSubtitle => 'Changer la langue de l\'application';
 
   @override
   String get appearance => 'Apparence';
@@ -250,38 +272,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get appearanceSubtitle => 'Basculer mode clair / sombre';
 
-  // ── combo menu ───────────────────────────────────────────────────────────────
-  @override
-  String get comboMenus => 'Menus Composés';
-
-  @override
-  String get newCombo => 'Nouveau Combo';
-
-  @override
-  String get editCombo => 'Modifier le Combo';
-
-  @override
-  String get comboName => 'Nom du combo';
-
-  @override
-  String get comboPrice => 'Prix (MAD)';
-
-  @override
-  String get includedItems => 'Articles inclus';
-
-  @override
-  String get createCombo => 'Créer le Combo';
-
-  @override
-  String get saveChanges => 'Enregistrer';
-
-  @override
-  String get items => 'Articles';
-
-  @override
-  String get combos => 'Combos';
-
-  // ── shift summary ────────────────────────────────────────────────────────────
   @override
   String get shiftSummary => 'Résumé du service';
 
@@ -321,4 +311,3 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get ordersCount => 'Commandes';
 }
-

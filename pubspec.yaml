@@ -63,7 +63,8 @@ dev_dependencies:
   riverpod_generator: ^4.0.3
   build_runner: ^2.4.0
   freezed: ^3.2.5
-
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
   json_serializable: ^6.8.0
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -77,6 +78,25 @@ flutter:
   uses-material-design: true
   generate: true
 
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/icon.png"
+  # For Android 12+ support:
+  adaptive_icon_background: "#000000" # Matches your dark theme
+  adaptive_icon_foreground: "assets/images/icon.png"
+
+flutter_native_splash:
+  color: "#000000" # Pure black background
+  image: "assets/images/icon.png" # Your epossys logo
+
+  # Ensures Android 12+ (Adaptive Splash) works correctly
+  android_12:
+    image: "assets/images/icon.png"
+    color: "#000000"
+
+  fullscreen: true
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

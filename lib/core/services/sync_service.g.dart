@@ -21,15 +21,15 @@ final class SyncServiceProvider
   /// Watches connectivity and auto-syncs the offline queue when back online.
   /// Instantiate once at app startup via ref.watch(syncServiceProvider).
   SyncServiceProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'syncServiceProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'syncServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$syncServiceHash();
@@ -50,11 +50,14 @@ abstract class _$SyncService extends $AsyncNotifier<void> {
   @override
   void runBuild() {
     final ref = this.ref as $Ref<AsyncValue<void>, void>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<AsyncValue<void>, void>,
-        AsyncValue<void>,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<AsyncValue<void>, void>,
+              AsyncValue<void>,
+              Object?,
+              Object?
+            >;
     element.handleCreate(ref, build);
   }
 }
@@ -71,15 +74,15 @@ final class PendingOpsCountProvider
     with $FutureModifier<int>, $FutureProvider<int> {
   /// How many operations are waiting to sync (used by the banner badge).
   PendingOpsCountProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'pendingOpsCountProvider',
-          isAutoDispose: false,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'pendingOpsCountProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$pendingOpsCountHash();

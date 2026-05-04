@@ -26,7 +26,36 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get search => 'Search coffee...';
 
-  // ── navigation ──────────────────────────────────────────────────────────────
+  @override
+  String get comboMenus => 'Combo Menus';
+
+  @override
+  String get newCombo => 'New Combo';
+
+  @override
+  String get editCombo => 'Edit Combo';
+
+  @override
+  String get comboName => 'Combo name';
+
+  @override
+  String get comboPrice => 'Price (MAD)';
+
+  @override
+  String get includedItems => 'Included items';
+
+  @override
+  String get createCombo => 'Create Combo';
+
+  @override
+  String get saveChanges => 'Save Changes';
+
+  @override
+  String get items => 'Items';
+
+  @override
+  String get combos => 'Combos';
+
   @override
   String get navHome => 'Home';
 
@@ -39,7 +68,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get navSettings => 'Settings';
 
-  // ── login ────────────────────────────────────────────────────────────────────
   @override
   String get welcome => 'Welcome';
 
@@ -49,7 +77,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get wrongPin => 'Wrong PIN';
 
-  // ── home ─────────────────────────────────────────────────────────────────────
   @override
   String get goodMorning => 'Good morning';
 
@@ -81,7 +108,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newOrder => 'New order';
 
   @override
-  String get todaysOrders => "Today's orders";
+  String get todaysOrders => 'Today\'s orders';
 
   @override
   String get noOrdersYet => 'No orders yet';
@@ -108,7 +135,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get closeShift => 'Close shift';
 
-  // ── orders ───────────────────────────────────────────────────────────────────
   @override
   String get activeOrders => 'Active Orders';
 
@@ -130,7 +156,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get comboLabel => 'COMBO';
 
-  // ── notifications ────────────────────────────────────────────────────────────
   @override
   String get notifications => 'Notifications';
 
@@ -149,7 +174,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noUnreadNotifications => 'No unread notifications';
 
-  // ── payment dialog ───────────────────────────────────────────────────────────
   @override
   String get completeOrder => 'Complete order';
 
@@ -177,9 +201,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cardConfirmed => 'Card payment confirmed on terminal';
 
-  // ── offline banner ───────────────────────────────────────────────────────────
   @override
-  String get backOnlineSyncing => 'Back online \u2014 syncing';
+  String get backOnlineSyncing => 'Back online — syncing';
 
   @override
   String get operation => 'operation';
@@ -188,15 +211,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get operations => 'operations';
 
   @override
-  String get offlineNoQueue => 'Offline \u2014 orders will sync when reconnected';
+  String get offlineNoQueue => 'Offline — orders will sync when reconnected';
 
   @override
-  String get offline => 'Offline \u2014';
+  String get offline => 'Offline —';
 
   @override
   String get queued => 'queued';
 
-  // ── settings ─────────────────────────────────────────────────────────────────
   @override
   String get analyticsReports => 'Analytics & Reports';
 
@@ -247,38 +269,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get appearanceSubtitle => 'Toggle light / dark mode';
 
-  // ── combo menu ───────────────────────────────────────────────────────────────
-  @override
-  String get comboMenus => 'Combo Menus';
-
-  @override
-  String get newCombo => 'New Combo';
-
-  @override
-  String get editCombo => 'Edit Combo';
-
-  @override
-  String get comboName => 'Combo name';
-
-  @override
-  String get comboPrice => 'Price (MAD)';
-
-  @override
-  String get includedItems => 'Included items';
-
-  @override
-  String get createCombo => 'Create Combo';
-
-  @override
-  String get saveChanges => 'Save Changes';
-
-  @override
-  String get items => 'Items';
-
-  @override
-  String get combos => 'Combos';
-
-  // ── shift summary ────────────────────────────────────────────────────────────
   @override
   String get shiftSummary => 'Shift summary';
 
@@ -318,4 +308,3 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ordersCount => 'Orders';
 }
-

@@ -7,18 +7,19 @@ part of 'order_item.dart';
 // **************************************************************************
 
 _OrderItem _$OrderItemFromJson(Map<String, dynamic> json) => _OrderItem(
-      id: json['id'] as String,
-      orderId: json['order_id'] as String,
-      menuItemId: json['menu_item_id'] as String,
-      name: json['name'] as String,
-      unitPrice: (json['unit_price'] as num).toDouble(),
-      quantity: (json['quantity'] as num).toInt(),
-      subtotal: (json['subtotal'] as num).toDouble(),
-      orderNotes: (json['order_notes'] as List<dynamic>?)
-              ?.map((e) => OrderNote.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
-    );
+  id: json['id'] as String,
+  orderId: json['order_id'] as String,
+  menuItemId: json['menu_item_id'] as String,
+  name: json['name'] as String,
+  unitPrice: (json['unit_price'] as num).toDouble(),
+  quantity: (json['quantity'] as num).toInt(),
+  subtotal: (json['subtotal'] as num).toDouble(),
+  orderNotes:
+      (json['order_notes'] as List<dynamic>?)
+          ?.map((e) => OrderNote.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+      const [],
+);
 
 Map<String, dynamic> _$OrderItemToJson(_OrderItem instance) =>
     <String, dynamic>{

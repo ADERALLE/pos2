@@ -26,7 +26,36 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get search => 'ابحث عن قهوة...';
 
-  // ── navigation ──────────────────────────────────────────────────────────────
+  @override
+  String get comboMenus => 'القوائم المركبة';
+
+  @override
+  String get newCombo => 'كومبو جديد';
+
+  @override
+  String get editCombo => 'تعديل الكومبو';
+
+  @override
+  String get comboName => 'اسم الكومبو';
+
+  @override
+  String get comboPrice => 'السعر (درهم)';
+
+  @override
+  String get includedItems => 'العناصر المضمنة';
+
+  @override
+  String get createCombo => 'إنشاء الكومبو';
+
+  @override
+  String get saveChanges => 'حفظ التغييرات';
+
+  @override
+  String get items => 'العناصر';
+
+  @override
+  String get combos => 'الكومبوهات';
+
   @override
   String get navHome => 'الرئيسية';
 
@@ -39,7 +68,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get navSettings => 'الإعدادات';
 
-  // ── login ────────────────────────────────────────────────────────────────────
   @override
   String get welcome => 'مرحباً';
 
@@ -49,7 +77,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get wrongPin => 'رمز سري خاطئ';
 
-  // ── home ─────────────────────────────────────────────────────────────────────
   @override
   String get goodMorning => 'صباح الخير';
 
@@ -108,7 +135,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get closeShift => 'إغلاق الوردية';
 
-  // ── orders ───────────────────────────────────────────────────────────────────
   @override
   String get activeOrders => 'الطلبات النشطة';
 
@@ -130,7 +156,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get comboLabel => 'كومبو';
 
-  // ── notifications ────────────────────────────────────────────────────────────
   @override
   String get notifications => 'الإشعارات';
 
@@ -149,7 +174,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get noUnreadNotifications => 'لا توجد إشعارات غير مقروءة';
 
-  // ── payment dialog ───────────────────────────────────────────────────────────
   @override
   String get completeOrder => 'إتمام الطلب';
 
@@ -177,9 +201,8 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get cardConfirmed => 'تم تأكيد الدفع بالبطاقة على الجهاز';
 
-  // ── offline banner ───────────────────────────────────────────────────────────
   @override
-  String get backOnlineSyncing => 'عودة الاتصال \u2014 مزامنة';
+  String get backOnlineSyncing => 'عودة الاتصال — مزامنة';
 
   @override
   String get operation => 'عملية';
@@ -188,16 +211,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get operations => 'عمليات';
 
   @override
-  String get offlineNoQueue =>
-      'غير متصل \u2014 ستتم المزامنة عند إعادة الاتصال';
+  String get offlineNoQueue => 'غير متصل — ستتم المزامنة عند إعادة الاتصال';
 
   @override
-  String get offline => 'غير متصل \u2014';
+  String get offline => 'غير متصل —';
 
   @override
   String get queued => 'في الانتظار';
 
-  // ── settings ─────────────────────────────────────────────────────────────────
   @override
   String get analyticsReports => 'التحليلات والتقارير';
 
@@ -212,8 +233,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get staffDashboard => 'لوحة الموظفين';
 
   @override
-  String get staffDashboardSubtitle =>
-      'متابعة الورديات والإيرادات لكل موظف';
+  String get staffDashboardSubtitle => 'متابعة الورديات والإيرادات لكل موظف';
 
   @override
   String get management => 'الإدارة';
@@ -248,38 +268,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get appearanceSubtitle => 'التبديل بين الوضع الفاتح والداكن';
 
-  // ── combo menu ───────────────────────────────────────────────────────────────
-  @override
-  String get comboMenus => 'القوائم المركبة';
-
-  @override
-  String get newCombo => 'كومبو جديد';
-
-  @override
-  String get editCombo => 'تعديل الكومبو';
-
-  @override
-  String get comboName => 'اسم الكومبو';
-
-  @override
-  String get comboPrice => 'السعر (درهم)';
-
-  @override
-  String get includedItems => 'العناصر المضمنة';
-
-  @override
-  String get createCombo => 'إنشاء الكومبو';
-
-  @override
-  String get saveChanges => 'حفظ التغييرات';
-
-  @override
-  String get items => 'العناصر';
-
-  @override
-  String get combos => 'الكومبوهات';
-
-  // ── shift summary ────────────────────────────────────────────────────────────
   @override
   String get shiftSummary => 'ملخص الوردية';
 
@@ -319,4 +307,3 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get ordersCount => 'الطلبات';
 }
-

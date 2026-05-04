@@ -12,20 +12,24 @@ part of 'shop_dashboard_repository.dart';
 @ProviderFor(shopDashboardRepository)
 final shopDashboardRepositoryProvider = ShopDashboardRepositoryProvider._();
 
-final class ShopDashboardRepositoryProvider extends $FunctionalProvider<
-    ShopDashboardRepository,
-    ShopDashboardRepository,
-    ShopDashboardRepository> with $Provider<ShopDashboardRepository> {
+final class ShopDashboardRepositoryProvider
+    extends
+        $FunctionalProvider<
+          ShopDashboardRepository,
+          ShopDashboardRepository,
+          ShopDashboardRepository
+        >
+    with $Provider<ShopDashboardRepository> {
   ShopDashboardRepositoryProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shopDashboardRepositoryProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shopDashboardRepositoryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shopDashboardRepositoryHash();
@@ -33,8 +37,8 @@ final class ShopDashboardRepositoryProvider extends $FunctionalProvider<
   @$internal
   @override
   $ProviderElement<ShopDashboardRepository> $createElement(
-          $ProviderPointer pointer) =>
-      $ProviderElement(pointer);
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
 
   @override
   ShopDashboardRepository create(Ref ref) {
