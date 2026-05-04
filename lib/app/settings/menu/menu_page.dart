@@ -1178,6 +1178,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
 
     await showDialog(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
           shape: RoundedRectangleBorder(
@@ -1216,7 +1217,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
+                onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
                 child: const Text('Cancel')),
             FilledButton(
               onPressed: saving
@@ -1233,7 +1234,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                   label: labelCtrl.text.trim(),
                   isSupp: isSupp,
                 );
-                if (ctx.mounted) Navigator.pop(ctx);
+                if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
               },
               child: saving
                   ? const SizedBox(
