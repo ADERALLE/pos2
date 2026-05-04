@@ -367,8 +367,8 @@ class _StaffTile extends ConsumerWidget {
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
-            onPressed: () {
-              ref
+            onPressed: () async {
+              await ref
                   .read(staffListProvider(AppConstants.shopId).notifier)
                   .delete(staffId: staff.id, shopId: AppConstants.shopId);
               Navigator.of(context, rootNavigator: true).pop();

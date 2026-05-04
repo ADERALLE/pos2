@@ -605,8 +605,8 @@ class _MenuItemTile extends ConsumerWidget {
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
-            onPressed: () {
-              ref
+            onPressed: () async {
+              await ref
                   .read(menuItemListProvider(AppConstants.shopId).notifier)
                   .deleteItem(
                   itemId: item.id, shopId: AppConstants.shopId);

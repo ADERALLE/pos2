@@ -547,8 +547,8 @@ class _ComboCard extends ConsumerWidget {
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
-            onPressed: () {
-              ref
+            onPressed: () async {
+              await ref
                   .read(comboMenuListProvider(AppConstants.shopId).notifier)
                   .delete(
                   comboId: combo.id, shopId: AppConstants.shopId);
