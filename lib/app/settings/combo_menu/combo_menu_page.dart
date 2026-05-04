@@ -163,7 +163,7 @@ class ComboMenuPage extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) =>
-          _ComboCategoriesSheet(ref: ref, categories: categories),
+          _ComboCategoriesSheet(categories: categories),
     );
   }
 
@@ -1333,18 +1333,17 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
 
 // ── Combo Categories Sheet ────────────────────────────────────────────────────
 
-class _ComboCategoriesSheet extends StatefulWidget {
+class _ComboCategoriesSheet extends ConsumerStatefulWidget {
   const _ComboCategoriesSheet(
-      {required this.ref, required this.categories});
-  final WidgetRef ref;
+      {required this.categories});
   final List<Category> categories;
 
   @override
-  State<_ComboCategoriesSheet> createState() =>
+  ConsumerState<_ComboCategoriesSheet> createState() =>
       _ComboCategoriesSheetState();
 }
 
-class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
+class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
   final _controller = TextEditingController();
   bool _loading = false;
 
@@ -1357,7 +1356,7 @@ class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
   Future<void> _add() async {
     if (_controller.text.trim().isEmpty) return;
     setState(() => _loading = true);
-    await widget.ref
+    await ref
         .read(comboCategoryListProvider(AppConstants.shopId).notifier)
         .create(
         shopId: AppConstants.shopId,
@@ -1370,7 +1369,7 @@ class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final categoriesAsync =
-    widget.ref.watch(comboCategoryListProvider(AppConstants.shopId));
+    ref.watch(comboCategoryListProvider(AppConstants.shopId));
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -1556,7 +1555,7 @@ class _ComboCategoriesSheetState extends State<_ComboCategoriesSheet> {
                                                     .delete_outline_rounded,
                                                 size: 20,
                                                 color: scheme.error),
-                                            onPressed: () async => await widget.ref
+                                            onPressed: () async => await ref
                                                 .read(comboCategoryListProvider(
                                                 AppConstants.shopId)
                                                 .notifier)
