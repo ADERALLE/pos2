@@ -184,7 +184,7 @@ class MenuPage extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _MenuItemFormSheet(
-          ref: ref, categories: categories, existing: existing),
+          categories: categories, existing: existing),
     );
   }
 
@@ -196,7 +196,7 @@ class MenuPage extends ConsumerWidget {
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => _CategoriesSheet(ref: ref, categories: categories),
+      builder: (_) => _CategoriesSheet(categories: categories),
     );
   }
 }
@@ -496,7 +496,7 @@ class _MenuItemTile extends ConsumerWidget {
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
         builder: (_) => _MenuItemFormSheet(
-            ref: ref, categories: categories, existing: item),
+            categories: categories, existing: item),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -632,21 +632,19 @@ class _ItemImagePlaceholder extends StatelessWidget {
 
 // ── Menu Item Form Sheet ──────────────────────────────────────────────────────
 
-class _MenuItemFormSheet extends StatefulWidget {
+class _MenuItemFormSheet extends ConsumerStatefulWidget {
   const _MenuItemFormSheet({
-    required this.ref,
     required this.categories,
     this.existing,
   });
-  final WidgetRef ref;
   final List<Category> categories;
   final MenuItem? existing;
 
   @override
-  State<_MenuItemFormSheet> createState() => _MenuItemFormSheetState();
+  ConsumerState<_MenuItemFormSheet> createState() => _MenuItemFormSheetState();
 }
 
-class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
+class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _priceController;
@@ -679,13 +677,13 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
 
     String? imageUrl = widget.existing?.imageUrl;
     if (_imageFile != null) {
-      imageUrl = await widget.ref
+      imageUrl = await ref
           .read(storageRepositoryProvider)
           .uploadMenuImage(file: _imageFile!, shopId: AppConstants.shopId);
     }
 
     final notifier =
-    widget.ref.read(menuItemListProvider(AppConstants.shopId).notifier);
+    ref.read(menuItemListProvider(AppConstants.shopId).notifier);
     final price = double.parse(_priceController.text.trim());
 
     if (!_isEdit) {
@@ -925,16 +923,15 @@ class _MenuItemFormSheetState extends State<_MenuItemFormSheet> {
 
 // ── Categories Management Sheet ───────────────────────────────────────────────
 
-class _CategoriesSheet extends StatefulWidget {
-  const _CategoriesSheet({required this.ref, required this.categories});
-  final WidgetRef ref;
+class _CategoriesSheet extends ConsumerStatefulWidget {
+  const _CategoriesSheet({required this.categories});
   final List<Category> categories;
 
   @override
-  State<_CategoriesSheet> createState() => _CategoriesSheetState();
+  ConsumerState<_CategoriesSheet> createState() => _CategoriesSheetState();
 }
 
-class _CategoriesSheetState extends State<_CategoriesSheet> {
+class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
   final _controller = TextEditingController();
   bool _loading = false;
   bool _isSupp = false;
@@ -948,7 +945,7 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
   Future<void> _add() async {
     if (_controller.text.trim().isEmpty) return;
     setState(() => _loading = true);
-    await widget.ref
+    await ref
         .read(categoryListProvider(AppConstants.shopId).notifier)
         .create(
       shopId: AppConstants.shopId,
@@ -966,7 +963,7 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final categoriesAsync =
-    widget.ref.watch(categoryListProvider(AppConstants.shopId));
+    ref.watch(categoryListProvider(AppConstants.shopId));
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -1149,7 +1146,6 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
                                   for (int i = 0; i < cats.length; i++) ...[
                                     _CategoryListTile(
                                       category: cats[i],
-                                      ref: widget.ref,
                                       onEdit: () =>
                                           _showEditDialog(context, cats[i]),
                                     ),
@@ -1228,7 +1224,7 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
                   : () async {
                 if (labelCtrl.text.trim().isEmpty) return;
                 setDialogState(() => saving = true);
-                await widget.ref
+                await ref
                     .read(categoryListProvider(AppConstants.shopId)
                     .notifier)
                     .editCategory(
@@ -1254,18 +1250,16 @@ class _CategoriesSheetState extends State<_CategoriesSheet> {
   }
 }
 
-class _CategoryListTile extends StatelessWidget {
+class _CategoryListTile extends ConsumerWidget {
   const _CategoryListTile({
     required this.category,
-    required this.ref,
     required this.onEdit,
   });
   final Category category;
-  final WidgetRef ref;
   final VoidCallback onEdit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
