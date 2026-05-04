@@ -597,7 +597,7 @@ class _MenuItemTile extends ConsumerWidget {
             'This will permanently remove "${item.name}" from the menu.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
@@ -606,7 +606,7 @@ class _MenuItemTile extends ConsumerWidget {
                   .read(menuItemListProvider(AppConstants.shopId).notifier)
                   .deleteItem(
                   itemId: item.id, shopId: AppConstants.shopId);
-              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).pop();
             },
             child: const Text('Remove'),
           ),

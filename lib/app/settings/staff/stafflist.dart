@@ -362,7 +362,7 @@ class _StaffTile extends ConsumerWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
             child: const Text('Cancel'),
           ),
           FilledButton(
@@ -371,7 +371,7 @@ class _StaffTile extends ConsumerWidget {
               ref
                   .read(staffListProvider(AppConstants.shopId).notifier)
                   .delete(staffId: staff.id, shopId: AppConstants.shopId);
-              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).pop();
             },
             child: const Text('Remove'),
           ),

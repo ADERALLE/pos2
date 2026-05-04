@@ -543,7 +543,7 @@ class _ComboCard extends ConsumerWidget {
             'This will permanently remove "${combo.name}" from your menu.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
@@ -552,7 +552,7 @@ class _ComboCard extends ConsumerWidget {
                   .read(comboMenuListProvider(AppConstants.shopId).notifier)
                   .delete(
                   comboId: combo.id, shopId: AppConstants.shopId);
-              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).pop();
             },
             child: const Text('Remove'),
           ),
