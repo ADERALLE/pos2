@@ -1223,11 +1223,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
             ),
             actions: [
               TextButton(
-                  onPressed: () {
-                    FocusScope.of(ctx).unfocus();
-
-                    Navigator.of(ctx, rootNavigator: true).pop();
-                  },
+                  onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
                   child: const Text('Cancel')),
               FilledButton(
                 onPressed: saving
