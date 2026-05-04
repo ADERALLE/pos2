@@ -597,7 +597,11 @@ class _MenuItemTile extends ConsumerWidget {
             'This will permanently remove "${item.name}" from the menu.'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+
+                Navigator.of(context, rootNavigator: true).pop();
+              },
               child: const Text('Cancel')),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
@@ -1008,7 +1012,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(
                     20, 20, 20,
-                    MediaQuery.of(context).viewInsets.bottom + 24),
+                    MediaQuery.of(context).viewInsets.bottom + 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -1016,18 +1020,16 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color:
-                        scheme.surfaceContainerHighest.withOpacity(0.5),
+                        color: scheme.surfaceContainerHighest.withOpacity(0.4),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: scheme.outlineVariant.withOpacity(0.4),
-                        ),
+                            color: scheme.outlineVariant.withOpacity(0.4)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'NEW CATEGORY',
+                            'ADD NEW CATEGORY',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1035,18 +1037,17 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                               color: scheme.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               Expanded(
                                 child: TextField(
                                   controller: _controller,
-                                  decoration: _sharedInputDecoration(context,
-                                    hint: 'Category name',
-                                    icon: Icons.label_outline_rounded,
-                                  ),
                                   textCapitalization:
                                   TextCapitalization.words,
+                                  decoration: _sharedInputDecoration(context,
+                                      hint: 'Category name',
+                                      icon: Icons.label_outline_rounded),
                                   onSubmitted: (_) => _add(),
                                 ),
                               ),
@@ -1169,9 +1170,11 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
     );
   }
 
+  // FIX: `scheme` is now derived from the dialog's own `ctx` (inside builder),
+  // not from the sheet's build context which may be deactivated when the
+  // keyboard opens and triggers a sheet resize/rebuild.
   Future<void> _showEditDialog(
       BuildContext context, Category category) async {
-    final scheme = Theme.of(context).colorScheme;
     final labelCtrl = TextEditingController(text: category.label);
     bool isSupp = category.isSupp;
     bool saving = false;
@@ -1179,73 +1182,82 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
     await showDialog(
       context: context,
       useRootNavigator: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
-          title: const Text('Edit category'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: labelCtrl,
-                  decoration: _sharedInputDecoration(ctx,
-                      hint: 'Category name',
-                      icon: Icons.label_outline_rounded),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: scheme.outlineVariant.withOpacity(0.4)),
+      builder: (ctx) {
+        // ↓ Moved here — uses ctx (dialog's context), not the sheet's context
+        final scheme = Theme.of(ctx).colorScheme;
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) => AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            title: const Text('Edit category'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: labelCtrl,
+                    decoration: _sharedInputDecoration(ctx,
+                        hint: 'Category name',
+                        icon: Icons.label_outline_rounded),
                   ),
-                  child: SwitchListTile(
-                    contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    title: const Text('Supplement',
-                        style: TextStyle(fontSize: 14)),
-                    value: isSupp,
-                    onChanged: (v) => setDialogState(() => isSupp = v),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: scheme.outlineVariant.withOpacity(0.4)),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      title: const Text('Supplement',
+                          style: TextStyle(fontSize: 14)),
+                      value: isSupp,
+                      onChanged: (v) => setDialogState(() => isSupp = v),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    FocusScope.of(ctx).unfocus();
+
+                    Navigator.of(ctx, rootNavigator: true).pop();
+                  },
+                  child: const Text('Cancel')),
+              FilledButton(
+                onPressed: saving
+                    ? null
+                    : () async {
+                  if (labelCtrl.text.trim().isEmpty) return;
+                  setDialogState(() => saving = true);
+                  await ref
+                      .read(categoryListProvider(AppConstants.shopId)
+                      .notifier)
+                      .editCategory(
+                    categoryId: category.id,
+                    shopId: AppConstants.shopId,
+                    label: labelCtrl.text.trim(),
+                    isSupp: isSupp,
+                  );
+                  if (ctx.mounted)
+                    Navigator.of(ctx, rootNavigator: true).pop();
+                },
+                child: saving
+                    ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text('Save'),
+              ),
+            ],
           ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
-                child: const Text('Cancel')),
-            FilledButton(
-              onPressed: saving
-                  ? null
-                  : () async {
-                if (labelCtrl.text.trim().isEmpty) return;
-                setDialogState(() => saving = true);
-                await ref
-                    .read(categoryListProvider(AppConstants.shopId)
-                    .notifier)
-                    .editCategory(
-                  categoryId: category.id,
-                  shopId: AppConstants.shopId,
-                  label: labelCtrl.text.trim(),
-                  isSupp: isSupp,
-                );
-                if (ctx.mounted) Navigator.of(ctx, rootNavigator: true).pop();
-              },
-              child: saving
-                  ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Save'),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
     labelCtrl.dispose();
   }
