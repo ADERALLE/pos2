@@ -936,31 +936,79 @@ class _CategoriesSheet extends ConsumerStatefulWidget {
 }
 
 class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
-  final _controller = TextEditingController();
+  final _addController = TextEditingController();
   bool _loading = false;
   bool _isSupp = false;
 
+  // Inline edit state — only one category can be expanded at a time.
+  String? _editingCategoryId;
+  late final TextEditingController _editLabelController =
+  TextEditingController();
+  bool _editIsSupp = false;
+  bool _editSaving = false;
+
   @override
   void dispose() {
-    _controller.dispose();
+    _addController.dispose();
+    _editLabelController.dispose();
     super.dispose();
   }
 
+  // ── Add ─────────────────────────────────────────────────────────────────────
+
   Future<void> _add() async {
-    if (_controller.text.trim().isEmpty) return;
+    if (_addController.text.trim().isEmpty) return;
     setState(() => _loading = true);
     await ref
         .read(categoryListProvider(AppConstants.shopId).notifier)
         .create(
       shopId: AppConstants.shopId,
-      label: _controller.text.trim(),
+      label: _addController.text.trim(),
       isSupp: _isSupp,
     );
-    _controller.clear();
+    _addController.clear();
     setState(() {
       _loading = false;
       _isSupp = false;
     });
+  }
+
+  // ── Inline edit helpers ──────────────────────────────────────────────────────
+
+  void _startEditing(Category category) {
+    // Dismiss keyboard from any previously focused field first.
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _editingCategoryId = category.id;
+      _editLabelController.text = category.label;
+      _editIsSupp = category.isSupp;
+      _editSaving = false;
+    });
+  }
+
+  void _cancelEditing() {
+    FocusScope.of(context).unfocus();
+    setState(() => _editingCategoryId = null);
+  }
+
+  Future<void> _saveEditing(Category category) async {
+    if (_editLabelController.text.trim().isEmpty) return;
+    FocusScope.of(context).unfocus();
+    setState(() => _editSaving = true);
+    await ref
+        .read(categoryListProvider(AppConstants.shopId).notifier)
+        .editCategory(
+      categoryId: category.id,
+      shopId: AppConstants.shopId,
+      label: _editLabelController.text.trim(),
+      isSupp: _editIsSupp,
+    );
+    if (mounted) {
+      setState(() {
+        _editingCategoryId = null;
+        _editSaving = false;
+      });
+    }
   }
 
   @override
@@ -1016,11 +1064,12 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Add new category
+                    // ── Add new category ──────────────────────────────────────
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: scheme.surfaceContainerHighest.withOpacity(0.4),
+                        color:
+                        scheme.surfaceContainerHighest.withOpacity(0.4),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                             color: scheme.outlineVariant.withOpacity(0.4)),
@@ -1042,7 +1091,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                             children: [
                               Expanded(
                                 child: TextField(
-                                  controller: _controller,
+                                  controller: _addController,
                                   textCapitalization:
                                   TextCapitalization.words,
                                   decoration: _sharedInputDecoration(context,
@@ -1069,14 +1118,13 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          // Supplement toggle
                           Container(
                             decoration: BoxDecoration(
                               color: scheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color:
-                                  scheme.outlineVariant.withOpacity(0.4)),
+                                  color: scheme.outlineVariant
+                                      .withOpacity(0.4)),
                             ),
                             child: SwitchListTile(
                               contentPadding: const EdgeInsets.symmetric(
@@ -1099,7 +1147,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Existing categories
+                    // ── Existing categories ───────────────────────────────────
                     categoriesAsync.when(
                       loading: () =>
                       const Center(child: CircularProgressIndicator()),
@@ -1137,8 +1185,8 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                                 side: BorderSide(
-                                  color:
-                                  scheme.outlineVariant.withOpacity(0.4),
+                                  color: scheme.outlineVariant
+                                      .withOpacity(0.4),
                                 ),
                               ),
                               clipBehavior: Clip.antiAlias,
@@ -1147,8 +1195,26 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                                   for (int i = 0; i < cats.length; i++) ...[
                                     _CategoryListTile(
                                       category: cats[i],
-                                      onEdit: () =>
-                                          _showEditDialog(context, cats[i]),
+                                      isEditing:
+                                      _editingCategoryId == cats[i].id,
+                                      editLabelController:
+                                      _editLabelController,
+                                      editIsSupp: _editIsSupp,
+                                      editSaving: _editSaving,
+                                      onEditIsSupp: (v) =>
+                                          setState(() => _editIsSupp = v),
+                                      onEditTap: () =>
+                                          _startEditing(cats[i]),
+                                      onSave: () => _saveEditing(cats[i]),
+                                      onCancel: _cancelEditing,
+                                      onDelete: () => ref
+                                          .read(categoryListProvider(
+                                          AppConstants.shopId)
+                                          .notifier)
+                                          .deleteCategory(
+                                        categoryId: cats[i].id,
+                                        shopId: AppConstants.shopId,
+                                      ),
                                     ),
                                     if (i < cats.length - 1)
                                       const Divider(height: 1),
@@ -1169,40 +1235,151 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
       ),
     );
   }
+}
 
-  // FIX: `scheme` is now derived from the dialog's own `ctx` (inside builder),
-  // not from the sheet's build context which may be deactivated when the
-  // keyboard opens and triggers a sheet resize/rebuild.
-  Future<void> _showEditDialog(
-      BuildContext context, Category category) async {
-    final labelCtrl = TextEditingController(text: category.label);
-    bool isSupp = category.isSupp;
-    bool saving = false;
+// ── Category List Tile (with inline edit expansion) ────────────────────────────
 
-    await showDialog(
-      context: context,
-      useRootNavigator: true,
-      builder: (ctx) {
-        // ↓ Moved here — uses ctx (dialog's context), not the sheet's context
-        final scheme = Theme.of(ctx).colorScheme;
-        return StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            title: const Text('Edit category'),
-            content: SingleChildScrollView(
+class _CategoryListTile extends ConsumerWidget {
+  const _CategoryListTile({
+    required this.category,
+    required this.isEditing,
+    required this.editLabelController,
+    required this.editIsSupp,
+    required this.editSaving,
+    required this.onEditIsSupp,
+    required this.onEditTap,
+    required this.onSave,
+    required this.onCancel,
+    required this.onDelete,
+  });
+
+  final Category category;
+  final bool isEditing;
+  final TextEditingController editLabelController;
+  final bool editIsSupp;
+  final bool editSaving;
+  final ValueChanged<bool> onEditIsSupp;
+  final VoidCallback onEditTap;
+  final VoidCallback onSave;
+  final VoidCallback onCancel;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Row: icon + label + action buttons ───────────────────────────
+          Padding(
+            padding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: scheme.primaryContainer.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.label_rounded,
+                      size: 18, color: scheme.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          category.label,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (category.isSupp) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: scheme.errorContainer.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'SUPP',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: scheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Edit / chevron toggle
+                IconButton(
+                  icon: Icon(
+                    isEditing
+                        ? Icons.expand_less_rounded
+                        : Icons.edit_outlined,
+                    size: 20,
+                    color: isEditing
+                        ? scheme.onSurfaceVariant
+                        : scheme.primary,
+                  ),
+                  onPressed: isEditing ? onCancel : onEditTap,
+                ),
+                // Delete (hidden while editing to avoid mis-taps)
+                if (!isEditing)
+                  IconButton(
+                    icon: Icon(Icons.delete_outline_rounded,
+                        size: 20, color: scheme.error),
+                    onPressed: onDelete,
+                  ),
+              ],
+            ),
+          ),
+
+          // ── Inline edit panel ─────────────────────────────────────────────
+          if (isEditing)
+            Container(
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withOpacity(0.45),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                    color: scheme.primary.withOpacity(0.3), width: 1.2),
+              ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Label field
                   TextField(
-                    controller: labelCtrl,
-                    decoration: _sharedInputDecoration(ctx,
-                        hint: 'Category name',
-                        icon: Icons.label_outline_rounded),
+                    controller: editLabelController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: _sharedInputDecoration(
+                      context,
+                      hint: 'Category name',
+                      icon: Icons.label_outline_rounded,
+                    ),
+                    onSubmitted: (_) => onSave(),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
+                  // Supplement toggle
                   Container(
                     decoration: BoxDecoration(
+                      color: scheme.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                           color: scheme.outlineVariant.withOpacity(0.4)),
@@ -1214,118 +1391,51 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                           borderRadius: BorderRadius.circular(12)),
                       title: const Text('Supplement',
                           style: TextStyle(fontSize: 14)),
-                      value: isSupp,
-                      onChanged: (v) => setDialogState(() => isSupp = v),
+                      value: editIsSupp,
+                      onChanged: editSaving ? null : onEditIsSupp,
                     ),
                   ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(ctx, rootNavigator: true).pop(),
-                  child: const Text('Cancel')),
-              FilledButton(
-                onPressed: saving
-                    ? null
-                    : () async {
-                  if (labelCtrl.text.trim().isEmpty) return;
-                  setDialogState(() => saving = true);
-                  await ref
-                      .read(categoryListProvider(AppConstants.shopId)
-                      .notifier)
-                      .editCategory(
-                    categoryId: category.id,
-                    shopId: AppConstants.shopId,
-                    label: labelCtrl.text.trim(),
-                    isSupp: isSupp,
-                  );
-                  if (ctx.mounted)
-                    Navigator.of(ctx, rootNavigator: true).pop();
-                },
-                child: saving
-                    ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Save'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-    labelCtrl.dispose();
-  }
-}
-
-class _CategoryListTile extends ConsumerWidget {
-  const _CategoryListTile({
-    required this.category,
-    required this.onEdit,
-  });
-  final Category category;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: scheme.primaryContainer.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.label_rounded,
-                size: 18, color: scheme.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              children: [
-                Text(category.label,
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w500)),
-                if (category.isSupp) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: scheme.errorContainer.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      'SUPP',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.error,
+                  const SizedBox(height: 12),
+                  // Save / Cancel row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: editSaving ? null : onCancel,
+                          style: OutlinedButton.styleFrom(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: FilledButton(
+                          onPressed: editSaving ? null : onSave,
+                          style: FilledButton.styleFrom(
+                            padding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: editSaving
+                              ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white))
+                              : const Text('Save'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ],
+              ),
             ),
-          ),
-          IconButton(
-            icon: Icon(Icons.edit_outlined, size: 20, color: scheme.primary),
-            onPressed: onEdit,
-          ),
-          IconButton(
-            icon: Icon(Icons.delete_outline_rounded,
-                size: 20, color: scheme.error),
-            onPressed: () => ref
-                .read(categoryListProvider(AppConstants.shopId).notifier)
-                .deleteCategory(
-              categoryId: category.id,
-              shopId: AppConstants.shopId,
-            ),
-          ),
         ],
       ),
     );

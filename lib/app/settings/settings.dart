@@ -12,25 +12,26 @@ class SettingsPage extends ConsumerWidget {
 
   Future<void> _pickDateAndGoToDashboard(BuildContext context) async {
     final now = DateTime.now();
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: DateTime(2023), // Adjust based on your launch date
-      lastDate: now,
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme,
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (selectedDate != null && context.mounted) {
-      // Using push instead of go so the user can easily hit "back" to return to settings
+    final selectedDate = now;
+    // await showDatePicker(
+    //   context: context,
+    //   initialDate: now,
+    //   firstDate: DateTime(2023), // Adjust based on your launch date
+    //   lastDate: now,
+    //   builder: (context, child) {
+    //     return Theme(
+    //       data: Theme.of(context).copyWith(
+    //         colorScheme: Theme.of(context).colorScheme,
+    //       ),
+    //       child: child!,
+    //     );
+    //   },
+    // );"
+    //
+    // if (selectedDate != null && context.mounted) {
+    //   // Using push instead of go so the user can easily hit "back" to return to settings
+    // }
       context.push('/settings/shop-dashboard', extra: selectedDate);
-    }
   }
 
   @override

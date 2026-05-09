@@ -22,7 +22,7 @@ final class DailySummaryProvider
     with $FutureModifier<DailySummary>, $FutureProvider<DailySummary> {
   DailySummaryProvider._({
     required DailySummaryFamily super.from,
-    required (String, DateTime) super.argument,
+    required (String, DateRange) super.argument,
   }) : super(
          retry: null,
          name: r'dailySummaryProvider',
@@ -49,7 +49,7 @@ final class DailySummaryProvider
 
   @override
   FutureOr<DailySummary> create(Ref ref) {
-    final argument = this.argument as (String, DateTime);
+    final argument = this.argument as (String, DateRange);
     return dailySummary(ref, argument.$1, argument.$2);
   }
 
@@ -64,10 +64,11 @@ final class DailySummaryProvider
   }
 }
 
-String _$dailySummaryHash() => r'8a69377a409dffac4af11320a2a08bad3cf0a260';
+String _$dailySummaryHash() => r'a481a00b7f8c1fa544e86ff63eddf160e758b416';
 
 final class DailySummaryFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<DailySummary>, (String, DateTime)> {
+    with
+        $FunctionalFamilyOverride<FutureOr<DailySummary>, (String, DateRange)> {
   DailySummaryFamily._()
     : super(
         retry: null,
@@ -77,8 +78,8 @@ final class DailySummaryFamily extends $Family
         isAutoDispose: true,
       );
 
-  DailySummaryProvider call(String shopId, DateTime date) =>
-      DailySummaryProvider._(argument: (shopId, date), from: this);
+  DailySummaryProvider call(String shopId, DateRange range) =>
+      DailySummaryProvider._(argument: (shopId, range), from: this);
 
   @override
   String toString() => r'dailySummaryProvider';

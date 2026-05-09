@@ -167,7 +167,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                                 isSelected: isSelected,
                                 isSupp: category.isSupp,
                                 onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state =
-                                    isSelected ? null : category.id,
+                                isSelected ? null : category.id,
                               );
                             },
                           ),
@@ -200,7 +200,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                               label: category.label,
                               isSelected: isSelected,
                               onPressed: () => ref.read(selectedComboCategoryIdProvider.notifier).state =
-                                  isSelected ? null : category.id,
+                              isSelected ? null : category.id,
                             );
                           },
                         ),
@@ -266,9 +266,9 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
               data: (combos) {
                 final activeCombos = combos
                     .where((c) =>
-                        c.isActive &&
-                        (selectedComboCategoryId == null ||
-                            c.categoryId == selectedComboCategoryId))
+                c.isActive &&
+                    (selectedComboCategoryId == null ||
+                        c.categoryId == selectedComboCategoryId))
                     .toList();
                 if (activeCombos.isEmpty) {
                   return const SliverFillRemaining(
@@ -600,12 +600,14 @@ class _CartContentState extends ConsumerState<CartContent> {
     final total = ref.read(cartProvider.notifier).total;
     final theme = Theme.of(context);
 
-    // Detect if ALL non-combo cart items belong to supp categories only.
+    // Block order placement only when every item in the cart is a supplement
+    // (i.e. belongs to a supp category). Combo items always count as main items
+    // and therefore always satisfy the requirement on their own.
     final categories = ref.watch(categoryListProvider(AppConstants.shopId)).value ?? [];
     final suppCatIds = categories.where((c) => c.isSupp).map((c) => c.id).toSet();
     final hasOnlySupps = cart.isNotEmpty &&
         cart.every((c) =>
-            c.isCombo || suppCatIds.contains(c.menuItem?.categoryId));
+        !c.isCombo && suppCatIds.contains(c.menuItem?.categoryId));
 
     return Padding(
       padding: EdgeInsets.fromLTRB(24, 24, 24, widget.isSheet ? MediaQuery.of(context).viewInsets.bottom + 24 : 24),
@@ -617,6 +619,38 @@ class _CartContentState extends ConsumerState<CartContent> {
             children: [
               const Text('Current Order', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               if (widget.isSheet) IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+              if (cart.isNotEmpty)
+                TextButton.icon(
+                  icon: const Icon(Icons.delete_sweep_rounded, size: 18),
+                  label: const Text('Clear all'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: const Text('Clear cart?', style: TextStyle(fontWeight: FontWeight.w600)),
+                      content: const Text('All items will be removed from the current order.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
+                          onPressed: () {
+                            ref.read(cartProvider.notifier).clear();
+                            Navigator.pop(dialogContext);
+                            if (widget.isSheet) Navigator.pop(context);
+                          },
+                          child: const Text('Clear'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -632,13 +666,13 @@ class _CartContentState extends ConsumerState<CartContent> {
                   contentPadding: EdgeInsets.zero,
                   leading: c.isCombo
                       ? Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.tertiaryContainer,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(Icons.restaurant_menu, size: 18),
-                        )
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.tertiaryContainer,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.restaurant_menu, size: 18),
+                  )
                       : null,
                   title: Text(c.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Column(
@@ -716,9 +750,9 @@ class _CartContentState extends ConsumerState<CartContent> {
               child: _loading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(
-                      editingOrder != null ? 'Update Order' : 'Place Order',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                editingOrder != null ? 'Update Order' : 'Place Order',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ]
         ],
@@ -782,7 +816,7 @@ class _ComboMenuCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // For combos with choices, count all matching cart entries
     final allInCart = ref.watch(cartProvider).where(
-        (c) => c.isCombo && c.comboMenu?.id == combo.id);
+            (c) => c.isCombo && c.comboMenu?.id == combo.id);
     final totalInCart = allInCart.fold<int>(0, (s, c) => s + c.quantity);
     final theme = Theme.of(context);
 
@@ -836,15 +870,15 @@ class _ComboMenuCard extends ConsumerWidget {
                   combo.imageUrl != null && combo.imageUrl!.isNotEmpty
                       ? CachedMenuImage(url: combo.imageUrl!)
                       : Container(
-                          color: theme.colorScheme.tertiaryContainer
-                              .withOpacity(0.4),
-                          child: Center(
-                            child: Icon(Icons.restaurant_menu,
-                                size: 40,
-                                color: theme.colorScheme.tertiary
-                                    .withOpacity(0.6)),
-                          ),
-                        ),
+                    color: theme.colorScheme.tertiaryContainer
+                        .withOpacity(0.4),
+                    child: Center(
+                      child: Icon(Icons.restaurant_menu,
+                          size: 40,
+                          color: theme.colorScheme.tertiary
+                              .withOpacity(0.6)),
+                    ),
+                  ),
                   // COMBO badge
                   Positioned(
                     top: 8,
@@ -970,8 +1004,8 @@ class _ComboMenuCard extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(12),
                               side: isChosen
                                   ? BorderSide(
-                                      color: theme.colorScheme.primary,
-                                      width: 2)
+                                  color: theme.colorScheme.primary,
+                                  width: 2)
                                   : BorderSide.none,
                             ),
                             child: RadioListTile<String>(
@@ -980,23 +1014,23 @@ class _ComboMenuCard extends ConsumerWidget {
                               onChanged: (val) {
                                 if (val != null) {
                                   setDialogState(() =>
-                                      selections[groupName] = val);
+                                  selections[groupName] = val);
                                 }
                               },
                               title: Text(mi.name,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.w500)),
                               secondary: mi.imageUrl != null &&
-                                      mi.imageUrl!.isNotEmpty
+                                  mi.imageUrl!.isNotEmpty
                                   ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: SizedBox(
-                                        width: 44,
-                                        height: 44,
-                                        child:
-                                            CachedMenuImage(url: mi.imageUrl!),
-                                      ),
-                                    )
+                                borderRadius: BorderRadius.circular(8),
+                                child: SizedBox(
+                                  width: 44,
+                                  height: 44,
+                                  child:
+                                  CachedMenuImage(url: mi.imageUrl!),
+                                ),
+                              )
                                   : null,
                               dense: true,
                               shape: RoundedRectangleBorder(

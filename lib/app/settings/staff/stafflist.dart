@@ -62,7 +62,6 @@ class StaffListPage extends ConsumerWidget {
                   );
                 }
 
-                // Group by role: managers first, then others
                 final managers = staffList
                     .where((s) => s.role == StaffRole.manager)
                     .toList();
@@ -73,10 +72,7 @@ class StaffListPage extends ConsumerWidget {
                 return SliverList(
                   delegate: SliverChildListDelegate([
                     if (managers.isNotEmpty) ...[
-                      _SectionHeader(
-                        title: 'Managers',
-                        count: managers.length,
-                      ),
+                      _SectionHeader(title: 'Managers', count: managers.length),
                       const SizedBox(height: 8),
                       _StaffCard(
                         children: [
@@ -90,10 +86,7 @@ class StaffListPage extends ConsumerWidget {
                       const SizedBox(height: 24),
                     ],
                     if (others.isNotEmpty) ...[
-                      _SectionHeader(
-                        title: 'Team',
-                        count: others.length,
-                      ),
+                      _SectionHeader(title: 'Team', count: others.length),
                       const SizedBox(height: 8),
                       _StaffCard(
                         children: [
@@ -105,7 +98,7 @@ class StaffListPage extends ConsumerWidget {
                         ],
                       ),
                     ],
-                    const SizedBox(height: 80), // FAB clearance
+                    const SizedBox(height: 80),
                   ]),
                 );
               },
@@ -188,10 +181,7 @@ class _StaffCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: Theme.of(context)
-              .colorScheme
-              .outlineVariant
-              .withOpacity(0.4),
+          color: Theme.of(context).colorScheme.outlineVariant.withOpacity(0.4),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -237,7 +227,6 @@ class _StaffTile extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            // Avatar
             Stack(
               clipBehavior: Clip.none,
               children: [
@@ -263,17 +252,13 @@ class _StaffTile extends ConsumerWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: scheme.surface, width: 1.5),
                     ),
-                    child: Icon(
-                      _roleIcon(staff.role),
-                      size: 9,
-                      color: Colors.white,
-                    ),
+                    child: Icon(_roleIcon(staff.role),
+                        size: 9, color: Colors.white),
                   ),
                 ),
               ],
             ),
             const SizedBox(width: 14),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,9 +266,7 @@ class _StaffTile extends ConsumerWidget {
                   Text(
                     staff.name,
                     style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                        fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -304,6 +287,42 @@ class _StaffTile extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      // PIN length badge
+                      if (staff.pin != null && staff.pin!.isNotEmpty) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${staff.pin!.length}-digit PIN',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: scheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'No PIN',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
                       if (!staff.isActive) ...[
                         const SizedBox(width: 6),
                         Container(
@@ -328,7 +347,6 @@ class _StaffTile extends ConsumerWidget {
                 ],
               ),
             ),
-            // Actions
             Switch(
               value: staff.isActive,
               onChanged: (val) => ref
@@ -355,7 +373,8 @@ class _StaffTile extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Remove staff member?'),
         content: Text(
           'This will permanently remove ${staff.name} from the team. This action cannot be undone.',
@@ -370,7 +389,8 @@ class _StaffTile extends ConsumerWidget {
             onPressed: () async {
               await ref
                   .read(staffListProvider(AppConstants.shopId).notifier)
-                  .delete(staffId: staff.id, shopId: AppConstants.shopId);
+                  .delete(
+                  staffId: staff.id, shopId: AppConstants.shopId);
               Navigator.of(context, rootNavigator: true).pop();
             },
             child: const Text('Remove'),
@@ -399,11 +419,8 @@ class _EmptyState extends StatelessWidget {
             color: scheme.surfaceContainerHighest,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.people_alt_outlined,
-            size: 48,
-            color: scheme.onSurfaceVariant,
-          ),
+          child: Icon(Icons.people_alt_outlined,
+              size: 48, color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
         Text(
@@ -449,8 +466,17 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
   bool _loading = false;
   bool _pinVisible = false;
 
+  /// For managers, user picks the PIN length (4–12).
+  /// For cashiers it is always fixed at 4.
+  int _managerPinLength = 6;
+
+  static const int _cashierPinLength = 4;
+  static const int _managerPinMin = 4;
+  static const int _managerPinMax = 12;
+
   bool get _isEdit => widget.existing != null;
-  int get _pinMaxLength => _role == StaffRole.manager ? 8 : 4;
+  int get _pinMaxLength =>
+      _role == StaffRole.manager ? _managerPinLength : _cashierPinLength;
 
   @override
   void initState() {
@@ -458,6 +484,16 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
     _nameController = TextEditingController(text: widget.existing?.name);
     _pinController = TextEditingController(text: widget.existing?.pin);
     _role = widget.existing?.role ?? StaffRole.cashier;
+
+    // When editing, infer the manager PIN length from the existing PIN length.
+    if (_isEdit &&
+        widget.existing!.role == StaffRole.manager &&
+        widget.existing!.pin != null &&
+        widget.existing!.pin!.isNotEmpty) {
+      final len = widget.existing!.pin!.length;
+      _managerPinLength =
+          len.clamp(_managerPinMin, _managerPinMax);
+    }
   }
 
   @override
@@ -468,7 +504,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
   }
 
   String? _validatePin(String? v) {
-    if (v == null || v.trim().isEmpty) return null; // optional
+    if (v == null || v.trim().isEmpty) return null; // PIN is optional
     final trimmed = v.trim();
     if (trimmed.length != _pinMaxLength) {
       return 'PIN must be exactly $_pinMaxLength digits';
@@ -519,8 +555,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
       body: Container(
         decoration: BoxDecoration(
           color: scheme.surface,
-          borderRadius:
-          const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -550,9 +585,10 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                   const SizedBox(width: 4),
                   Text(
                     _isEdit ? 'Edit Staff Member' : 'Add Staff Member',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const Spacer(),
                   _loading
@@ -561,7 +597,8 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                     child: SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child:
+                      CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
                       : FilledButton(
@@ -576,7 +613,9 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
             Flexible(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(
-                  20, 24, 20,
+                  20,
+                  24,
+                  20,
                   MediaQuery.of(context).viewInsets.bottom + 32,
                 ),
                 child: Form(
@@ -584,7 +623,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Name field
+                      // ── Name ──────────────────────────────────────────────
                       _FormLabel(label: 'Full Name'),
                       const SizedBox(height: 6),
                       TextFormField(
@@ -595,13 +634,14 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                           hint: 'e.g. John Doe',
                           icon: Icons.person_outline_rounded,
                         ),
-                        validator: (v) => v == null || v.trim().isEmpty
+                        validator: (v) =>
+                        v == null || v.trim().isEmpty
                             ? 'Name is required'
                             : null,
                       ),
                       const SizedBox(height: 20),
 
-                      // Role field
+                      // ── Role ──────────────────────────────────────────────
                       _FormLabel(label: 'Role'),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<StaffRole>(
@@ -623,9 +663,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                                 size: 16,
                                 color: r == StaffRole.manager
                                     ? Colors.amber.shade700
-                                    : Theme.of(context)
-                                    .colorScheme
-                                    .primary,
+                                    : scheme.primary,
                               ),
                               const SizedBox(width: 8),
                               Text(r.name),
@@ -644,7 +682,23 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                       ),
                       const SizedBox(height: 20),
 
-                      // PIN field
+                      // ── PIN length picker (managers only) ─────────────────
+                      if (_role == StaffRole.manager) ...[
+                        _FormLabel(label: 'PIN Length'),
+                        const SizedBox(height: 8),
+                        _PinLengthPicker(
+                          value: _managerPinLength,
+                          min: _managerPinMin,
+                          max: _managerPinMax,
+                          onChanged: (len) => setState(() {
+                            _managerPinLength = len;
+                            _pinController.clear();
+                          }),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+
+                      // ── PIN field ─────────────────────────────────────────
                       Row(
                         children: [
                           _FormLabel(label: 'PIN'),
@@ -659,7 +713,8 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '$_pinMaxLength digits${_role == StaffRole.manager ? ' · Manager' : ''}',
+                              '$_pinMaxLength digits'
+                                  '${_role == StaffRole.manager ? ' · Manager' : ''}',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -687,7 +742,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                         obscureText: !_pinVisible,
                         decoration: _inputDecoration(
                           context,
-                          hint: 'Enter ${_pinMaxLength}-digit PIN',
+                          hint: 'Enter $_pinMaxLength-digit PIN (optional)',
                           icon: Icons.lock_outline_rounded,
                         ).copyWith(
                           counterText: '',
@@ -704,38 +759,16 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                         ),
                         validator: _validatePin,
                       ),
-
                       const SizedBox(height: 8),
 
-                      // Manager notice
-                      if (_role == StaffRole.manager)
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.amber.shade700.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.amber.shade700.withOpacity(0.2),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.info_outline_rounded,
-                                  size: 16,
-                                  color: Colors.amber.shade700),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Manager accounts require an 8-digit PIN for enhanced security.',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.amber.shade800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      // ── No-PIN info banner ────────────────────────────────
+                      _NoPinNotice(role: _role),
+
+                      // ── Manager security notice ───────────────────────────
+                      if (_role == StaffRole.manager) ...[
+                        const SizedBox(height: 8),
+                        _ManagerPinNotice(pinLength: _managerPinLength),
+                      ],
                     ],
                   ),
                 ),
@@ -762,11 +795,13 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
       const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: scheme.outlineVariant.withOpacity(0.5)),
+        borderSide:
+        BorderSide(color: scheme.outlineVariant.withOpacity(0.5)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: scheme.outlineVariant.withOpacity(0.4)),
+        borderSide:
+        BorderSide(color: scheme.outlineVariant.withOpacity(0.4)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -775,6 +810,138 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: scheme.error),
+      ),
+    );
+  }
+}
+
+// ── PIN Length Picker ─────────────────────────────────────────────────────────
+// Horizontal scrollable row of selectable digit-count chips (4 to 12).
+
+class _PinLengthPicker extends StatelessWidget {
+  const _PinLengthPicker({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final int value;
+  final int min;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (int len = min; len <= max; len++) ...[
+            GestureDetector(
+              onTap: () => onChanged(len),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                width: 48,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: value == len
+                      ? Colors.amber.shade700
+                      : scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: value == len
+                        ? Colors.amber.shade700
+                        : scheme.outlineVariant.withOpacity(0.4),
+                    width: 1.5,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    '$len',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: value == len
+                          ? Colors.white
+                          : scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (len < max) const SizedBox(width: 8),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── No-PIN Notice ─────────────────────────────────────────────────────────────
+
+class _NoPinNotice extends StatelessWidget {
+  const _NoPinNotice({required this.role});
+  final StaffRole role;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline_rounded,
+              size: 16, color: scheme.onSurfaceVariant),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'If no PIN is set, this staff member can log in without entering one.',
+              style: TextStyle(
+                fontSize: 12,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Manager PIN Notice ────────────────────────────────────────────────────────
+
+class _ManagerPinNotice extends StatelessWidget {
+  const _ManagerPinNotice({required this.pinLength});
+  final int pinLength;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.amber.shade700.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber.shade700.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.star_rounded, size: 16, color: Colors.amber.shade700),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Manager accounts use a $pinLength-digit PIN for enhanced security. '
+                  'You can adjust the length above.',
+              style: TextStyle(fontSize: 12, color: Colors.amber.shade800),
+            ),
+          ),
+        ],
       ),
     );
   }

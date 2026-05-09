@@ -139,7 +139,7 @@ final class ComboCategoryListProvider
   }
 }
 
-String _$comboCategoryListHash() => r'222f62deadbe730e7773d7fe38cf4eb51533915f';
+String _$comboCategoryListHash() => r'60b01968cefebc307ea3d50fd2be136d940a6312';
 
 final class ComboCategoryListFamily extends $Family
     with

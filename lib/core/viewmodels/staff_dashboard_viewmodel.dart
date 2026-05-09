@@ -1,6 +1,5 @@
 import 'package:pos_v1/core/repositories/staff_dashboard_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:pos_v1/core/repositories/staff_dashboard_repository.dart';
 
 part 'staff_dashboard_viewmodel.g.dart';
 
@@ -12,6 +11,13 @@ Future<List<Map<String, dynamic>>> staffList(Ref ref, String shopId) {
 @riverpod
 Future<Map<String, dynamic>> staffStats(Ref ref, String staffId) {
   return ref.read(staffDashboardRepositoryProvider).getStaffStats(staffId);
+}
+
+/// Fetches only the single most-recent shift. Powers the "Last Shift" tab
+/// without loading the full paginated list.
+@riverpod
+Future<Map<String, dynamic>?> staffLatestShift(Ref ref, String staffId) {
+  return ref.read(staffDashboardRepositoryProvider).getLatestShift(staffId);
 }
 
 @riverpod

@@ -82,19 +82,19 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
-  image_path: "assets/images/icon.png"
+  image_path: "assets/images/epossys_icon.png"
   # For Android 12+ support:
-  adaptive_icon_background: "#000000" # Matches your dark theme
-  adaptive_icon_foreground: "assets/images/icon.png"
+  adaptive_icon_background: "#ffffff" # Matches your dark theme
+  adaptive_icon_foreground: "assets/images/epossys_icon.png"
 
 flutter_native_splash:
-  color: "#000000" # Pure black background
-  image: "assets/images/icon.png" # Your epossys logo
+  color: "#085e1f" # Pure black background
+  image: "assets/images/epossys_icon.png" # Your epossys logo
 
   # Ensures Android 12+ (Adaptive Splash) works correctly
   android_12:
-    image: "assets/images/icon.png"
-    color: "#000000"
+    image: "assets/images/epossys_icon.png"
+    color: "#085e1f"
 
   fullscreen: true
   # To add assets to your application, add an assets section, like this:

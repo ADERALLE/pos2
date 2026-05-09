@@ -11,23 +11,33 @@ class Auth extends _$Auth {
   @override
   AuthState build() => const AuthState();
 
-  Future<bool> login(Staff staff, String pin) async {
-    if (staff.pin == null || staff.pin != pin) return false;
+  Future<bool> login(Staff staff, String? pin) async {
+    final hasPin = staff.pin != null && staff.pin!.isNotEmpty;
+
+    // Staff with no PIN: allow login immediately, no check needed.
+    if (!hasPin) {
+      state = AuthState(staff: staff);
+      return true;
+    }
+
+    // Staff with a PIN: pin must match exactly.
+    if (pin == null || pin != staff.pin) return false;
+
     state = AuthState(staff: staff);
     return true;
   }
 
   Future<void> logout() async {
-     state = const AuthState();
-     // ref.invalidate(activeOrdersProvider);
-     // ref.invalidate(myActiveOrdersProvider);
-     // ref.invalidate(shiftOrdersProvider);
-     //
-     // ref.invalidate(orderHistoryProvider);
-     // ref.invalidate(myOrderHistoryProvider);
-     // ref.invalidate(shopOrderHistoryProvider);
-     //
-     // ref.invalidate(currentStaffProvider);
+    state = const AuthState();
+    // ref.invalidate(activeOrdersProvider);
+    // ref.invalidate(myActiveOrdersProvider);
+    // ref.invalidate(shiftOrdersProvider);
+    //
+    // ref.invalidate(orderHistoryProvider);
+    // ref.invalidate(myOrderHistoryProvider);
+    // ref.invalidate(shopOrderHistoryProvider);
+    //
+    // ref.invalidate(currentStaffProvider);
   }
 }
 

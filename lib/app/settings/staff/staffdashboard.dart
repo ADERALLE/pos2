@@ -50,7 +50,7 @@ class _StaffListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
-    final statsAsync = ref.watch(staffStatsProvider(staff['id']));
+    // final statsAsync = ref.watch(staffStatsProvider(staff['id']));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -73,17 +73,19 @@ class _StaffListTile extends ConsumerWidget {
         ),
         title: Text(staff['name'],
             style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: statsAsync.when(
-          loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('—'),
-          data: (s) => Text(
-            '${s['totalShifts']} shifts · '
-                '${s['totalOrders']} orders · '
-                '${(s['totalRevenue'] as double).toStringAsFixed(2)} MAD',
-            style: TextStyle(
-                fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
-          ),
-        ),
+        subtitle: Text(staff['role'],
+            style: const TextStyle(fontWeight: FontWeight.w600)),
+        // subtitle: statsAsync.when(
+        //   loading: () => const Text('Loading...'),
+        //   error: (_, __) => const Text('—'),
+        //   data: (s) => Text(
+        //     '${s['totalShifts']} shifts · '
+        //         '${s['totalOrders']} orders · '
+        //         '${(s['totalRevenue'] as double).toStringAsFixed(2)} MAD',
+        //     style: TextStyle(
+        //         fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
+        //   ),
+        // ),
         trailing: Icon(Icons.chevron_right,
             color: scheme.onSurface.withOpacity(0.3)),
         onTap: () => context.go(

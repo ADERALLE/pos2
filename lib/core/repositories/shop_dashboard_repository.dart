@@ -14,12 +14,14 @@ class ShopDashboardRepository {
   ShopDashboardRepository(this._client);
   final SupabaseClient _client;
 
-  Future<List<Map<String, dynamic>>> getDailyOrders({
+  Future<List<Map<String, dynamic>>> getOrdersInRange({
     required String shopId,
-    required DateTime date,
+    required DateTime from,
+    required DateTime to,
   }) async {
-    final dateStr =
-        '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+    // Normalise: start of [from] day → end of [to] day (local midnight-based)
+    final start = DateTime(from.year, from.month, from.day);
+    final end   = DateTime(to.year, to.month, to.day, 23, 59, 59);
 
     final data = await _client
         .from('orders')
@@ -29,8 +31,8 @@ class ShopDashboardRepository {
     )
         .eq('shop_id', shopId)
         .eq('status', 'done')
-        .gte('created_at', '${dateStr}T00:00:00')
-        .lte('created_at', '${dateStr}T23:59:59');
+        .gte('created_at', start.toIso8601String())
+        .lte('created_at', end.toIso8601String());
 
     return List<Map<String, dynamic>>.from(data);
   }

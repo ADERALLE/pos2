@@ -19,7 +19,7 @@ class ScaffoldWithNestedNavigation extends ConsumerWidget {
   void _goBranch(BuildContext context, WidgetRef ref, int index) {
     final staff = ref.read(currentStaffProvider);
     final isCashier = staff?.role == StaffRole.cashier;
-    if (isCashier && index >= 3) return;
+    if (isCashier && index >= 2) return;
     navigationShell.goBranch(
       index,
       initialLocation: index == navigationShell.currentIndex,
@@ -28,8 +28,6 @@ class ScaffoldWithNestedNavigation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Bootstrap the sync service once at shell level.
-    // It watches connectivity and drains the queue automatically.
     ref.watch(syncServiceProvider);
 
     final staff = ref.watch(currentStaffProvider);
@@ -47,11 +45,11 @@ class ScaffoldWithNestedNavigation extends ConsumerWidget {
           onDestinationSelected: (i) => _goBranch(context, ref, i),
         );
       } else {
+        // Always compact rail — never extended.
         return _ScaffoldWithNavigationRail(
           body: navigationShell,
           selectedIndex: navigationShell.currentIndex,
           onDestinationSelected: (i) => _goBranch(context, ref, i),
-          isExtended: constraints.maxWidth >= 900,
         );
       }
     });
@@ -84,7 +82,6 @@ class _ScaffoldWithNavigationBar extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Offline / syncing banner sits above all page content
           const OfflineBanner(),
           Expanded(child: body),
         ],
@@ -117,28 +114,30 @@ class _ScaffoldWithNavigationBar extends ConsumerWidget {
               Icon(Icons.receipt_long, color: scheme.onPrimaryContainer),
               label: AppLocalizations.of(context)!.navOrders,
             ),
-            if (!isCashier)
-             ...[
-               NavigationDestination(
-                 icon: Badge(
-                   isLabelVisible: unread > 0,
-                   label: Text(unread > 99 ? '99+' : '$unread'),
-                   child: Icon(Icons.notifications_outlined, color: scheme.onSurfaceVariant),
-                 ),
-                 selectedIcon: Badge(
-                   isLabelVisible: unread > 0,
-                   label: Text(unread > 99 ? '99+' : '$unread'),
-                   child: Icon(Icons.notifications_rounded, color: scheme.onPrimaryContainer),
-                 ),
-                 label: AppLocalizations.of(context)!.navAlerts,
-               ),
-               NavigationDestination(
-                icon: Icon(Icons.tune_outlined, color: scheme.onSurfaceVariant),
+            if (!isCashier) ...[
+              NavigationDestination(
+                icon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  child: Icon(Icons.notifications_outlined,
+                      color: scheme.onSurfaceVariant),
+                ),
+                selectedIcon: Badge(
+                  isLabelVisible: unread > 0,
+                  label: Text(unread > 99 ? '99+' : '$unread'),
+                  child: Icon(Icons.notifications_rounded,
+                      color: scheme.onPrimaryContainer),
+                ),
+                label: AppLocalizations.of(context)!.navAlerts,
+              ),
+              NavigationDestination(
+                icon:
+                Icon(Icons.tune_outlined, color: scheme.onSurfaceVariant),
                 selectedIcon:
                 Icon(Icons.tune, color: scheme.onPrimaryContainer),
                 label: AppLocalizations.of(context)!.navSettings,
               ),
-             ]
+            ],
           ],
         ),
       ),
@@ -146,19 +145,17 @@ class _ScaffoldWithNavigationBar extends ConsumerWidget {
   }
 }
 
-// ── navigation rail ───────────────────────────────────────────────────────────
+// ── compact navigation rail (no extended mode) ────────────────────────────────
 
 class _ScaffoldWithNavigationRail extends ConsumerWidget {
   const _ScaffoldWithNavigationRail({
     required this.body,
     required this.selectedIndex,
     required this.onDestinationSelected,
-    required this.isExtended,
   });
   final Widget body;
   final int selectedIndex;
   final ValueChanged<int> onDestinationSelected;
-  final bool isExtended;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -174,7 +171,6 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Offline / syncing banner spans full width above the rail+body
           const OfflineBanner(),
           Expanded(
             child: Row(
@@ -189,12 +185,11 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                     ),
                   ),
                   child: NavigationRail(
-                    extended: isExtended,
+                    extended: false,
                     selectedIndex: selectedIndex,
                     onDestinationSelected: onDestinationSelected,
                     backgroundColor: Colors.transparent,
                     minWidth: 64,
-                    minExtendedWidth: 180,
                     useIndicator: true,
                     indicatorColor: scheme.primaryContainer,
                     selectedIconTheme: IconThemeData(
@@ -205,52 +200,9 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                       color: scheme.onSurfaceVariant,
                       size: 22,
                     ),
-                    selectedLabelTextStyle: TextStyle(
-                      color: scheme.primary,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
-                    ),
-                    unselectedLabelTextStyle: TextStyle(
-                      color: scheme.onSurfaceVariant,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                    ),
                     leading: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: isExtended
-                          ? Padding(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: scheme.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.coffee_rounded,
-                                color: scheme.onPrimary,
-                                size: 18,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              'POS',
-                              style: TextStyle(
-                                color: scheme.onSurface,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                          : Container(
+                      child: Container(
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
@@ -279,30 +231,32 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                             color: scheme.onPrimaryContainer),
                         label: Text(AppLocalizations.of(context)!.navOrders),
                       ),
-                      if (!isCashier)
-                        ...[
-
-                          NavigationRailDestination(
-                            icon: Badge(
-                              isLabelVisible: unread > 0,
-                              label: Text(unread > 99 ? '99+' : '$unread'),
-                              child: Icon(Icons.notifications_outlined, color: scheme.onSurfaceVariant),
-                            ),
-                            selectedIcon: Badge(
-                              isLabelVisible: unread > 0,
-                              label: Text(unread > 99 ? '99+' : '$unread'),
-                              child: Icon(Icons.notifications_rounded, color: scheme.onPrimaryContainer),
-                            ),
-                            label: Text(AppLocalizations.of(context)!.navAlerts),
-                          ),
-                          NavigationRailDestination(
-                            icon: Icon(Icons.tune_outlined,
+                      if (!isCashier) ...[
+                        NavigationRailDestination(
+                          icon: Badge(
+                            isLabelVisible: unread > 0,
+                            label: Text(unread > 99 ? '99+' : '$unread'),
+                            child: Icon(Icons.notifications_outlined,
                                 color: scheme.onSurfaceVariant),
-                            selectedIcon: Icon(Icons.tune,
-                                color: scheme.onPrimaryContainer),
-                            label: Text(AppLocalizations.of(context)!.navSettings),
                           ),
-                        ]
+                          selectedIcon: Badge(
+                            isLabelVisible: unread > 0,
+                            label: Text(unread > 99 ? '99+' : '$unread'),
+                            child: Icon(Icons.notifications_rounded,
+                                color: scheme.onPrimaryContainer),
+                          ),
+                          label:
+                          Text(AppLocalizations.of(context)!.navAlerts),
+                        ),
+                        NavigationRailDestination(
+                          icon: Icon(Icons.tune_outlined,
+                              color: scheme.onSurfaceVariant),
+                          selectedIcon: Icon(Icons.tune,
+                              color: scheme.onPrimaryContainer),
+                          label:
+                          Text(AppLocalizations.of(context)!.navSettings),
+                        ),
+                      ],
                     ],
                   ),
                 ),

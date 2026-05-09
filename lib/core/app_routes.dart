@@ -135,7 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'shop-dashboard',
                     builder: (context, state) {
                       final date = state.extra as DateTime? ?? DateTime.now();
-                      return ShopDashboardPage(date: date);
+                      return ShopDashboardPage();
                     },
                   ),
 // nested under /settings
