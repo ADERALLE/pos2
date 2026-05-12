@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pos_v1/core/models/shift.dart';
+import 'package:pos_v1/core/models/staff_stats.dart';
 import 'package:pos_v1/core/viewmodels/staff_dashboard_viewmodel.dart';
 
 class StaffDetailPage extends ConsumerStatefulWidget {
@@ -425,16 +428,16 @@ class _LastShiftTab extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class _AllTimeStats extends StatelessWidget {
   const _AllTimeStats({required this.stats});
-  final Map<String, dynamic> stats;
+  final StaffStats stats;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final cashRevenue = (stats['cashRevenue'] as num).toDouble();
-    final cardRevenue = (stats['cardRevenue'] as num).toDouble();
-    final totalRevenue = (stats['totalRevenue'] as num).toDouble();
-    final totalTips = (stats['totalTips'] as num).toDouble();
-    final passationAmount = (stats['passationAmount'] as num).toDouble();
+    final cashRevenue = stats.cashRevenue;
+    final cardRevenue = stats.cardRevenue;
+    final totalRevenue = stats.totalRevenue;
+    final totalTips = stats.totalTips;
+    final passationAmount = stats.passationAmount;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -447,21 +450,21 @@ class _AllTimeStats extends StatelessWidget {
             children: [
               _MiniStatCard(
                 label: 'Shifts',
-                value: '${stats['totalShifts']}',
+                value: '${stats.totalShifts}',
                 icon: Icons.work_history_rounded,
                 color: scheme.primary,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
                 label: 'Orders',
-                value: '${stats['totalOrders']}',
+                value: '${stats.totalOrders}',
                 icon: Icons.receipt_long_rounded,
                 color: Colors.orange,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
                 label: 'Avg shift',
-                value: '${stats['avgShiftDuration']}m',
+                value: '${stats.avgShiftDuration != null ? stats.avgShiftDuration : '--'}m',
                 icon: Icons.timer_rounded,
                 color: Colors.blue,
               ),
@@ -597,7 +600,7 @@ class _CashHandoverBanner extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shift card — used in All Shifts list
+// Shift tile — minimal, tappable, navigates to ShiftSummaryPage
 // ─────────────────────────────────────────────────────────────────────────────
 class _ShiftCard extends StatelessWidget {
   const _ShiftCard({required this.shift});
@@ -613,216 +616,115 @@ class _ShiftCard extends StatelessWidget {
     final duration = (closedAt ?? DateTime.now()).difference(openedAt);
     final orders = shift['orders'] as List? ?? [];
     final done = orders.where((o) => o['status'] == 'done').toList();
-    final cancelled = orders.where((o) => o['status'] == 'cancelled').length;
+    final totalRevenue = done.fold(
+      0.0,
+          (s, o) =>
+      s +
+          (o['cash_amount'] as num? ?? 0).toDouble() +
+          (o['card_amount'] as num? ?? 0).toDouble(),
+    );
 
-    final cashRevenue = done.fold(
-        0.0, (s, o) => s + (o['cash_amount'] as num? ?? 0).toDouble());
-    final cardRevenue = done.fold(
-        0.0, (s, o) => s + (o['card_amount'] as num? ?? 0).toDouble());
-    final totalTips =
-    done.fold(0.0, (s, o) => s + (o['tip'] as num? ?? 0).toDouble());
-    final passationAmount =
-    (shift['passation_amount'] as num? ?? 0).toDouble();
-    final totalRevenue = cashRevenue + cardRevenue;
-    final cashToHandOver =
-    (cashRevenue + passationAmount - totalTips).clamp(0.0, double.infinity);
+    final shiftModel = Shift.fromJson(shift);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerLow,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scheme.outlineVariant.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        onTap: () => context.push('/shift-summary', extra: shiftModel),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: scheme.outlineVariant.withOpacity(0.3)),
+          ),
+          child: Row(
             children: [
-              Row(
+              // Status dot
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Colors.green
+                      : scheme.onSurface.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Date + duration
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _fmtDate(openedAt),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${_fmtTime(openedAt)} → ${closedAt != null ? _fmtTime(closedAt) : '--:--'}'
+                          '  ·  ${duration.inHours}h ${duration.inMinutes % 60}m',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: scheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Revenue + order count
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? Colors.green
-                          : scheme.onSurface.withOpacity(0.3),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
                   Text(
-                    isActive ? 'Active' : 'Closed',
+                    '${totalRevenue.toStringAsFixed(2)} MAD',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isActive
-                          ? Colors.green
-                          : scheme.onSurface.withOpacity(0.5),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: scheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${done.length}/${orders.length} orders',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: scheme.onSurface.withOpacity(0.45),
                     ),
                   ),
                 ],
               ),
-              Text(
-                '${duration.inHours}h ${duration.inMinutes % 60}m',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Times
-          Row(
-            children: [
-              Expanded(
-                child: _ShiftTime(
-                  label: 'Start',
-                  value: _fmt(openedAt),
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _ShiftTime(
-                  label: 'End',
-                  value: closedAt != null ? _fmt(closedAt) : '--:--',
-                  color: scheme.error,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Divider(height: 1),
-          const SizedBox(height: 10),
-
-          // Order badges
-          Row(
-            children: [
-              _OrderBadge(label: '${orders.length} orders', color: scheme.primary),
               const SizedBox(width: 6),
-              _OrderBadge(label: '${done.length} done', color: Colors.green),
-              if (cancelled > 0) ...[
-                const SizedBox(width: 6),
-                _OrderBadge(label: '$cancelled cancelled', color: Colors.red),
-              ],
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // Revenue
-          Row(
-            children: [
-              Expanded(
-                child: _RevenueTile(
-                  icon: Icons.payments_rounded,
-                  label: 'Cash',
-                  value: cashRevenue,
-                  color: Colors.green,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _RevenueTile(
-                  icon: Icons.credit_card_rounded,
-                  label: 'Card',
-                  value: cardRevenue,
-                  color: Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: _RevenueTile(
-                  icon: Icons.account_balance_wallet_rounded,
-                  label: 'Total',
-                  value: totalRevenue,
-                  color: Colors.orange,
-                  bold: true,
-                ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: scheme.onSurface.withOpacity(0.3),
               ),
             ],
           ),
-
-          if (totalTips > 0 || passationAmount > 0) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (totalTips > 0) ...[
-                  Expanded(
-                    child: _RevenueTile(
-                      icon: Icons.volunteer_activism_rounded,
-                      label: 'Tips',
-                      value: totalTips,
-                      color: Colors.purple,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                if (passationAmount > 0)
-                  Expanded(
-                    child: _RevenueTile(
-                      icon: Icons.rotate_right_rounded,
-                      label: 'Passation',
-                      value: passationAmount,
-                      color: Colors.deepOrange,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-
-          // Cash to hand over — always last, always visible
-          const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.green.withOpacity(0.35)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.savings_rounded, size: 16, color: Colors.green),
-                const SizedBox(width: 8),
-                const Text(
-                  'Cash to hand over',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.green,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  '${cashToHandOver.toStringAsFixed(2)} MAD',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.green,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  String _fmt(DateTime dt) =>
-      '${dt.day}/${dt.month} '
-          '${dt.hour.toString().padLeft(2, '0')}:'
-          '${dt.minute.toString().padLeft(2, '0')}';
+  String _fmtDate(DateTime dt) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+
+  String _fmtTime(DateTime dt) =>
+      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared small widgets

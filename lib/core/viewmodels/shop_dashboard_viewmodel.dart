@@ -37,10 +37,7 @@ class DateRange {
     return !to.isBefore(DateTime(today.year, today.month, today.day));
   }
 
-  /// Shift the range forward by one unit of [mode].
-  DateRange next() => _shift(1);
-
-  /// Shift the range backward by one unit of [mode].
+  DateRange next()     => _shift(1);
   DateRange previous() => _shift(-1);
 
   DateRange _shift(int direction) {
@@ -52,35 +49,23 @@ class DateRange {
       case RangeMode.nDays:
         final span = to.difference(from).inDays + 1;
         final d = from.add(Duration(days: span * direction));
-        return DateRange(
-          from: d,
-          to: d.add(Duration(days: span - 1)),
-          mode: mode,
-        );
+        return DateRange(from: d, to: d.add(Duration(days: span - 1)), mode: mode);
 
       case RangeMode.week:
         final d = from.add(Duration(days: 7 * direction));
-        return DateRange(
-          from: d,
-          to: d.add(const Duration(days: 6)),
-          mode: mode,
-        );
+        return DateRange(from: d, to: d.add(const Duration(days: 6)), mode: mode);
 
       case RangeMode.month:
-        final m = from.month + direction;
+        final m    = from.month + direction;
         final year = from.year + (m - 1) ~/ 12;
         final month = ((m - 1) % 12) + 1;
         final start = DateTime(year, month, 1);
-        final end = DateTime(year, month + 1, 1).subtract(const Duration(days: 1));
+        final end   = DateTime(year, month + 1, 1).subtract(const Duration(days: 1));
         return DateRange(from: start, to: end, mode: mode);
 
       case RangeMode.year:
         final y = from.year + direction;
-        return DateRange(
-          from: DateTime(y, 1, 1),
-          to: DateTime(y, 12, 31),
-          mode: mode,
-        );
+        return DateRange(from: DateTime(y, 1, 1), to: DateTime(y, 12, 31), mode: mode);
     }
   }
 
@@ -92,36 +77,30 @@ class DateRange {
   }
 
   factory DateRange.lastNDays(int n) {
-    final end = _today();
+    final end   = _today();
     final start = end.subtract(Duration(days: n - 1));
     return DateRange(from: start, to: end, mode: RangeMode.nDays);
   }
 
   factory DateRange.thisWeek() {
-    final today = _today();
+    final today  = _today();
     final monday = today.subtract(Duration(days: today.weekday - 1));
-    final sunday = monday.add(const Duration(days: 6));
-    return DateRange(from: monday, to: sunday, mode: RangeMode.week);
+    return DateRange(from: monday, to: monday.add(const Duration(days: 6)), mode: RangeMode.week);
   }
 
   factory DateRange.thisMonth() {
     final today = _today();
     final start = DateTime(today.year, today.month, 1);
-    final end = DateTime(today.year, today.month + 1, 1)
-        .subtract(const Duration(days: 1));
+    final end   = DateTime(today.year, today.month + 1, 1).subtract(const Duration(days: 1));
     return DateRange(from: start, to: end, mode: RangeMode.month);
   }
 
   factory DateRange.thisYear() {
     final y = DateTime.now().year;
-    return DateRange(
-      from: DateTime(y, 1, 1),
-      to: DateTime(y, 12, 31),
-      mode: RangeMode.year,
-    );
+    return DateRange(from: DateTime(y, 1, 1), to: DateTime(y, 12, 31), mode: RangeMode.year);
   }
 
-  // ── helpers ────────────────────────────────────────────────────────────────
+  // ── Helpers ────────────────────────────────────────────────────────────────
 
   static DateTime _today() {
     final n = DateTime.now();
@@ -133,16 +112,12 @@ class DateRange {
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
   ];
 
-  static String _fmt(DateTime d) => '${_months[d.month]} ${d.day}, ${d.year}';
-
+  static String _fmt(DateTime d)        => '${_months[d.month]} ${d.day}, ${d.year}';
   static String _monthLabel(DateTime d) => '${_months[d.month]} ${d.year}';
 
   @override
   bool operator ==(Object other) =>
-      other is DateRange &&
-          other.from == from &&
-          other.to == to &&
-          other.mode == mode;
+      other is DateRange && other.from == from && other.to == to && other.mode == mode;
 
   @override
   int get hashCode => Object.hash(from, to, mode);
@@ -194,55 +169,48 @@ Future<DailySummary> dailySummary(
     String shopId,
     DateRange range,
     ) async {
-  final orders = await ref
+  // Single RPC call — DB returns one small JSON object, no matter the order volume.
+  final raw = await ref
       .read(shopDashboardRepositoryProvider)
-      .getOrdersInRange(shopId: shopId, from: range.from, to: range.to);
+      .getDashboardSummary(shopId: shopId, from: range.from, to: range.to);
 
-  final totalOrders = orders.length;
-  double cashRevenue = 0;
-  double cardRevenue = 0;
-  double totalTips = 0;
-
-  final itemMap = <String, int>{};
-  final bucketMap = <int, int>{};
-
-  for (final order in orders) {
-    cashRevenue += (order['cash_amount'] as num? ?? 0).toDouble();
-    cardRevenue += (order['card_amount'] as num? ?? 0).toDouble();
-    totalTips += (order['tip'] as num? ?? 0).toDouble();
-
-    final dt = DateTime.parse(order['created_at'] as String);
-    bucketMap[dt.hour] = (bucketMap[dt.hour] ?? 0) + 1;
-
-    final items = order['order_items'] as List? ?? [];
-    for (final item in items) {
-      final name = item['menu_items']?['name'] as String? ?? 'Unknown';
-      final qty = item['quantity'] as int? ?? 1;
-      itemMap[name] = (itemMap[name] ?? 0) + qty;
-    }
-  }
-
+  // ── KPIs ──────────────────────────────────────────────────────────────────
+  final totalOrders = (raw['total_orders'] as num? ?? 0).toInt();
+  final cashRevenue = (raw['cash_revenue'] as num? ?? 0).toDouble();
+  final cardRevenue = (raw['card_revenue'] as num? ?? 0).toDouble();
+  final totalTips   = (raw['total_tips']   as num? ?? 0).toDouble();
   final totalRevenue = cashRevenue + cardRevenue;
 
-  final topItems = itemMap.entries
-      .map((e) => TopItem(name: e.key, quantity: e.value))
+  // ── Hourly buckets ────────────────────────────────────────────────────────
+  // RPC guarantees 24 rows ordered 0–23; fall back to zeros if null.
+  final rawHourly = raw['orders_by_hour'] as List? ?? [];
+  final ordersByHour = rawHourly.isNotEmpty
+      ? rawHourly
+      .map((e) => HourlyBucket(
+    hour:  (e['hour']  as num).toInt(),
+    count: (e['count'] as num).toInt(),
+  ))
       .toList()
-    ..sort((a, b) => b.quantity.compareTo(a.quantity));
+      : List.generate(24, (h) => HourlyBucket(hour: h, count: 0));
 
-  final ordersByHour = List.generate(
-    24,
-        (h) => HourlyBucket(hour: h, count: bucketMap[h] ?? 0),
-  );
+  // ── Top items ─────────────────────────────────────────────────────────────
+  final rawTop = raw['top_items'] as List? ?? [];
+  final topItems = rawTop
+      .map((e) => TopItem(
+    name:     e['name']     as String? ?? 'Unknown',
+    quantity: (e['quantity'] as num).toInt(),
+  ))
+      .toList();
 
   return DailySummary(
-    totalOrders: totalOrders,
-    totalRevenue: totalRevenue,
-    cashRevenue: cashRevenue,
-    cardRevenue: cardRevenue,
-    totalTips: totalTips,
+    totalOrders:   totalOrders,
+    totalRevenue:  totalRevenue,
+    cashRevenue:   cashRevenue,
+    cardRevenue:   cardRevenue,
+    totalTips:     totalTips,
     avgOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0.0,
-    topItems: topItems.take(5).toList(),
-    ordersByHour: ordersByHour,
-    range: range,
+    topItems:      topItems,
+    ordersByHour:  ordersByHour,
+    range:         range,
   );
 }

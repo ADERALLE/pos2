@@ -42,19 +42,15 @@ class ShiftSummaryPage extends ConsumerWidget {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      _ShiftInfoCard(shift: shift),
-                      const SizedBox(height: 12),
-                      _StatsRow(data: snapshot.data!),
-                      const SizedBox(height: 24),
-                      if ((snapshot.data!['orders'] as List<Order>).isNotEmpty) ...[
-                        _SectionLabel(label: '${AppLocalizations.of(context)!.ordersCount} (${(snapshot.data!['orders'] as List<Order>).length})'),
-                        const SizedBox(height: 8),
-                        ...(snapshot.data!['orders'] as List<Order>)
-                            .map((o) => _OrderTile(order: o)),
-                      ],
+                      _ShiftHeaderCard(shift: shift),
+                      const SizedBox(height: 20),
+                      _ShiftStatsBody(
+                        shift: shift,
+                        data: snapshot.data!,
+                      ),
                       const SizedBox(height: 32),
                     ]),
                   ),
@@ -67,10 +63,10 @@ class ShiftSummaryPage extends ConsumerWidget {
   }
 }
 
-// ── shift info card ───────────────────────────────────────────────────────────
+// ── Shift header card (status + times) ───────────────────────────────────────
 
-class _ShiftInfoCard extends StatelessWidget {
-  const _ShiftInfoCard({required this.shift});
+class _ShiftHeaderCard extends StatelessWidget {
+  const _ShiftHeaderCard({required this.shift});
   final Shift shift;
 
   @override
@@ -78,86 +74,106 @@ class _ShiftInfoCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final openedAt = shift.openedAt;
     final closedAt = shift.closedAt ?? DateTime.now();
+    final isClosed = shift.closedAt != null;
     final duration = closedAt.difference(openedAt);
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
 
     return Container(
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: scheme.outlineVariant.withOpacity(0.4)),
       ),
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Status + duration
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: (isClosed ? scheme.onSurface : Colors.green)
+                      .withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
-                    const SizedBox(width: 4),
-                    Text(AppLocalizations.of(context)!.shiftClosed,
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        )),
+                    Container(
+                      width: 7,
+                      height: 7,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: isClosed
+                            ? scheme.onSurface.withOpacity(0.4)
+                            : Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Text(
+                      isClosed
+                          ? AppLocalizations.of(context)!.shiftClosed
+                          : 'Active shift',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isClosed
+                            ? scheme.onSurface.withOpacity(0.6)
+                            : Colors.green,
+                      ),
+                    ),
                   ],
                 ),
               ),
               const Spacer(),
               Text(
-                '${hours}h ${minutes}m',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                '${duration.inHours}h ${duration.inMinutes % 60}m',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface.withOpacity(0.5),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
+          // Start / End times
           Row(
             children: [
               Expanded(
-                child: _TimeBlock(
+                child: _ShiftTime(
                   label: AppLocalizations.of(context)!.started,
-                  time: _fmt(openedAt),
-                  icon: Icons.play_arrow_rounded,
+                  value: _fmt(openedAt),
                   color: Colors.green,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
-                child: _TimeBlock(
+                child: _ShiftTime(
                   label: AppLocalizations.of(context)!.closed,
-                  time: shift.closedAt != null ? _fmt(closedAt) : '--:--',
-                  icon: Icons.stop_rounded,
+                  value: shift.closedAt != null ? _fmt(closedAt) : '--:--',
                   color: scheme.error,
                 ),
               ),
             ],
           ),
-          if (shift.passationAmount > 0) ...[
-            const SizedBox(height: 4),
-            _NoteRow(
-              icon: Icons.rotate_right_rounded,
-              color: Colors.orange,
-              note: '${AppLocalizations.of(context)!.passation}: ${shift.passationAmount.toStringAsFixed(2)} MAD',
-            ),
-          ],
+          // Notes
           if (shift.openingNote != null || shift.closingNote != null) ...[
             const Divider(height: 24),
             if (shift.openingNote != null)
-              _NoteRow(icon: Icons.play_arrow_rounded, color: Colors.green, note: shift.openingNote!),
+              _NoteRow(
+                icon: Icons.play_arrow_rounded,
+                color: Colors.green,
+                note: shift.openingNote!,
+              ),
             if (shift.closingNote != null)
-              _NoteRow(icon: Icons.stop_rounded, color: scheme.error, note: shift.closingNote!),
+              _NoteRow(
+                icon: Icons.stop_rounded,
+                color: scheme.error,
+                note: shift.closingNote!,
+              ),
           ],
         ],
       ),
@@ -165,50 +181,398 @@ class _ShiftInfoCard extends StatelessWidget {
   }
 
   String _fmt(DateTime dt) =>
-      '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+      '${dt.day}/${dt.month} '
+          '${dt.hour.toString().padLeft(2, '0')}:'
+          '${dt.minute.toString().padLeft(2, '0')}';
 }
 
-class _TimeBlock extends StatelessWidget {
-  const _TimeBlock({
+// ── Stats body (hero banner + mini cards + orders) ────────────────────────────
+
+class _ShiftStatsBody extends StatelessWidget {
+  const _ShiftStatsBody({required this.shift, required this.data});
+  final Shift shift;
+  final Map<String, dynamic> data;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    final orders = data['orders'] as List<Order>;
+    final done = orders.where((o) => o.status == OrderStatus.done).toList();
+    final cancelled =
+        orders.where((o) => o.status == OrderStatus.cancelled).length;
+    final pending =
+        orders.where((o) => o.status == OrderStatus.pending).length;
+
+    final cashRevenue = (data['cashRevenue'] as num).toDouble();
+    final cardRevenue = (data['cardRevenue'] as num).toDouble();
+    final totalRevenue = (data['totalRevenue'] as num).toDouble();
+    final totalTips = (data['totalTips'] as num? ?? 0).toDouble();
+    final passationAmount = shift.passationAmount;
+    final cashToHandOver =
+    (cashRevenue + passationAmount - totalTips).clamp(0.0, double.infinity);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Hero: cash to hand over ────────────────────────────────────
+        _CashHandoverBanner(cashToHandOver: cashToHandOver),
+        const SizedBox(height: 20),
+
+        // ── Orders summary ─────────────────────────────────────────────
+        _SectionLabel('Orders', scheme: scheme),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _MiniStatCard(
+              label: l10n.ordersCount,
+              value: '${orders.length}',
+              icon: Icons.receipt_long_rounded,
+              color: scheme.primary,
+            ),
+            const SizedBox(width: 8),
+            _MiniStatCard(
+              label: 'Done',
+              value: '${done.length}',
+              icon: Icons.check_circle_outline_rounded,
+              color: Colors.green,
+            ),
+            const SizedBox(width: 8),
+            _MiniStatCard(
+              label: 'Cancelled',
+              value: '$cancelled',
+              icon: Icons.cancel_outlined,
+              color: Colors.red,
+            ),
+            if (pending > 0) ...[
+              const SizedBox(width: 8),
+              _MiniStatCard(
+                label: 'Pending',
+                value: '$pending',
+                icon: Icons.hourglass_empty_rounded,
+                color: Colors.orange,
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // ── Revenue breakdown ──────────────────────────────────────────
+        _SectionLabel(l10n.totalRevenue, scheme: scheme),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            _RevenueStatCard(
+              label: l10n.cash,
+              value: cashRevenue,
+              icon: Icons.payments_rounded,
+              color: Colors.green,
+            ),
+            const SizedBox(width: 8),
+            _RevenueStatCard(
+              label: l10n.card,
+              value: cardRevenue,
+              icon: Icons.credit_card_rounded,
+              color: Colors.blue,
+            ),
+            const SizedBox(width: 8),
+            _RevenueStatCard(
+              label: l10n.totalRevenue,
+              value: totalRevenue,
+              icon: Icons.account_balance_wallet_rounded,
+              color: Colors.orange,
+              bold: true,
+            ),
+          ],
+        ),
+
+        // Tips & passation (conditional)
+        if (totalTips > 0 || passationAmount > 0) ...[
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              if (totalTips > 0) ...[
+                _RevenueStatCard(
+                  label: l10n.tipsCard,
+                  value: totalTips,
+                  icon: Icons.volunteer_activism_rounded,
+                  color: Colors.purple,
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (passationAmount > 0)
+                _RevenueStatCard(
+                  label: l10n.passation,
+                  value: passationAmount,
+                  icon: Icons.rotate_right_rounded,
+                  color: Colors.deepOrange,
+                ),
+            ],
+          ),
+        ],
+
+        // ── Order list ─────────────────────────────────────────────────
+        if (orders.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _SectionLabel(
+              '${l10n.ordersCount} (${orders.length})',
+              scheme: scheme),
+          const SizedBox(height: 8),
+          ...orders.map((o) => _OrderTile(order: o)),
+        ],
+      ],
+    );
+  }
+}
+
+// ── Shared small widgets ──────────────────────────────────────────────────────
+
+class _CashHandoverBanner extends StatelessWidget {
+  const _CashHandoverBanner({required this.cashToHandOver});
+  final double cashToHandOver;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade600,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.withOpacity(0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child:
+            const Icon(Icons.savings_rounded, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.cashToHandOver,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${cashToHandOver.toStringAsFixed(2)} MAD',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShiftTime extends StatelessWidget {
+  const _ShiftTime({
     required this.label,
-    required this.time,
-    required this.icon,
+    required this.value,
     required this.color,
   });
   final String label;
-  final String time;
-  final IconData icon;
+  final String value;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: color),
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 6),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label,
                   style: TextStyle(
-                    fontSize: 11,
-                    color: scheme.onSurface.withOpacity(0.5),
-                  )),
-              Text(time,
+                      fontSize: 10,
+                      color: scheme.onSurface.withOpacity(0.5))),
+              Text(value,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  )),
+                      fontWeight: FontWeight.w600, fontSize: 13)),
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text, {required this.scheme});
+  final String text;
+  final ColorScheme scheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text.toUpperCase(),
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.8,
+        color: scheme.onSurface.withOpacity(0.45),
+      ),
+    );
+  }
+}
+
+class _MiniStatCard extends StatelessWidget {
+  const _MiniStatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.15)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: scheme.onSurface,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: scheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RevenueStatCard extends StatelessWidget {
+  const _RevenueStatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+    this.bold = false,
+  });
+  final String label;
+  final double value;
+  final IconData icon;
+  final Color color;
+  final bool bold;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.07),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: bold ? color.withOpacity(0.4) : color.withOpacity(0.15),
+            width: bold ? 1.5 : 1.0,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value.toStringAsFixed(2),
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+                  color: bold ? color : scheme.onSurface,
+                ),
+              ),
+            ),
+            Text(
+              'MAD',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+                color: color.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: scheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -223,17 +587,20 @@ class _NoteRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 12, color: color),
+          Icon(icon, size: 14, color: color),
           const SizedBox(width: 6),
           Expanded(
-            child: Text(note,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6))),
+            child: Text(
+              note,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
           ),
         ],
       ),
@@ -241,155 +608,7 @@ class _NoteRow extends StatelessWidget {
   }
 }
 
-// ── stats row ─────────────────────────────────────────────────────────────────
-
-class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.data});
-  final Map<String, dynamic> data;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _StatCard(label: l10n.total, value: '${data['totalOrders']}',
-                icon: Icons.receipt_long_rounded, color: Colors.grey)),
-            const SizedBox(width: 8),
-            Expanded(child: _StatCard(label: l10n.done, value: '${data['doneOrders']}',
-                icon: Icons.check_circle_rounded, color: Colors.green)),
-            const SizedBox(width: 8),
-            Expanded(child: _StatCard(label: l10n.cancelled, value: '${data['cancelledOrders']}',
-                icon: Icons.cancel_rounded, color: Colors.red)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(child: _StatCard(
-              label: l10n.cash,
-              value: '${(data['cashRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
-              icon: Icons.payments_rounded,
-              color: Colors.green,
-            )),
-            const SizedBox(width: 8),
-            Expanded(child: _StatCard(
-              label: l10n.card,
-              value: '${(data['cardRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
-              icon: Icons.credit_card_rounded,
-              color: Colors.blue,
-            )),
-            const SizedBox(width: 8),
-            Expanded(child: _StatCard(
-              label: l10n.totalRevenue,
-              value: '${(data['totalRevenue'] as num).toDouble().toStringAsFixed(2)} MAD',
-              icon: Icons.account_balance_wallet_rounded,
-              color: Colors.orange,
-            )),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            if ((data['passationAmount'] as num).toDouble() > 0) ...[
-              Expanded(child: _StatCard(
-                label: l10n.passation,
-                value: '${(data['passationAmount'] as num).toDouble().toStringAsFixed(2)} MAD',
-                icon: Icons.rotate_right_rounded,
-                color: Colors.orange,
-              )),
-              const SizedBox(width: 8),
-            ],
-            if ((data['totalTips'] as num).toDouble() > 0) ...[
-              Expanded(child: _StatCard(
-                label: l10n.tipsCard,
-                value: '${(data['totalTips'] as num).toDouble().toStringAsFixed(2)} MAD',
-                icon: Icons.volunteer_activism_rounded,
-                color: Colors.purple,
-              )),
-              const SizedBox(width: 8),
-            ],
-            Expanded(
-              flex: 2,
-              child: _StatCard(
-                label: l10n.cashToHandOver,
-                value: '${(data['cashToHandOver'] as num).toDouble().toStringAsFixed(2)} MAD',
-                icon: Icons.savings_rounded,
-                color: Colors.green,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.15)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(height: 6),
-          Text(value,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                color: scheme.onSurface,
-              )),
-          Text(label,
-              style: TextStyle(
-                fontSize: 11,
-                color: scheme.onSurface.withOpacity(0.5),
-              )),
-        ],
-      ),
-    );
-  }
-}
-
-// ── section label ─────────────────────────────────────────────────────────────
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({required this.label});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-        fontWeight: FontWeight.w600,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-        letterSpacing: 0.3,
-      ),
-    );
-  }
-}
-
-// ── order tile ────────────────────────────────────────────────────────────────
+// ── Order tile (expandable) ───────────────────────────────────────────────────
 
 class _OrderTile extends StatelessWidget {
   const _OrderTile({required this.order});
@@ -399,10 +618,10 @@ class _OrderTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final statusColor = switch (order.status) {
-      OrderStatus.pending    => Colors.orange,
+      OrderStatus.pending => Colors.orange,
       OrderStatus.inprogress => Colors.blue,
-      OrderStatus.done       => Colors.green,
-      OrderStatus.cancelled  => Colors.red,
+      OrderStatus.done => Colors.green,
+      OrderStatus.cancelled => Colors.red,
     };
 
     return Container(
@@ -413,7 +632,8 @@ class _OrderTile extends StatelessWidget {
         border: Border.all(color: scheme.outlineVariant.withOpacity(0.3)),
       ),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+        tilePadding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
         leading: Container(
           width: 36,
           height: 36,
@@ -421,7 +641,8 @@ class _OrderTile extends StatelessWidget {
             color: statusColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.receipt_long_rounded, color: statusColor, size: 18),
+          child:
+          Icon(Icons.receipt_long_rounded, color: statusColor, size: 18),
         ),
         title: Text(
           order.tableLabel ?? AppLocalizations.of(context)!.takeaway,
@@ -429,10 +650,12 @@ class _OrderTile extends StatelessWidget {
         ),
         subtitle: Text(
           '${order.orderItems.length} items · ${order.total.toStringAsFixed(2)} MAD',
-          style: TextStyle(fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
+          style: TextStyle(
+              fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
         ),
         trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          padding:
+          const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
             color: statusColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
@@ -447,10 +670,14 @@ class _OrderTile extends StatelessWidget {
           ),
         ),
         children: <Widget>[
-          ...order.orderItems.where((item) => !item.name.contains(' – ')).map((item) => ListTile(
+          ...order.orderItems
+              .where((item) => !item.name.contains(' – '))
+              .map((item) => ListTile(
             dense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-            title: Text(item.name, style: const TextStyle(fontSize: 13)),
+            contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16),
+            title: Text(item.name,
+                style: const TextStyle(fontSize: 13)),
             trailing: Text(
               '${item.quantity} × ${item.unitPrice.toStringAsFixed(2)} MAD',
               style: const TextStyle(fontSize: 12),
@@ -475,7 +702,8 @@ class _OrderTile extends StatelessWidget {
     }
     if (groups.isEmpty) return [];
     return groups.entries.map((e) {
-      final comboPrice = e.value.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
+      final comboPrice =
+      e.value.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
       final subItems = e.value.map((i) {
         final sub = i.name.substring(i.name.indexOf(_sep) + _sep.length);
         return '${i.quantity}x $sub';
@@ -484,11 +712,15 @@ class _OrderTile extends StatelessWidget {
         dense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         leading: const Icon(Icons.restaurant_menu, size: 16),
-        title: Text(e.key, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-        subtitle: Text(subItems, style: const TextStyle(fontSize: 11)),
+        title: Text(e.key,
+            style: const TextStyle(
+                fontSize: 13, fontWeight: FontWeight.w600)),
+        subtitle:
+        Text(subItems, style: const TextStyle(fontSize: 11)),
         trailing: Text(
           '${comboPrice.toStringAsFixed(2)} MAD',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+              fontSize: 12, fontWeight: FontWeight.w600),
         ),
       );
     }).toList();

@@ -33,6 +33,85 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
     });
   }
 
+  /// Opens the appropriate picker for the current [RangeMode].
+  Future<void> _openDatePicker() async {
+    switch (_range.mode) {
+    // ── Single day ──────────────────────────────────────────────────────────
+      case RangeMode.day:
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _range.from,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+        );
+        if (picked != null) {
+          setState(() => _range = DateRange(from: picked, to: picked, mode: RangeMode.day));
+        }
+
+    // ── 7-day window: pick the start day ────────────────────────────────────
+      case RangeMode.nDays:
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _range.from,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+          helpText: 'Select start of 7-day window',
+        );
+        if (picked != null) {
+          setState(() => _range = DateRange(
+            from: picked,
+            to: picked.add(const Duration(days: 6)),
+            mode: RangeMode.nDays,
+          ));
+        }
+
+    // ── Week: pick any day → snap to Monday ─────────────────────────────────
+      case RangeMode.week:
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: _range.from,
+          firstDate: DateTime(2020),
+          lastDate: DateTime.now(),
+          helpText: 'Select any day in the week',
+        );
+        if (picked != null) {
+          final monday = picked.subtract(Duration(days: picked.weekday - 1));
+          setState(() => _range = DateRange(
+            from: monday,
+            to: monday.add(const Duration(days: 6)),
+            mode: RangeMode.week,
+          ));
+        }
+
+    // ── Month: custom month/year picker ─────────────────────────────────────
+      case RangeMode.month:
+        final result = await _showMonthYearPicker(
+          context: context,
+          initialDate: _range.from,
+        );
+        if (result != null) {
+          final start = DateTime(result.year, result.month, 1);
+          final end   = DateTime(result.year, result.month + 1, 1)
+              .subtract(const Duration(days: 1));
+          setState(() => _range = DateRange(from: start, to: end, mode: RangeMode.month));
+        }
+
+    // ── Year: custom year picker ─────────────────────────────────────────────
+      case RangeMode.year:
+        final year = await _showYearOnlyPicker(
+          context: context,
+          initialYear: _range.from.year,
+        );
+        if (year != null) {
+          setState(() => _range = DateRange(
+            from: DateTime(year, 1, 1),
+            to: DateTime(year, 12, 31),
+            mode: RangeMode.year,
+          ));
+        }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final shopId = ref.watch(currentStaffProvider)?.shopId;
@@ -50,10 +129,25 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text('Dashboard'),
-            Text(
-              _range.label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: scheme.onSurface.withOpacity(0.55),
+            // ── Tappable date label ──────────────────────────────────────────
+            GestureDetector(
+              onTap: _openDatePicker,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _range.label,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: scheme.onSurface.withOpacity(0.55),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.edit_calendar_rounded,
+                    size: 12,
+                    color: scheme.onSurface.withOpacity(0.4),
+                  ),
+                ],
               ),
             ),
           ],
@@ -81,12 +175,8 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
-              // ── KPI grid ──────────────────────────────────────────────────
               _KpiGrid(summary: summary),
-
               const SizedBox(height: 28),
-
-              // ── hourly chart ──────────────────────────────────────────────
               _SectionHeader(
                 label: 'Orders by hour',
                 trailing: summary.totalOrders == 0
@@ -100,14 +190,8 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
                 ),
               ),
               const SizedBox(height: 12),
-              _HourlyChart(
-                buckets: summary.ordersByHour,
-                color: scheme.primary,
-              ),
-
+              _HourlyChart(buckets: summary.ordersByHour, color: scheme.primary),
               const SizedBox(height: 28),
-
-              // ── top items ─────────────────────────────────────────────────
               if (summary.topItems.isNotEmpty) ...[
                 const _SectionHeader(label: 'Top items'),
                 const SizedBox(height: 10),
@@ -124,6 +208,205 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Month/Year picker ─────────────────────────────────────────────────────────
+
+/// Shows a dialog with a scrollable list of months × years.
+Future<DateTime?> _showMonthYearPicker({
+  required BuildContext context,
+  required DateTime initialDate,
+}) {
+  return showDialog<DateTime>(
+    context: context,
+    builder: (ctx) => _MonthYearPickerDialog(initialDate: initialDate),
+  );
+}
+
+class _MonthYearPickerDialog extends StatefulWidget {
+  const _MonthYearPickerDialog({required this.initialDate});
+  final DateTime initialDate;
+
+  @override
+  State<_MonthYearPickerDialog> createState() => _MonthYearPickerDialogState();
+}
+
+class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
+  late int _year;
+  late int _month;
+
+  static const _months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _year  = widget.initialDate.year;
+    _month = widget.initialDate.month;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final now    = DateTime.now();
+
+    return AlertDialog(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left_rounded),
+            onPressed: _year > 2020 ? () => setState(() => _year--) : null,
+          ),
+          Text('$_year', style: const TextStyle(fontWeight: FontWeight.w700)),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded),
+            onPressed: _year < now.year ? () => setState(() => _year++) : null,
+          ),
+        ],
+      ),
+      content: SizedBox(
+        width: 280,
+        child: GridView.builder(
+          shrinkWrap: true,
+          itemCount: 12,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 2.2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemBuilder: (_, i) {
+            final m          = i + 1;
+            final isSelected = m == _month;
+            final isFuture   = _year == now.year && m > now.month;
+            return GestureDetector(
+              onTap: isFuture ? null : () => setState(() => _month = m),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                decoration: BoxDecoration(
+                  color: isSelected ? scheme.primary : scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  _months[i].substring(0, 3),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isFuture
+                        ? scheme.onSurface.withOpacity(0.25)
+                        : isSelected
+                        ? scheme.onPrimary
+                        : scheme.onSurface,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, DateTime(_year, _month)),
+          child: const Text('Select'),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Year-only picker ──────────────────────────────────────────────────────────
+
+Future<int?> _showYearOnlyPicker({
+  required BuildContext context,
+  required int initialYear,
+}) {
+  return showDialog<int>(
+    context: context,
+    builder: (ctx) => _YearPickerDialog(initialYear: initialYear),
+  );
+}
+
+class _YearPickerDialog extends StatefulWidget {
+  const _YearPickerDialog({required this.initialYear});
+  final int initialYear;
+
+  @override
+  State<_YearPickerDialog> createState() => _YearPickerDialogState();
+}
+
+class _YearPickerDialogState extends State<_YearPickerDialog> {
+  late int _year;
+
+  @override
+  void initState() {
+    super.initState();
+    _year = widget.initialYear;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme  = Theme.of(context).colorScheme;
+    final now     = DateTime.now();
+    final years   = List.generate(now.year - 2019, (i) => 2020 + i);
+
+    return AlertDialog(
+      title: const Text('Select year'),
+      content: SizedBox(
+        width: 240,
+        child: GridView.builder(
+          shrinkWrap: true,
+          itemCount: years.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 2,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+          ),
+          itemBuilder: (_, i) {
+            final y          = years[i];
+            final isSelected = y == _year;
+            return GestureDetector(
+              onTap: () => setState(() => _year = y),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                decoration: BoxDecoration(
+                  color: isSelected ? scheme.primary : scheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  '$y',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? scheme.onPrimary : scheme.onSurface,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, _year),
+          child: const Text('Select'),
+        ),
+      ],
     );
   }
 }
@@ -161,15 +444,8 @@ class _RangePicker extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
       child: Row(
         children: [
-          // ← Prev
-          _NavButton(
-            icon: Icons.chevron_left_rounded,
-            onTap: onPrevious,
-          ),
-
+          _NavButton(icon: Icons.chevron_left_rounded, onTap: onPrevious),
           const SizedBox(width: 6),
-
-          // Segmented tabs
           Expanded(
             child: Container(
               height: 36,
@@ -188,9 +464,7 @@ class _RangePicker extends StatelessWidget {
                         duration: const Duration(milliseconds: 200),
                         margin: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: isSelected
-                              ? scheme.primary
-                              : Colors.transparent,
+                          color: isSelected ? scheme.primary : Colors.transparent,
                           borderRadius: BorderRadius.circular(7),
                           boxShadow: isSelected
                               ? [
@@ -220,10 +494,7 @@ class _RangePicker extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(width: 6),
-
-          // → Next
           _NavButton(
             icon: Icons.chevron_right_rounded,
             onTap: canGoNext ? onNext : null,
@@ -241,7 +512,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final scheme  = Theme.of(context).colorScheme;
     final enabled = onTap != null;
     return GestureDetector(
       onTap: onTap,
@@ -354,6 +625,7 @@ class _KpiCard extends StatelessWidget {
     required this.value,
     required this.color,
   });
+
   final IconData icon;
   final String label;
   final String value;
@@ -380,8 +652,7 @@ class _KpiCard extends StatelessWidget {
           ),
           Text(
             label,
-            style: TextStyle(
-                fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
+            style: TextStyle(fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
           ),
         ],
       ),
@@ -423,16 +694,15 @@ class _HourlyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final maxCount =
-    buckets.map((b) => b.count).reduce((a, b) => a > b ? a : b);
+    final scheme   = Theme.of(context).colorScheme;
+    final maxCount = buckets.map((b) => b.count).reduce((a, b) => a > b ? a : b);
 
     return SizedBox(
       height: 100,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: buckets.map((b) {
-          final ratio = maxCount == 0 ? 0.0 : b.count / maxCount;
+          final ratio     = maxCount == 0 ? 0.0 : b.count / maxCount;
           final showLabel = b.hour % 6 == 0;
           return Expanded(
             child: Column(
@@ -450,9 +720,7 @@ class _HourlyChart extends StatelessWidget {
                         color: b.count > 0
                             ? color.withOpacity(0.75)
                             : scheme.outlineVariant.withOpacity(0.3),
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(3),
-                        ),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
                       ),
                     ),
                   ),
@@ -460,10 +728,7 @@ class _HourlyChart extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   showLabel ? '${b.hour}h' : '',
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: scheme.onSurface.withOpacity(0.4),
-                  ),
+                  style: TextStyle(fontSize: 9, color: scheme.onSurface.withOpacity(0.4)),
                 ),
               ],
             ),
@@ -489,7 +754,7 @@ class _TopItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final ratio = maxQty == 0 ? 0.0 : item.quantity / maxQty;
+    final ratio  = maxQty == 0 ? 0.0 : item.quantity / maxQty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -514,17 +779,11 @@ class _TopItemTile extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      item.name,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w500, fontSize: 13),
-                    ),
+                    Text(item.name,
+                        style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
                     Text(
                       '×${item.quantity}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: scheme.onSurface.withOpacity(0.5),
-                      ),
+                      style: TextStyle(fontSize: 12, color: scheme.onSurface.withOpacity(0.5)),
                     ),
                   ],
                 ),
@@ -535,8 +794,7 @@ class _TopItemTile extends StatelessWidget {
                     value: ratio,
                     minHeight: 4,
                     backgroundColor: scheme.outlineVariant.withOpacity(0.3),
-                    valueColor:
-                    AlwaysStoppedAnimation(scheme.primary.withOpacity(0.7)),
+                    valueColor: AlwaysStoppedAnimation(scheme.primary.withOpacity(0.7)),
                   ),
                 ),
               ],
@@ -561,8 +819,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
         children: [
-          Icon(Icons.inbox_rounded,
-              size: 48, color: scheme.onSurface.withOpacity(0.2)),
+          Icon(Icons.inbox_rounded, size: 48, color: scheme.onSurface.withOpacity(0.2)),
           const SizedBox(height: 12),
           Text(
             'No orders for ${range.label}',
@@ -587,18 +844,12 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline_rounded,
-              size: 48, color: scheme.error.withOpacity(0.6)),
+          Icon(Icons.error_outline_rounded, size: 48, color: scheme.error.withOpacity(0.6)),
           const SizedBox(height: 12),
-          Text(
-            'Failed to load summary',
-            style: TextStyle(color: scheme.onSurface.withOpacity(0.6)),
-          ),
+          Text('Failed to load summary',
+              style: TextStyle(color: scheme.onSurface.withOpacity(0.6))),
           const SizedBox(height: 8),
-          FilledButton.tonal(
-            onPressed: onRetry,
-            child: const Text('Retry'),
-          ),
+          FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
         ],
       ),
     );

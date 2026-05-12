@@ -1,3 +1,4 @@
+import 'package:pos_v1/core/models/staff_stats.dart';
 import 'package:pos_v1/core/repositories/staff_dashboard_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -8,13 +9,14 @@ Future<List<Map<String, dynamic>>> staffList(Ref ref, String shopId) {
   return ref.read(staffDashboardRepositoryProvider).getStaffList(shopId);
 }
 
+/// All-time aggregated stats for a staff member.
+/// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
 @riverpod
-Future<Map<String, dynamic>> staffStats(Ref ref, String staffId) {
+Future<StaffStats> staffStats(Ref ref, String staffId) {
   return ref.read(staffDashboardRepositoryProvider).getStaffStats(staffId);
 }
 
-/// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-/// without loading the full paginated list.
+/// Single most-recent shift. Powers the "Last Shift" tab.
 @riverpod
 Future<Map<String, dynamic>?> staffLatestShift(Ref ref, String staffId) {
   return ref.read(staffDashboardRepositoryProvider).getLatestShift(staffId);
@@ -46,9 +48,7 @@ class StaffShifts extends _$StaffShifts {
       _hasMore = false;
       return;
     }
-    if (more.length < StaffDashboardRepository.pageSize) {
-      _hasMore = false;
-    }
+    if (more.length < StaffDashboardRepository.pageSize) _hasMore = false;
     state = AsyncData([...?state.value, ...more]);
   }
 

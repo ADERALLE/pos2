@@ -14,26 +14,35 @@ class ShopDashboardRepository {
   ShopDashboardRepository(this._client);
   final SupabaseClient _client;
 
-  Future<List<Map<String, dynamic>>> getOrdersInRange({
+  /// Calls the `get_shop_dashboard_summary` Postgres RPC.
+  /// The DB does all aggregation — only a single small JSON object
+  /// is transferred over the wire regardless of order volume.
+  Future<Map<String, dynamic>> getDashboardSummary({
     required String shopId,
     required DateTime from,
     required DateTime to,
   }) async {
-    // Normalise: start of [from] day → end of [to] day (local midnight-based)
+    // Normalise to start-of-day / end-of-day boundaries (local time → ISO)
     final start = DateTime(from.year, from.month, from.day);
-    final end   = DateTime(to.year, to.month, to.day, 23, 59, 59);
+    final end   = DateTime(to.year,   to.month,   to.day, 23, 59, 59);
 
-    final data = await _client
-        .from('orders')
-        .select(
-      'id, total, created_at, cash_amount, card_amount, tip, '
-          'order_items(quantity, menu_items(name))',
-    )
-        .eq('shop_id', shopId)
-        .eq('status', 'done')
-        .gte('created_at', start.toIso8601String())
-        .lte('created_at', end.toIso8601String());
+    final data = await _client.rpc(
+      'get_shop_dashboard_summary',
+      params: {
+        'p_shop_id': shopId,
+        'p_from':    start.toIso8601String(),
+        'p_to':      end.toIso8601String(),
+      },
+    );
 
-    return List<Map<String, dynamic>>.from(data);
+    // `rpc` returns the JSON value directly when the function returns JSON
+    if (data is Map<String, dynamic>) return data;
+
+    // Supabase sometimes wraps it in a list
+    if (data is List && data.isNotEmpty && data.first is Map<String, dynamic>) {
+      return data.first as Map<String, dynamic>;
+    }
+
+    throw StateError('Unexpected RPC response type: ${data.runtimeType}');
   }
 }

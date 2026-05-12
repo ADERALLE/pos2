@@ -64,7 +64,7 @@ final class DailySummaryProvider
   }
 }
 
-String _$dailySummaryHash() => r'a481a00b7f8c1fa544e86ff63eddf160e758b416';
+String _$dailySummaryHash() => r'a98128c7d43e8df91614c2870543f37571de00da';
 
 final class DailySummaryFamily extends $Family
     with

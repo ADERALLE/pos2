@@ -90,19 +90,25 @@ final class StaffListFamily extends $Family
   String toString() => r'staffListProvider';
 }
 
+/// All-time aggregated stats for a staff member.
+/// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
+
 @ProviderFor(staffStats)
 final staffStatsProvider = StaffStatsFamily._();
+
+/// All-time aggregated stats for a staff member.
+/// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
 
 final class StaffStatsProvider
     extends
         $FunctionalProvider<
-          AsyncValue<Map<String, dynamic>>,
-          Map<String, dynamic>,
-          FutureOr<Map<String, dynamic>>
+          AsyncValue<StaffStats>,
+          StaffStats,
+          FutureOr<StaffStats>
         >
-    with
-        $FutureModifier<Map<String, dynamic>>,
-        $FutureProvider<Map<String, dynamic>> {
+    with $FutureModifier<StaffStats>, $FutureProvider<StaffStats> {
+  /// All-time aggregated stats for a staff member.
+  /// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
   StaffStatsProvider._({
     required StaffStatsFamily super.from,
     required String super.argument,
@@ -126,12 +132,11 @@ final class StaffStatsProvider
 
   @$internal
   @override
-  $FutureProviderElement<Map<String, dynamic>> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
+  $FutureProviderElement<StaffStats> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
 
   @override
-  FutureOr<Map<String, dynamic>> create(Ref ref) {
+  FutureOr<StaffStats> create(Ref ref) {
     final argument = this.argument as String;
     return staffStats(ref, argument);
   }
@@ -147,10 +152,13 @@ final class StaffStatsProvider
   }
 }
 
-String _$staffStatsHash() => r'ff3b3aad2f028fd0af34be55409d20c6ffeed2a6';
+String _$staffStatsHash() => r'908e048b62e8def24854805d84acca18936a9638';
+
+/// All-time aggregated stats for a staff member.
+/// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
 
 final class StaffStatsFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<Map<String, dynamic>>, String> {
+    with $FunctionalFamilyOverride<FutureOr<StaffStats>, String> {
   StaffStatsFamily._()
     : super(
         retry: null,
@@ -160,6 +168,9 @@ final class StaffStatsFamily extends $Family
         isAutoDispose: true,
       );
 
+  /// All-time aggregated stats for a staff member.
+  /// Backed by the `get_staff_stats` SQL RPC — one DB round-trip, no client math.
+
   StaffStatsProvider call(String staffId) =>
       StaffStatsProvider._(argument: staffId, from: this);
 
@@ -167,14 +178,12 @@ final class StaffStatsFamily extends $Family
   String toString() => r'staffStatsProvider';
 }
 
-/// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-/// without loading the full paginated list.
+/// Single most-recent shift. Powers the "Last Shift" tab.
 
 @ProviderFor(staffLatestShift)
 final staffLatestShiftProvider = StaffLatestShiftFamily._();
 
-/// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-/// without loading the full paginated list.
+/// Single most-recent shift. Powers the "Last Shift" tab.
 
 final class StaffLatestShiftProvider
     extends
@@ -186,8 +195,7 @@ final class StaffLatestShiftProvider
     with
         $FutureModifier<Map<String, dynamic>?>,
         $FutureProvider<Map<String, dynamic>?> {
-  /// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-  /// without loading the full paginated list.
+  /// Single most-recent shift. Powers the "Last Shift" tab.
   StaffLatestShiftProvider._({
     required StaffLatestShiftFamily super.from,
     required String super.argument,
@@ -234,8 +242,7 @@ final class StaffLatestShiftProvider
 
 String _$staffLatestShiftHash() => r'0fe345704d067ba8cf2b6b88dc8a1cbf820aa0d1';
 
-/// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-/// without loading the full paginated list.
+/// Single most-recent shift. Powers the "Last Shift" tab.
 
 final class StaffLatestShiftFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Map<String, dynamic>?>, String> {
@@ -248,8 +255,7 @@ final class StaffLatestShiftFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// Fetches only the single most-recent shift. Powers the "Last Shift" tab
-  /// without loading the full paginated list.
+  /// Single most-recent shift. Powers the "Last Shift" tab.
 
   StaffLatestShiftProvider call(String staffId) =>
       StaffLatestShiftProvider._(argument: staffId, from: this);
@@ -299,7 +305,7 @@ final class StaffShiftsProvider
   }
 }
 
-String _$staffShiftsHash() => r'7f42f2702010055cb96b544ca2a29d4dccdb7cf9';
+String _$staffShiftsHash() => r'cc3fb11236f55e176285b52169cdd3935f799ed2';
 
 final class StaffShiftsFamily extends $Family
     with
