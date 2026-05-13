@@ -75,11 +75,19 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
     final isLargeScreen = screenWidth >= 800;
     final showSideCart = isLargeScreen && cart.isNotEmpty;
 
-    // Adjust grid columns based on screen width
-    final int crossAxisCount = screenWidth > 1200 ? 4 : (screenWidth > 600 ? 3 : 2);
+    // Adjust grid columns based on screen width — POS needs more items visible
+    final int crossAxisCount = screenWidth > 1400
+        ? 7
+        : screenWidth > 1100
+        ? 6
+        : screenWidth > 800
+        ? 5
+        : screenWidth > 600
+        ? 4
+        : 3;
 
     Widget mainContent = Container(
-      padding: EdgeInsets.symmetric(horizontal: SizeConfig().cardPadd(15)),
+      padding: EdgeInsets.symmetric(horizontal: SizeConfig().cardPadd(6)),
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -110,7 +118,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 ),
             ],
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(108),
+              preferredSize: const Size.fromHeight(92),
               child: Column(
                 children: [
                   // ── Items / Combos toggle ──
@@ -239,13 +247,13 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 }
 
                 return SliverPadding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   sliver: SliverGrid(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
-                      childAspectRatio: 0.80,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.85,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
                     ),
                     delegate: SliverChildBuilderDelegate(
                           (context, i) => _MenuItemCard(item: filteredItems[i]),
@@ -276,13 +284,13 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                   );
                 }
                 return SliverPadding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   sliver: SliverGrid(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
-                      childAspectRatio: 0.72,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.88,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
                     ),
                     delegate: SliverChildBuilderDelegate(
                           (context, i) => _ComboMenuCard(combo: activeCombos[i]),
@@ -379,7 +387,7 @@ class _CategoryChip extends StatelessWidget {
       label: Text(label),
       backgroundColor: bgColor,
       labelStyle: TextStyle(fontWeight: FontWeight.w600, color: labelColor),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: isSelected ? BorderSide.none : BorderSide(color: borderColor),
@@ -405,12 +413,12 @@ class _MenuItemCard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -423,21 +431,21 @@ class _MenuItemCard extends ConsumerWidget {
                 fit: StackFit.expand,
                 children: [
                   item.imageUrl != null && item.imageUrl!.isNotEmpty
-                      ? CachedMenuImage(url: item.imageUrl!, )
+                      ? CachedMenuImage(url: item.imageUrl!)
                       : _buildPlaceholder(theme),
                   if (inCart != null)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 4,
+                      right: 4,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           '${inCart.quantity}',
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ),
                     ),
@@ -445,13 +453,20 @@ class _MenuItemCard extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text('${item.price.toStringAsFixed(2)} MAD', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w700)),
+                  Text(item.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text('${item.price.toStringAsFixed(2)} MAD',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -465,7 +480,7 @@ class _MenuItemCard extends ConsumerWidget {
     return Container(
       color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
       child: Center(
-        child: Icon(Icons.fastfood, size: 40, color: theme.colorScheme.primary.withOpacity(0.4)),
+        child: Icon(Icons.fastfood, size: 28, color: theme.colorScheme.primary.withOpacity(0.35)),
       ),
     );
   }
@@ -849,12 +864,12 @@ class _ComboMenuCard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -870,30 +885,27 @@ class _ComboMenuCard extends ConsumerWidget {
                   combo.imageUrl != null && combo.imageUrl!.isNotEmpty
                       ? CachedMenuImage(url: combo.imageUrl!)
                       : Container(
-                    color: theme.colorScheme.tertiaryContainer
-                        .withOpacity(0.4),
+                    color: theme.colorScheme.tertiaryContainer.withOpacity(0.4),
                     child: Center(
                       child: Icon(Icons.restaurant_menu,
-                          size: 40,
-                          color: theme.colorScheme.tertiary
-                              .withOpacity(0.6)),
+                          size: 28,
+                          color: theme.colorScheme.tertiary.withOpacity(0.6)),
                     ),
                   ),
                   // COMBO badge
                   Positioned(
-                    top: 8,
-                    left: 8,
+                    top: 4,
+                    left: 4,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.tertiary,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        _hasChoices ? 'COMBO + CHOICE' : 'COMBO',
+                        _hasChoices ? 'COMBO+' : 'COMBO',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 8,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onTertiary,
                         ),
@@ -902,10 +914,10 @@ class _ComboMenuCard extends ConsumerWidget {
                   ),
                   if (totalInCart > 0)
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 4,
+                      right: 4,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primary,
                           shape: BoxShape.circle,
@@ -913,7 +925,7 @@ class _ComboMenuCard extends ConsumerWidget {
                         child: Text(
                           '$totalInCart',
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
@@ -925,27 +937,28 @@ class _ComboMenuCard extends ConsumerWidget {
             ),
             // Text area
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(combo.name,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
                   if (itemSummary.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       itemSummary,
-                      style: TextStyle(fontSize: 11, color: theme.hintColor),
-                      maxLines: 2,
+                      style: TextStyle(fontSize: 9, color: theme.hintColor),
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(
                     '${combo.price.toStringAsFixed(2)} MAD',
                     style: TextStyle(
+                        fontSize: 11,
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.w700),
                   ),
