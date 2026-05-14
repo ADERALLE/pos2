@@ -135,17 +135,40 @@ class _ActiveOrdersTab extends ConsumerWidget {
         ? ref.watch(activeOrdersProvider(AppConstants.shopId))
         : ref.watch(myActiveOrdersProvider(staff.id));
 
-    return ordersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
-      ),
-      data: (orders) => orders.isEmpty
-          ? _EmptyState(icon: Icons.receipt_long, message: AppLocalizations.of(context)!.noActiveOrders)
-          : ListView.builder(
-        padding: EdgeInsets.zero,
-        itemCount: orders.length,
-        itemBuilder: (_, i) => _OrderCard(order: orders[i],),
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (isManager) {
+          await ref
+              .read(activeOrdersProvider(AppConstants.shopId).notifier)
+              .refresh(AppConstants.shopId);
+        } else {
+          await ref
+              .read(myActiveOrdersProvider(staff.id).notifier)
+              .refresh(staff.id);
+        }
+      },
+      child: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
+        ),
+        data: (orders) => orders.isEmpty
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: _EmptyState(
+                    icon: Icons.receipt_long,
+                    message: AppLocalizations.of(context)!.noActiveOrders,
+                  ),
+                ),
+              )
+            : ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: orders.length,
+                itemBuilder: (_, i) => _OrderCard(order: orders[i]),
+              ),
       ),
     );
   }
@@ -199,18 +222,38 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
         ? ref.watch(shopOrderHistoryProvider(AppConstants.shopId))
         : ref.watch(myOrderHistoryProvider(staff.id));
 
-    return ordersAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
-      ),
-      data: (orders) => orders.isEmpty
-          ? Center(child: Text(AppLocalizations.of(context)!.noOrderHistory))
-          : ListView.separated(
-        controller: _scrollController,
-        itemCount: orders.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
-        itemBuilder: (_, i) => _OrderCard(order: orders[i], readonly: true),
+    return RefreshIndicator(
+      onRefresh: () async {
+        if (isManager) {
+          ref.invalidate(shopOrderHistoryProvider(AppConstants.shopId));
+          await ref.read(shopOrderHistoryProvider(AppConstants.shopId).future);
+        } else {
+          ref.invalidate(myOrderHistoryProvider(staff.id));
+          await ref.read(myOrderHistoryProvider(staff.id).future);
+        }
+      },
+      child: ordersAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(
+          child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
+        ),
+        data: (orders) => orders.isEmpty
+            ? SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Text(AppLocalizations.of(context)!.noOrderHistory),
+                  ),
+                ),
+              )
+            : ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                controller: _scrollController,
+                itemCount: orders.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (_, i) => _OrderCard(order: orders[i], readonly: true),
+              ),
       ),
     );
   }
