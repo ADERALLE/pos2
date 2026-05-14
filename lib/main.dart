@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:pos_v1/i10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/app_routes.dart';
@@ -16,9 +17,26 @@ Future<void> main() async {
     url: 'https://fibwxmixrpgwxmrasbxk.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZpYnd4bWl4cnBnd3htcmFzYnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5Nzc5MDIsImV4cCI6MjA5MDU1MzkwMn0.rFzNrF0zxPHz8Tn71BQ91Cacw5HVTXB5X38e4b_m8NM',
   );
+
+  final prefs = await SharedPreferences.getInstance();
+  final savedTheme = prefs.getString(kThemeKey);
+  final savedLang = prefs.getString(kLocaleKey);
+
+  final initialTheme = savedTheme == 'dark'
+      ? ThemeMode.dark
+      : savedTheme == 'light'
+          ? ThemeMode.light
+          : ThemeMode.system;
+  final initialLocale =
+      savedLang != null ? Locale(savedLang) : const Locale('fr');
+
   runApp(
-    const ProviderScope(
-      child: CoffeePosApp(),
+    ProviderScope(
+      overrides: [
+        themeModeProvider.overrideWith(() => ThemeModeNotifier(initialTheme)),
+        localeProvider.overrideWith(() => LocaleNotifier(initialLocale)),
+      ],
+      child: const CoffeePosApp(),
     ),
   );
 }
