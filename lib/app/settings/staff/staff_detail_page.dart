@@ -50,7 +50,7 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage>
             expandedHeight: 160,
             bottom: TabBar(
               controller: _tabController,
-              tabs: const [
+              tabs:  [
                 Tab(text: l10n.lastShift),
                 Tab(text: l10n.allShifts),
               ],
@@ -192,7 +192,7 @@ class _AllShiftsTabState extends ConsumerState<_AllShiftsTab> {
           error: (e, _) =>
               SliverFillRemaining(child: Center(child: Text('$e'))),
           data: (shifts) => shifts.isEmpty
-              ? const SliverFillRemaining(
+              ?  SliverFillRemaining(
             child: Center(child: Text(l10n.noShiftsYet)),
           )
               : SliverPadding(
@@ -220,6 +220,8 @@ class _LastShiftTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
     final openedAt = DateTime.parse(shift['opened_at']);
     final closedAt =
     shift['closed_at'] != null ? DateTime.parse(shift['closed_at']) : null;
@@ -542,6 +544,8 @@ class _CashHandoverBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -573,7 +577,7 @@ class _CashHandoverBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                 Text(
                   l10n.cashToHandOver,
                   style: TextStyle(
                     color: Colors.white70,
@@ -664,7 +668,7 @@ class _ShiftCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _fmtDate(openedAt),
+                      _fmtDate(context, openedAt),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -718,7 +722,7 @@ class _ShiftCard extends StatelessWidget {
     );
   }
 
-  String _fmtDate(DateTime dt) {
+  String _fmtDate(BuildContext context,DateTime dt) {
     final localeName = Localizations.localeOf(context).toLanguageTag();
     return DateFormat.yMMMd(localeName).format(dt);
   }

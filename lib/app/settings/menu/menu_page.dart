@@ -1278,6 +1278,7 @@ class _CategoryListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 220),

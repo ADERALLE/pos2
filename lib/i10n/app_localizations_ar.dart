@@ -306,4 +306,442 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get ordersCount => 'الطلبات';
+
+  @override
+  String get all => 'الكل';
+
+  @override
+  String get cancelEdit => 'إلغاء التعديل';
+
+  @override
+  String get errorLoadingMenu => 'خطأ في تحميل القائمة';
+
+  @override
+  String get errorLoadingCombos => 'خطأ في تحميل الكومبوهات';
+
+  @override
+  String get noItemsFoundInCategory => 'لا توجد عناصر في هذه الفئة';
+
+  @override
+  String get noCombosAvailable => 'لا توجد كومبوهات متاحة';
+
+  @override
+  String get currentOrder => 'الطلب الحالي';
+
+  @override
+  String get clearAll => 'مسح الكل';
+
+  @override
+  String get clearCartQuestion => 'مسح السلة؟';
+
+  @override
+  String get clearCartMessage => 'ستتم إزالة جميع العناصر من الطلب الحالي.';
+
+  @override
+  String get clear => 'مسح';
+
+  @override
+  String get cartIsEmpty => 'السلة فارغة';
+
+  @override
+  String get tableCustomerLabel => 'الطاولة / العميل';
+
+  @override
+  String get addNonSupplementItem =>
+      'أضف عنصراً واحداً على الأقل ليس إضافة لإرسال هذا الطلب.';
+
+  @override
+  String get updateOrder => 'تحديث الطلب';
+
+  @override
+  String get placeOrder => 'إرسال الطلب';
+
+  @override
+  String get customize => 'تخصيص';
+
+  @override
+  String get chooseYour => 'اختر';
+
+  @override
+  String get addToOrder => 'إضافة إلى الطلب';
+
+  @override
+  String get manageCategories => 'إدارة الفئات';
+
+  @override
+  String get addItem => 'إضافة عنصر';
+
+  @override
+  String get somethingWentWrong => 'حدث خطأ ما';
+
+  @override
+  String get noItemsInCategory => 'لا توجد عناصر في هذه الفئة';
+
+  @override
+  String get noMenuItemsYet => 'لا توجد عناصر في القائمة بعد';
+
+  @override
+  String get uncategorised => 'بدون فئة';
+
+  @override
+  String get supplementBadge => 'إضافة';
+
+  @override
+  String get tapBelowAddFirstItem => 'اضغط أدناه لإضافة أول عنصر';
+
+  @override
+  String get addMenuItem => 'إضافة عنصر للقائمة';
+
+  @override
+  String get inactive => 'غير نشط';
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String get removeMenuItemQuestion => 'إزالة عنصر القائمة؟';
+
+  @override
+  String get permanentlyRemoveFromMenu => 'سيؤدي هذا إلى إزالة';
+
+  @override
+  String get fromTheMenu => 'من القائمة نهائياً.';
+
+  @override
+  String get editMenuItem => 'تعديل عنصر القائمة';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get add => 'إضافة';
+
+  @override
+  String get tapToAddPhoto => 'اضغط لإضافة صورة';
+
+  @override
+  String get itemName => 'اسم العنصر';
+
+  @override
+  String get exampleChickenBurger => 'مثال: Chicken Burger';
+
+  @override
+  String get requiredField => 'مطلوب';
+
+  @override
+  String get price => 'السعر';
+
+  @override
+  String get invalidPrice => 'سعر غير صالح';
+
+  @override
+  String get category => 'الفئة';
+
+  @override
+  String get selectCategory => 'اختر فئة';
+
+  @override
+  String get noCategory => 'بدون فئة';
+
+  @override
+  String get categories => 'الفئات';
+
+  @override
+  String get addNewCategory => 'إضافة فئة جديدة';
+
+  @override
+  String get categoryName => 'اسم الفئة';
+
+  @override
+  String get supplementCategory => 'فئة الإضافات';
+
+  @override
+  String get itemsCannotBeOrderedAlone => 'لا يمكن طلب العناصر وحدها';
+
+  @override
+  String get noCategoriesYet => 'لا توجد فئات بعد';
+
+  @override
+  String get existingCategories => 'الفئات الموجودة';
+
+  @override
+  String get supplement => 'إضافة';
+
+  @override
+  String get manageComboCategories => 'إدارة فئات الكومبو';
+
+  @override
+  String get noCombosYet => 'لا توجد كومبوهات بعد';
+
+  @override
+  String get createFirstComboMenu => 'أنشئ أول قائمة كومبو';
+
+  @override
+  String get removeComboQuestion => 'إزالة الكومبو؟';
+
+  @override
+  String get fromYourMenu => 'من قائمتك.';
+
+  @override
+  String get addOneItemToCombo => 'أضف عنصراً واحداً على الأقل إلى الكومبو';
+
+  @override
+  String get create => 'إنشاء';
+
+  @override
+  String get comboNameField => 'اسم الكومبو';
+
+  @override
+  String get exampleFamilyMeal => 'مثال: Family Meal';
+
+  @override
+  String get invalidNumber => 'رقم غير صالح';
+
+  @override
+  String get descriptionOptional => 'الوصف (اختياري)';
+
+  @override
+  String get shortDescription => 'وصف قصير...';
+
+  @override
+  String get categoryOptional => 'الفئة (اختياري)';
+
+  @override
+  String get includedItemsUpper => 'العناصر المضمنة';
+
+  @override
+  String get selected => 'محدد';
+
+  @override
+  String get choiceGroup => 'مجموعة اختيار';
+
+  @override
+  String get choiceGroupHint =>
+      'اضغط مطولاً على عنصر محدد لتعيين مجموعة اختيار (مثال: \"مشروب\"). العناصر في نفس المجموعة تصبح خيارات اختيار واحد.';
+
+  @override
+  String get choiceGroupDescription =>
+      'العناصر التي تشترك في اسم المجموعة تصبح اختيارات واحدة. اتركه فارغاً لعنصر ثابت.';
+
+  @override
+  String get choiceGroupExample => 'مثال: مشروب، حلوى...';
+
+  @override
+  String get removeGroup => 'إزالة المجموعة';
+
+  @override
+  String get comboCategories => 'فئات الكومبو';
+
+  @override
+  String get newCategory => 'فئة جديدة';
+
+  @override
+  String get addStaff => 'إضافة موظف';
+
+  @override
+  String get managers => 'المديرون';
+
+  @override
+  String get team => 'الفريق';
+
+  @override
+  String get noPin => 'لا يوجد PIN';
+
+  @override
+  String get digitPin => 'أرقام PIN';
+
+  @override
+  String get removeStaffMemberQuestion => 'إزالة عضو الفريق؟';
+
+  @override
+  String get fromTheTeam => 'من الفريق. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get noStaffYet => 'لا يوجد موظفون بعد';
+
+  @override
+  String get addFirstTeamMember => 'أضف أول عضو في الفريق للبدء';
+
+  @override
+  String get addStaffMember => 'إضافة عضو فريق';
+
+  @override
+  String get editStaffMember => 'تعديل عضو الفريق';
+
+  @override
+  String get fullName => 'الاسم الكامل';
+
+  @override
+  String get exampleJohnDoe => 'مثال: John Doe';
+
+  @override
+  String get nameIsRequired => 'الاسم مطلوب';
+
+  @override
+  String get role => 'الدور';
+
+  @override
+  String get selectRole => 'اختر الدور';
+
+  @override
+  String get pinLength => 'طول PIN';
+
+  @override
+  String get pin => 'PIN';
+
+  @override
+  String get digits => 'أرقام';
+
+  @override
+  String get manager => 'مدير';
+
+  @override
+  String get optional => 'اختياري';
+
+  @override
+  String get enterDigitPinOptional => 'أدخل PIN (اختياري)';
+
+  @override
+  String get pinExactDigitsPrefix => 'يجب أن يكون PIN بالضبط';
+
+  @override
+  String get pinExactDigitsSuffix => 'أرقام';
+
+  @override
+  String get pinDigitsOnly => 'يجب أن يحتوي PIN على أرقام فقط';
+
+  @override
+  String get noPinNotice =>
+      'إذا لم يتم تعيين PIN، يمكن لهذا الموظف تسجيل الدخول بدونه.';
+
+  @override
+  String get managerPinNoticePrefix => 'تستخدم حسابات المدير PIN من';
+
+  @override
+  String get managerPinNoticeSuffix =>
+      'أرقام لمزيد من الأمان. يمكنك تعديل الطول أعلاه.';
+
+  @override
+  String get staffDashboardTitle => 'لوحة الموظفين';
+
+  @override
+  String get lastShift => 'آخر وردية';
+
+  @override
+  String get allShifts => 'كل الورديات';
+
+  @override
+  String get noShiftsYet => 'لا توجد ورديات بعد';
+
+  @override
+  String get shiftHistory => 'سجل الورديات';
+
+  @override
+  String get activeShift => 'وردية نشطة';
+
+  @override
+  String get closedShift => 'وردية مغلقة';
+
+  @override
+  String get end => 'النهاية';
+
+  @override
+  String get pending => 'معلق';
+
+  @override
+  String get revenue => 'الإيرادات';
+
+  @override
+  String get tips => 'الإكراميات';
+
+  @override
+  String get overview => 'نظرة عامة';
+
+  @override
+  String get shifts => 'الورديات';
+
+  @override
+  String get avgShift => 'متوسط الوردية';
+
+  @override
+  String get revenueBreakdown => 'تفصيل الإيرادات';
+
+  @override
+  String get ordersByHour => 'الطلبات حسب الساعة';
+
+  @override
+  String get topItems => 'أفضل العناصر';
+
+  @override
+  String get select => 'اختيار';
+
+  @override
+  String get selectYear => 'اختيار السنة';
+
+  @override
+  String get avgOrder => 'متوسط الطلب';
+
+  @override
+  String get noOrdersFor => 'لا توجد طلبات لـ';
+
+  @override
+  String get failedToLoadSummary => 'فشل تحميل الملخص';
+
+  @override
+  String get selectStartOf7DayWindow => 'اختر بداية فترة 7 أيام';
+
+  @override
+  String get selectAnyDayInWeek => 'اختر أي يوم في الأسبوع';
+
+  @override
+  String get searchByOrderId => 'البحث برقم الطلب...';
+
+  @override
+  String get typeToSearchOrders => 'اكتب للبحث في الطلبات';
+
+  @override
+  String get noOrdersMatch => 'لا توجد طلبات تطابق';
+
+  @override
+  String get error => 'خطأ';
+
+  @override
+  String get notes => 'ملاحظات';
+
+  @override
+  String get markAsPaid => 'تحديد كمدفوع';
+
+  @override
+  String get reviewOrder => 'مراجعة الطلب';
+
+  @override
+  String get noteOptional => 'ملاحظة (اختياري)';
+
+  @override
+  String get passationAmount => 'مبلغ التسليم';
+
+  @override
+  String get cashTakenFromRegister =>
+      'النقد المأخوذ من الصندوق عند بدء الوردية';
+
+  @override
+  String get logoutQuestion => 'هل أنت متأكد أنك تريد تسجيل الخروج؟';
+
+  @override
+  String get justNow => 'الآن';
+
+  @override
+  String get minutesAgoSuffix => 'د مضت';
+
+  @override
+  String get hoursAgoSuffix => 'س مضت';
+
+  @override
+  String get daysAgoSuffix => 'ي مضت';
+
+  @override
+  String get totalShort => 'المجموع';
+
+  @override
+  String get sum => 'المجموع';
 }

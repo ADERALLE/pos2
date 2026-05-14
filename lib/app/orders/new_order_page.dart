@@ -633,17 +633,32 @@ class _CartContentState extends ConsumerState<CartContent> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(l10n.currentOrder, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              if (widget.isSheet) IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+              Expanded(
+                child: Text(
+                  l10n.currentOrder,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              if (widget.isSheet)
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
               if (cart.isNotEmpty)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                  label: Text(l10n.clearAll),
+                  label: Text(
+                    l10n.clearAll,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: theme.colorScheme.error,
                     visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () => showDialog(
                     context: context,
@@ -692,7 +707,7 @@ class _CartContentState extends ConsumerState<CartContent> {
                     child: const Icon(Icons.restaurant_menu, size: 18),
                   )
                       : null,
-                  title: Text(c.displayName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(c.displayName, style: const TextStyle(fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis, maxLines: 1),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -741,9 +756,26 @@ class _CartContentState extends ConsumerState<CartContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(l10n.total, style: const TextStyle(fontSize: 16)),
-                Text('${total.toStringAsFixed(2)} MAD',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+                Flexible(
+                  child: Text(
+                    l10n.total,
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '${total.toStringAsFixed(2)} MAD',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.primary,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -770,6 +802,8 @@ class _CartContentState extends ConsumerState<CartContent> {
                   : Text(
                 editingOrder != null ? l10n.updateOrder : l10n.placeOrder,
                 style: const TextStyle(fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ]

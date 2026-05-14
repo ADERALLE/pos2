@@ -310,4 +310,449 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get ordersCount => 'Commandes';
+
+  @override
+  String get all => 'Tout';
+
+  @override
+  String get cancelEdit => 'Annuler la modification';
+
+  @override
+  String get errorLoadingMenu => 'Erreur lors du chargement du menu';
+
+  @override
+  String get errorLoadingCombos => 'Erreur lors du chargement des combos';
+
+  @override
+  String get noItemsFoundInCategory =>
+      'Aucun article trouvé dans cette catégorie';
+
+  @override
+  String get noCombosAvailable => 'Aucun combo disponible';
+
+  @override
+  String get currentOrder => 'Commande en cours';
+
+  @override
+  String get clearAll => 'Tout vider';
+
+  @override
+  String get clearCartQuestion => 'Vider le panier ?';
+
+  @override
+  String get clearCartMessage =>
+      'Tous les articles seront retirés de la commande en cours.';
+
+  @override
+  String get clear => 'Vider';
+
+  @override
+  String get cartIsEmpty => 'Le panier est vide';
+
+  @override
+  String get tableCustomerLabel => 'Table / client';
+
+  @override
+  String get addNonSupplementItem =>
+      'Ajoutez au moins un article non supplément pour passer cette commande.';
+
+  @override
+  String get updateOrder => 'Mettre à jour la commande';
+
+  @override
+  String get placeOrder => 'Passer la commande';
+
+  @override
+  String get customize => 'Personnaliser';
+
+  @override
+  String get chooseYour => 'Choisissez votre';
+
+  @override
+  String get addToOrder => 'Ajouter à la commande';
+
+  @override
+  String get manageCategories => 'Gérer les catégories';
+
+  @override
+  String get addItem => 'Ajouter un article';
+
+  @override
+  String get somethingWentWrong => 'Une erreur est survenue';
+
+  @override
+  String get noItemsInCategory => 'Aucun article dans cette catégorie';
+
+  @override
+  String get noMenuItemsYet => 'Aucun article pour le moment';
+
+  @override
+  String get uncategorised => 'Sans catégorie';
+
+  @override
+  String get supplementBadge => 'SUPP';
+
+  @override
+  String get tapBelowAddFirstItem =>
+      'Appuyez ci-dessous pour ajouter votre premier article';
+
+  @override
+  String get addMenuItem => 'Ajouter un article';
+
+  @override
+  String get inactive => 'Inactif';
+
+  @override
+  String get remove => 'Supprimer';
+
+  @override
+  String get removeMenuItemQuestion => 'Supprimer l\'article ?';
+
+  @override
+  String get permanentlyRemoveFromMenu => 'Cela supprimera définitivement';
+
+  @override
+  String get fromTheMenu => 'du menu.';
+
+  @override
+  String get editMenuItem => 'Modifier l\'article';
+
+  @override
+  String get save => 'Enregistrer';
+
+  @override
+  String get add => 'Ajouter';
+
+  @override
+  String get tapToAddPhoto => 'Appuyer pour ajouter une photo';
+
+  @override
+  String get itemName => 'Nom de l\'article';
+
+  @override
+  String get exampleChickenBurger => 'ex. Chicken Burger';
+
+  @override
+  String get requiredField => 'Obligatoire';
+
+  @override
+  String get price => 'Prix';
+
+  @override
+  String get invalidPrice => 'Prix invalide';
+
+  @override
+  String get category => 'Catégorie';
+
+  @override
+  String get selectCategory => 'Sélectionner une catégorie';
+
+  @override
+  String get noCategory => 'Aucune catégorie';
+
+  @override
+  String get categories => 'Catégories';
+
+  @override
+  String get addNewCategory => 'AJOUTER UNE CATÉGORIE';
+
+  @override
+  String get categoryName => 'Nom de la catégorie';
+
+  @override
+  String get supplementCategory => 'Catégorie supplément';
+
+  @override
+  String get itemsCannotBeOrderedAlone =>
+      'Les articles ne peuvent pas être commandés seuls';
+
+  @override
+  String get noCategoriesYet => 'Aucune catégorie pour le moment';
+
+  @override
+  String get existingCategories => 'CATÉGORIES EXISTANTES';
+
+  @override
+  String get supplement => 'Supplément';
+
+  @override
+  String get manageComboCategories => 'Gérer les catégories de combos';
+
+  @override
+  String get noCombosYet => 'Aucun combo pour le moment';
+
+  @override
+  String get createFirstComboMenu => 'Créez votre premier menu combo';
+
+  @override
+  String get removeComboQuestion => 'Supprimer le combo ?';
+
+  @override
+  String get fromYourMenu => 'de votre menu.';
+
+  @override
+  String get addOneItemToCombo => 'Ajoutez au moins un article au combo';
+
+  @override
+  String get create => 'Créer';
+
+  @override
+  String get comboNameField => 'Nom du combo';
+
+  @override
+  String get exampleFamilyMeal => 'ex. Family Meal';
+
+  @override
+  String get invalidNumber => 'Nombre invalide';
+
+  @override
+  String get descriptionOptional => 'Description (facultative)';
+
+  @override
+  String get shortDescription => 'Courte description...';
+
+  @override
+  String get categoryOptional => 'Catégorie (facultative)';
+
+  @override
+  String get includedItemsUpper => 'ARTICLES INCLUS';
+
+  @override
+  String get selected => 'sélectionné(s)';
+
+  @override
+  String get choiceGroup => 'Groupe de choix';
+
+  @override
+  String get choiceGroupHint =>
+      'Appuyez longuement sur un article sélectionné pour lui attribuer un groupe de choix (ex. \"boisson\"). Les articles du même groupe deviennent des options à choix unique.';
+
+  @override
+  String get choiceGroupDescription =>
+      'Les articles partageant le même nom de groupe deviennent des choix uniques. Laissez vide pour un article fixe.';
+
+  @override
+  String get choiceGroupExample => 'ex. boisson, dessert...';
+
+  @override
+  String get removeGroup => 'Supprimer le groupe';
+
+  @override
+  String get comboCategories => 'Catégories de combos';
+
+  @override
+  String get newCategory => 'NOUVELLE CATÉGORIE';
+
+  @override
+  String get addStaff => 'Ajouter du personnel';
+
+  @override
+  String get managers => 'Managers';
+
+  @override
+  String get team => 'Équipe';
+
+  @override
+  String get noPin => 'Aucun PIN';
+
+  @override
+  String get digitPin => 'chiffres PIN';
+
+  @override
+  String get removeStaffMemberQuestion => 'Supprimer ce membre ?';
+
+  @override
+  String get fromTheTeam => 'de l\'équipe. Cette action est irréversible.';
+
+  @override
+  String get noStaffYet => 'Aucun membre pour le moment';
+
+  @override
+  String get addFirstTeamMember =>
+      'Ajoutez votre premier membre d\'équipe pour commencer';
+
+  @override
+  String get addStaffMember => 'Ajouter un membre';
+
+  @override
+  String get editStaffMember => 'Modifier le membre';
+
+  @override
+  String get fullName => 'Nom complet';
+
+  @override
+  String get exampleJohnDoe => 'ex. John Doe';
+
+  @override
+  String get nameIsRequired => 'Le nom est obligatoire';
+
+  @override
+  String get role => 'Rôle';
+
+  @override
+  String get selectRole => 'Sélectionner un rôle';
+
+  @override
+  String get pinLength => 'Longueur du PIN';
+
+  @override
+  String get pin => 'PIN';
+
+  @override
+  String get digits => 'chiffres';
+
+  @override
+  String get manager => 'Manager';
+
+  @override
+  String get optional => 'Facultatif';
+
+  @override
+  String get enterDigitPinOptional => 'Entrer le PIN (facultatif)';
+
+  @override
+  String get pinExactDigitsPrefix => 'Le PIN doit contenir exactement';
+
+  @override
+  String get pinExactDigitsSuffix => 'chiffres';
+
+  @override
+  String get pinDigitsOnly => 'Le PIN doit contenir uniquement des chiffres';
+
+  @override
+  String get noPinNotice =>
+      'Si aucun PIN n\'est défini, ce membre peut se connecter sans en saisir un.';
+
+  @override
+  String get managerPinNoticePrefix =>
+      'Les comptes manager utilisent un PIN de';
+
+  @override
+  String get managerPinNoticeSuffix =>
+      'chiffres pour plus de sécurité. Vous pouvez ajuster la longueur ci-dessus.';
+
+  @override
+  String get staffDashboardTitle => 'Tableau du personnel';
+
+  @override
+  String get lastShift => 'Dernier service';
+
+  @override
+  String get allShifts => 'Tous les services';
+
+  @override
+  String get noShiftsYet => 'Aucun service pour le moment';
+
+  @override
+  String get shiftHistory => 'Historique des services';
+
+  @override
+  String get activeShift => 'Service actif';
+
+  @override
+  String get closedShift => 'Service fermé';
+
+  @override
+  String get end => 'Fin';
+
+  @override
+  String get pending => 'En attente';
+
+  @override
+  String get revenue => 'Revenus';
+
+  @override
+  String get tips => 'Pourboires';
+
+  @override
+  String get overview => 'Aperçu';
+
+  @override
+  String get shifts => 'Services';
+
+  @override
+  String get avgShift => 'Service moyen';
+
+  @override
+  String get revenueBreakdown => 'Répartition des revenus';
+
+  @override
+  String get ordersByHour => 'Commandes par heure';
+
+  @override
+  String get topItems => 'Meilleurs articles';
+
+  @override
+  String get select => 'Sélectionner';
+
+  @override
+  String get selectYear => 'Sélectionner l\'année';
+
+  @override
+  String get avgOrder => 'Panier moyen';
+
+  @override
+  String get noOrdersFor => 'Aucune commande pour';
+
+  @override
+  String get failedToLoadSummary => 'Échec du chargement du résumé';
+
+  @override
+  String get selectStartOf7DayWindow =>
+      'Sélectionner le début de la période de 7 jours';
+
+  @override
+  String get selectAnyDayInWeek => 'Sélectionner un jour de la semaine';
+
+  @override
+  String get searchByOrderId => 'Rechercher par ID de commande...';
+
+  @override
+  String get typeToSearchOrders => 'Saisissez pour rechercher des commandes';
+
+  @override
+  String get noOrdersMatch => 'Aucune commande ne correspond à';
+
+  @override
+  String get error => 'Erreur';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get markAsPaid => 'Marquer payé';
+
+  @override
+  String get reviewOrder => 'Revoir la commande';
+
+  @override
+  String get noteOptional => 'Note (facultative)';
+
+  @override
+  String get passationAmount => 'Montant de passation';
+
+  @override
+  String get cashTakenFromRegister =>
+      'Espèces prises dans la caisse au démarrage du service';
+
+  @override
+  String get logoutQuestion => 'Voulez-vous vraiment vous déconnecter ?';
+
+  @override
+  String get justNow => 'À l\'instant';
+
+  @override
+  String get minutesAgoSuffix => 'min';
+
+  @override
+  String get hoursAgoSuffix => 'h';
+
+  @override
+  String get daysAgoSuffix => 'j';
+
+  @override
+  String get totalShort => 'total';
+
+  @override
+  String get sum => 'Somme';
 }

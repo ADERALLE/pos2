@@ -206,7 +206,7 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: scheme.primary,
+                          // color: scheme.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         // Replaced Icon with Image.asset
@@ -215,8 +215,8 @@ class _ScaffoldWithNavigationRail extends ConsumerWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(4.0), // Padding to keep icon within container bounds
                             child: Image.asset(
-                              'assets/images/logomark.png',
-                              fit: BoxFit.contain,
+                              'assets/images/logomark2_tbg.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),

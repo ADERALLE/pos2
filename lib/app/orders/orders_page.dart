@@ -428,6 +428,7 @@ class _OrderItemsGrouped extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     // Partition items: those whose name contains " – " belong to a combo,
     // others are standalone.

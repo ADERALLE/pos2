@@ -81,15 +81,17 @@ flutter:
   assets:
     - assets/images/epossys_icon.png
     - assets/images/logomark.png
+    - assets/images/logomark2.png
+    - assets/images/logomark2_tbg.png
 
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: false
-  image_path: "assets/images/epossys_icon.png"
+  image_path: "assets/images/logomark2.png"
   # For Android 12+ support:
-  adaptive_icon_background: "#ffffff" # Matches your dark theme
-  adaptive_icon_foreground: "assets/images/epossys_icon.png"
+  adaptive_icon_background: "#085e1f" # Matches your dark theme
+  adaptive_icon_foreground: "assets/images/logomark2.png"
 
 flutter_native_splash:
   color: "#085e1f" # Pure black background

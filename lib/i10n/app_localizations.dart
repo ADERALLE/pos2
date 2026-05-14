@@ -693,6 +693,870 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Orders'**
   String get ordersCount;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @cancelEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel edit'**
+  String get cancelEdit;
+
+  /// No description provided for @errorLoadingMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading menu'**
+  String get errorLoadingMenu;
+
+  /// No description provided for @errorLoadingCombos.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading combos'**
+  String get errorLoadingCombos;
+
+  /// No description provided for @noItemsFoundInCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No items found in this category'**
+  String get noItemsFoundInCategory;
+
+  /// No description provided for @noCombosAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No combos available'**
+  String get noCombosAvailable;
+
+  /// No description provided for @currentOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Order'**
+  String get currentOrder;
+
+  /// No description provided for @clearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get clearAll;
+
+  /// No description provided for @clearCartQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cart?'**
+  String get clearCartQuestion;
+
+  /// No description provided for @clearCartMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All items will be removed from the current order.'**
+  String get clearCartMessage;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @cartIsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Cart is empty'**
+  String get cartIsEmpty;
+
+  /// No description provided for @tableCustomerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Table / Customer label'**
+  String get tableCustomerLabel;
+
+  /// No description provided for @addNonSupplementItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one non-supplement item to place this order.'**
+  String get addNonSupplementItem;
+
+  /// No description provided for @updateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Order'**
+  String get updateOrder;
+
+  /// No description provided for @placeOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Place Order'**
+  String get placeOrder;
+
+  /// No description provided for @customize.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize'**
+  String get customize;
+
+  /// No description provided for @chooseYour.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your'**
+  String get chooseYour;
+
+  /// No description provided for @addToOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to order'**
+  String get addToOrder;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage categories'**
+  String get manageCategories;
+
+  /// No description provided for @addItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Item'**
+  String get addItem;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get somethingWentWrong;
+
+  /// No description provided for @noItemsInCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No items in this category'**
+  String get noItemsInCategory;
+
+  /// No description provided for @noMenuItemsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No menu items yet'**
+  String get noMenuItemsYet;
+
+  /// No description provided for @uncategorised.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorised'**
+  String get uncategorised;
+
+  /// No description provided for @supplementBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'SUPP'**
+  String get supplementBadge;
+
+  /// No description provided for @tapBelowAddFirstItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap below to add your first item'**
+  String get tapBelowAddFirstItem;
+
+  /// No description provided for @addMenuItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Menu Item'**
+  String get addMenuItem;
+
+  /// No description provided for @inactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get inactive;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @removeMenuItemQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove menu item?'**
+  String get removeMenuItemQuestion;
+
+  /// No description provided for @permanentlyRemoveFromMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently remove'**
+  String get permanentlyRemoveFromMenu;
+
+  /// No description provided for @fromTheMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'from the menu.'**
+  String get fromTheMenu;
+
+  /// No description provided for @editMenuItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Menu Item'**
+  String get editMenuItem;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @tapToAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add photo'**
+  String get tapToAddPhoto;
+
+  /// No description provided for @itemName.
+  ///
+  /// In en, this message translates to:
+  /// **'Item Name'**
+  String get itemName;
+
+  /// No description provided for @exampleChickenBurger.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Chicken Burger'**
+  String get exampleChickenBurger;
+
+  /// No description provided for @requiredField.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get requiredField;
+
+  /// No description provided for @price.
+  ///
+  /// In en, this message translates to:
+  /// **'Price'**
+  String get price;
+
+  /// No description provided for @invalidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid price'**
+  String get invalidPrice;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get selectCategory;
+
+  /// No description provided for @noCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get noCategory;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// No description provided for @addNewCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'ADD NEW CATEGORY'**
+  String get addNewCategory;
+
+  /// No description provided for @categoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get categoryName;
+
+  /// No description provided for @supplementCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplement category'**
+  String get supplementCategory;
+
+  /// No description provided for @itemsCannotBeOrderedAlone.
+  ///
+  /// In en, this message translates to:
+  /// **'Items cannot be ordered alone'**
+  String get itemsCannotBeOrderedAlone;
+
+  /// No description provided for @noCategoriesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get noCategoriesYet;
+
+  /// No description provided for @existingCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'EXISTING CATEGORIES'**
+  String get existingCategories;
+
+  /// No description provided for @supplement.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplement'**
+  String get supplement;
+
+  /// No description provided for @manageComboCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage combo categories'**
+  String get manageComboCategories;
+
+  /// No description provided for @noCombosYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No combos yet'**
+  String get noCombosYet;
+
+  /// No description provided for @createFirstComboMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first combo menu'**
+  String get createFirstComboMenu;
+
+  /// No description provided for @removeComboQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove combo?'**
+  String get removeComboQuestion;
+
+  /// No description provided for @fromYourMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'from your menu.'**
+  String get fromYourMenu;
+
+  /// No description provided for @addOneItemToCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one item to the combo'**
+  String get addOneItemToCombo;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @comboNameField.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo Name'**
+  String get comboNameField;
+
+  /// No description provided for @exampleFamilyMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Family Meal'**
+  String get exampleFamilyMeal;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid number'**
+  String get invalidNumber;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @shortDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Short description...'**
+  String get shortDescription;
+
+  /// No description provided for @categoryOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Category (optional)'**
+  String get categoryOptional;
+
+  /// No description provided for @includedItemsUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'INCLUDED ITEMS'**
+  String get includedItemsUpper;
+
+  /// No description provided for @selected.
+  ///
+  /// In en, this message translates to:
+  /// **'selected'**
+  String get selected;
+
+  /// No description provided for @choiceGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Choice group'**
+  String get choiceGroup;
+
+  /// No description provided for @choiceGroupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press a selected item to assign a choice group (e.g. \"drink\"). Items sharing the same group become pick-one options.'**
+  String get choiceGroupHint;
+
+  /// No description provided for @choiceGroupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Items sharing the same group name become pick-one choices. Leave empty for a fixed item.'**
+  String get choiceGroupDescription;
+
+  /// No description provided for @choiceGroupExample.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. drink, dessert...'**
+  String get choiceGroupExample;
+
+  /// No description provided for @removeGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove group'**
+  String get removeGroup;
+
+  /// No description provided for @comboCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Combo Categories'**
+  String get comboCategories;
+
+  /// No description provided for @newCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW CATEGORY'**
+  String get newCategory;
+
+  /// No description provided for @addStaff.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Staff'**
+  String get addStaff;
+
+  /// No description provided for @managers.
+  ///
+  /// In en, this message translates to:
+  /// **'Managers'**
+  String get managers;
+
+  /// No description provided for @team.
+  ///
+  /// In en, this message translates to:
+  /// **'Team'**
+  String get team;
+
+  /// No description provided for @noPin.
+  ///
+  /// In en, this message translates to:
+  /// **'No PIN'**
+  String get noPin;
+
+  /// No description provided for @digitPin.
+  ///
+  /// In en, this message translates to:
+  /// **'digit PIN'**
+  String get digitPin;
+
+  /// No description provided for @removeStaffMemberQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove staff member?'**
+  String get removeStaffMemberQuestion;
+
+  /// No description provided for @fromTheTeam.
+  ///
+  /// In en, this message translates to:
+  /// **'from the team. This action cannot be undone.'**
+  String get fromTheTeam;
+
+  /// No description provided for @noStaffYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No staff yet'**
+  String get noStaffYet;
+
+  /// No description provided for @addFirstTeamMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first team member to get started'**
+  String get addFirstTeamMember;
+
+  /// No description provided for @addStaffMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Staff Member'**
+  String get addStaffMember;
+
+  /// No description provided for @editStaffMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Staff Member'**
+  String get editStaffMember;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @exampleJohnDoe.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. John Doe'**
+  String get exampleJohnDoe;
+
+  /// No description provided for @nameIsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Name is required'**
+  String get nameIsRequired;
+
+  /// No description provided for @role.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get role;
+
+  /// No description provided for @selectRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Select role'**
+  String get selectRole;
+
+  /// No description provided for @pinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN Length'**
+  String get pinLength;
+
+  /// No description provided for @pin.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN'**
+  String get pin;
+
+  /// No description provided for @digits.
+  ///
+  /// In en, this message translates to:
+  /// **'digits'**
+  String get digits;
+
+  /// No description provided for @manager.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager'**
+  String get manager;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @enterDigitPinOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter digit PIN (optional)'**
+  String get enterDigitPinOptional;
+
+  /// No description provided for @pinExactDigitsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN must be exactly'**
+  String get pinExactDigitsPrefix;
+
+  /// No description provided for @pinExactDigitsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'digits'**
+  String get pinExactDigitsSuffix;
+
+  /// No description provided for @pinDigitsOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'PIN must contain digits only'**
+  String get pinDigitsOnly;
+
+  /// No description provided for @noPinNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'If no PIN is set, this staff member can log in without entering one.'**
+  String get noPinNotice;
+
+  /// No description provided for @managerPinNoticePrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Manager accounts use a'**
+  String get managerPinNoticePrefix;
+
+  /// No description provided for @managerPinNoticeSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'digit PIN for enhanced security. You can adjust the length above.'**
+  String get managerPinNoticeSuffix;
+
+  /// No description provided for @staffDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Staff dashboard'**
+  String get staffDashboardTitle;
+
+  /// No description provided for @lastShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Shift'**
+  String get lastShift;
+
+  /// No description provided for @allShifts.
+  ///
+  /// In en, this message translates to:
+  /// **'All Shifts'**
+  String get allShifts;
+
+  /// No description provided for @noShiftsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No shifts yet'**
+  String get noShiftsYet;
+
+  /// No description provided for @shiftHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Shift history'**
+  String get shiftHistory;
+
+  /// No description provided for @activeShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Active shift'**
+  String get activeShift;
+
+  /// No description provided for @closedShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed shift'**
+  String get closedShift;
+
+  /// No description provided for @end.
+  ///
+  /// In en, this message translates to:
+  /// **'End'**
+  String get end;
+
+  /// No description provided for @pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get pending;
+
+  /// No description provided for @revenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue'**
+  String get revenue;
+
+  /// No description provided for @tips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get tips;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @shifts.
+  ///
+  /// In en, this message translates to:
+  /// **'Shifts'**
+  String get shifts;
+
+  /// No description provided for @avgShift.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg shift'**
+  String get avgShift;
+
+  /// No description provided for @revenueBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue breakdown'**
+  String get revenueBreakdown;
+
+  /// No description provided for @ordersByHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders by hour'**
+  String get ordersByHour;
+
+  /// No description provided for @topItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Top items'**
+  String get topItems;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @selectYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Select year'**
+  String get selectYear;
+
+  /// No description provided for @avgOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg order'**
+  String get avgOrder;
+
+  /// No description provided for @noOrdersFor.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders for'**
+  String get noOrdersFor;
+
+  /// No description provided for @failedToLoadSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load summary'**
+  String get failedToLoadSummary;
+
+  /// No description provided for @selectStartOf7DayWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Select start of 7-day window'**
+  String get selectStartOf7DayWindow;
+
+  /// No description provided for @selectAnyDayInWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Select any day in the week'**
+  String get selectAnyDayInWeek;
+
+  /// No description provided for @searchByOrderId.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by order ID...'**
+  String get searchByOrderId;
+
+  /// No description provided for @typeToSearchOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Type to search orders'**
+  String get typeToSearchOrders;
+
+  /// No description provided for @noOrdersMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders match'**
+  String get noOrdersMatch;
+
+  /// No description provided for @error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @notes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// No description provided for @markAsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as paid'**
+  String get markAsPaid;
+
+  /// No description provided for @reviewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Review order'**
+  String get reviewOrder;
+
+  /// No description provided for @noteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get noteOptional;
+
+  /// No description provided for @passationAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Passation amount'**
+  String get passationAmount;
+
+  /// No description provided for @cashTakenFromRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash taken from register at shift start'**
+  String get cashTakenFromRegister;
+
+  /// No description provided for @logoutQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutQuestion;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgoSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'m ago'**
+  String get minutesAgoSuffix;
+
+  /// No description provided for @hoursAgoSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'h ago'**
+  String get hoursAgoSuffix;
+
+  /// No description provided for @daysAgoSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'d ago'**
+  String get daysAgoSuffix;
+
+  /// No description provided for @totalShort.
+  ///
+  /// In en, this message translates to:
+  /// **'total'**
+  String get totalShort;
+
+  /// No description provided for @sum.
+  ///
+  /// In en, this message translates to:
+  /// **'Sum'**
+  String get sum;
 }
 
 class _AppLocalizationsDelegate
