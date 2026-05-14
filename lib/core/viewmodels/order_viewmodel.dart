@@ -498,8 +498,26 @@ class Cart extends _$Cart {
   /// both [submitOrder] and [updateExistingOrder]).
   List<Map<String, dynamic>> _buildItemsPayload() {
     final items = <Map<String, dynamic>>[];
+
+    // Pre-compute total units per combo ID across all cart entries so we can
+    // assign globally-unique " #N" suffixes. This ensures two entries of the
+    // same combo with *different* choices (each qty 1) get distinct group names
+    // like "Combo A #1" and "Combo A #2" instead of both being "Combo A".
+    final comboTotals = <String, int>{};
     for (final c in state) {
       if (c.isCombo) {
+        final id = c.comboMenu!.id;
+        comboTotals[id] = (comboTotals[id] ?? 0) + c.quantity;
+      }
+    }
+    final comboCounters = <String, int>{};
+
+    for (final c in state) {
+      if (c.isCombo) {
+        final comboId = c.comboMenu!.id;
+        final totalUnits = comboTotals[comboId]!;
+        final startUnit = comboCounters[comboId] ?? 0;
+
         final selectedIds = c.selectedChoices.values.toSet();
         final effectiveItems = c.comboMenu!.comboMenuItems.where((ci) {
           if (ci.choiceGroup == null) return true;
@@ -507,7 +525,8 @@ class Cart extends _$Cart {
         }).toList();
 
         for (int u = 0; u < c.quantity; u++) {
-          final suffix = c.quantity > 1 ? ' #${u + 1}' : '';
+          final unitNum = startUnit + u + 1;
+          final suffix = totalUnits > 1 ? ' #$unitNum' : '';
           for (final ci in effectiveItems) {
             final mi = ci.menuItem;
             if (mi == null) continue;
@@ -523,6 +542,8 @@ class Cart extends _$Cart {
             items.last['unit_price'] = c.comboMenu!.price / lastQty;
           }
         }
+
+        comboCounters[comboId] = startUnit + c.quantity;
       } else {
         items.add({
           'menu_item_id': c.menuItem!.id,
