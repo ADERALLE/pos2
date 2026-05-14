@@ -302,8 +302,9 @@ class _LanguageSheet extends StatelessWidget {
   static const _languages = [
     (locale: Locale('fr'), flag: '🇫🇷', name: 'Français'),
     (locale: Locale('en'), flag: '🇺🇸', name: 'English'),
-    (locale: Locale('ar'), flag: '�🇦', name: 'العربية'),
+    (locale: Locale('ar'), flag: '🇲🇦', name: 'العربية'),
   ];
+
 
   @override
   Widget build(BuildContext context) {
