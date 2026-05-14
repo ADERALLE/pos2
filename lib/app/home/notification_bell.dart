@@ -263,7 +263,7 @@ class _NotifTile extends ConsumerWidget {
               fontSize: 12,
               color: scheme.onSurface.withOpacity(notif.isRead ? 0.5 : 0.8))),
           Text(
-            _timeAgo(notif.createdAt),
+            _timeAgo(context, notif.createdAt),
             style: TextStyle(
                 fontSize: 11, color: scheme.onSurface.withOpacity(0.4)),
           ),
@@ -282,12 +282,13 @@ class _NotifTile extends ConsumerWidget {
     );
   }
 
-  String _timeAgo(DateTime dt) {
+  String _timeAgo(BuildContext context, DateTime dt) {
+    final l10n = AppLocalizations.of(context)!;
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes}m ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inMinutes < 1) return l10n.justNow;
+    if (diff.inHours < 1) return '${diff.inMinutes}${l10n.minutesAgoSuffix}';
+    if (diff.inDays < 1) return '${diff.inHours}${l10n.hoursAgoSuffix}';
+    return '${diff.inDays}${l10n.daysAgoSuffix}';
   }
 }
 

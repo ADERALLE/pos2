@@ -221,7 +221,7 @@ class _ShiftStatsBody extends StatelessWidget {
         const SizedBox(height: 20),
 
         // ── Orders summary ─────────────────────────────────────────────
-        _SectionLabel('Orders', scheme: scheme),
+        _SectionLabel(l10n.orders, scheme: scheme),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -233,14 +233,14 @@ class _ShiftStatsBody extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _MiniStatCard(
-              label: 'Done',
+              label: l10n.done,
               value: '${done.length}',
               icon: Icons.check_circle_outline_rounded,
               color: Colors.green,
             ),
             const SizedBox(width: 8),
             _MiniStatCard(
-              label: 'Cancelled',
+              label: l10n.cancelled,
               value: '$cancelled',
               icon: Icons.cancel_outlined,
               color: Colors.red,
@@ -248,7 +248,7 @@ class _ShiftStatsBody extends StatelessWidget {
             if (pending > 0) ...[
               const SizedBox(width: 8),
               _MiniStatCard(
-                label: 'Pending',
+                label: l10n.pending,
                 value: '$pending',
                 icon: Icons.hourglass_empty_rounded,
                 color: Colors.orange,

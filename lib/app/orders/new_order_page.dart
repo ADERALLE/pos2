@@ -14,6 +14,7 @@ import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/combo_menu_item.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 import '../../core/models/size_config.dart';
 
 // ── State Provider for Category Filtering ────────────────────────────────────
@@ -45,6 +46,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
     final combosAsync = ref.watch(comboMenuListProvider(AppConstants.shopId));
     final cart = ref.watch(cartProvider);
     final editingOrder = ref.watch(editingOrderProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     // When both menu data is available and an order is being edited, populate
     // the cart exactly once per editing session.
@@ -93,7 +95,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
         slivers: [
           SliverAppBar(
             title: Text(
-              editingOrder != null ? 'Edit Order' : 'New Order',
+              editingOrder != null ? l10n.editOrder : l10n.newOrder,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             pinned: true,
@@ -104,7 +106,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
               if (editingOrder != null)
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
-                  tooltip: 'Cancel edit',
+                  tooltip: l10n.cancelEdit,
                   onPressed: () {
                     ref.read(editingOrderProvider.notifier).state = null;
                     ref.read(cartProvider.notifier).clear();
@@ -127,13 +129,13 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                     child: Row(
                       children: [
                         _TabChip(
-                          label: 'Items',
+                          label: l10n.items,
                           isSelected: activeTab == OrderViewTab.items,
                           onPressed: () => ref.read(orderViewTabProvider.notifier).state = OrderViewTab.items,
                         ),
                         const SizedBox(width: 8),
                         _TabChip(
-                          label: 'Combos',
+                          label: l10n.combos,
                           isSelected: activeTab == OrderViewTab.combos,
                           onPressed: () => ref.read(orderViewTabProvider.notifier).state = OrderViewTab.combos,
                         ),
@@ -163,7 +165,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                               if (i == 0) {
                                 final isSelected = selectedCategoryId == null;
                                 return _CategoryChip(
-                                  label: 'All',
+                                  label: l10n.all,
                                   isSelected: isSelected,
                                   onPressed: () => ref.read(selectedCategoryIdProvider.notifier).state = null,
                                 );
@@ -197,7 +199,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                             if (i == 0) {
                               final isSelected = selectedComboCategoryId == null;
                               return _CategoryChip(
-                                label: 'All',
+                                label: l10n.all,
                                 isSelected: isSelected,
                                 onPressed: () => ref.read(selectedComboCategoryIdProvider.notifier).state = null,
                               );
@@ -226,7 +228,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, _) => SliverFillRemaining(
-                child: Center(child: Text('Error loading menu: $e')),
+                child: Center(child: Text('${l10n.errorLoadingMenu}: $e')),
               ),
               data: (items) {
                 final cats = categoriesAsync.value ?? [];
@@ -241,8 +243,8 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 }).toList();
 
                 if (filteredItems.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: Text('No items found in this category')),
+                  return SliverFillRemaining(
+                    child: Center(child: Text(l10n.noItemsFoundInCategory)),
                   );
                 }
 
@@ -269,7 +271,7 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                 child: Center(child: CircularProgressIndicator()),
               ),
               error: (e, _) => SliverFillRemaining(
-                child: Center(child: Text('Error loading combos: $e')),
+                child: Center(child: Text('${l10n.errorLoadingCombos}: $e')),
               ),
               data: (combos) {
                 final activeCombos = combos
@@ -279,8 +281,8 @@ class _NewOrderPageState extends ConsumerState<NewOrderPage> {
                         c.categoryId == selectedComboCategoryId))
                     .toList();
                 if (activeCombos.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: Text('No combos available')),
+                  return SliverFillRemaining(
+                    child: Center(child: Text(l10n.noCombosAvailable)),
                   );
                 }
                 return SliverPadding(
@@ -614,6 +616,7 @@ class _CartContentState extends ConsumerState<CartContent> {
     final cart = ref.watch(cartProvider);
     final total = ref.read(cartProvider.notifier).total;
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     // Block order placement only when every item in the cart is a supplement
     // (i.e. belongs to a supp category). Combo items always count as main items
@@ -632,12 +635,12 @@ class _CartContentState extends ConsumerState<CartContent> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Current Order', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(l10n.currentOrder, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               if (widget.isSheet) IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
               if (cart.isNotEmpty)
                 TextButton.icon(
                   icon: const Icon(Icons.delete_sweep_rounded, size: 18),
-                  label: const Text('Clear all'),
+                  label: Text(l10n.clearAll),
                   style: TextButton.styleFrom(
                     foregroundColor: theme.colorScheme.error,
                     visualDensity: VisualDensity.compact,
@@ -646,12 +649,12 @@ class _CartContentState extends ConsumerState<CartContent> {
                     context: context,
                     builder: (dialogContext) => AlertDialog(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      title: const Text('Clear cart?', style: TextStyle(fontWeight: FontWeight.w600)),
-                      content: const Text('All items will be removed from the current order.'),
+                      title: Text(l10n.clearCartQuestion, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      content: Text(l10n.clearCartMessage),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogContext),
-                          child: const Text('Cancel'),
+                          child: Text(l10n.cancel),
                         ),
                         FilledButton(
                           style: FilledButton.styleFrom(backgroundColor: theme.colorScheme.error),
@@ -660,7 +663,7 @@ class _CartContentState extends ConsumerState<CartContent> {
                             Navigator.pop(dialogContext);
                             if (widget.isSheet) Navigator.pop(context);
                           },
-                          child: const Text('Clear'),
+                          child: Text(l10n.clear),
                         ),
                       ],
                     ),
@@ -671,7 +674,7 @@ class _CartContentState extends ConsumerState<CartContent> {
           const SizedBox(height: 16),
           Expanded(
             child: cart.isEmpty
-                ? const Center(child: Text('Cart is empty'))
+                ? Center(child: Text(l10n.cartIsEmpty))
                 : ListView.separated(
               itemCount: cart.length,
               separatorBuilder: (_, __) => const Divider(height: 1),
@@ -728,7 +731,7 @@ class _CartContentState extends ConsumerState<CartContent> {
             TextField(
               controller: _tableLabelController,
               decoration: InputDecoration(
-                hintText: 'Table / Customer label',
+                hintText: l10n.tableCustomerLabel,
                 filled: true,
                 fillColor: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
@@ -738,7 +741,7 @@ class _CartContentState extends ConsumerState<CartContent> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Total', style: TextStyle(fontSize: 16)),
+                Text(l10n.total, style: const TextStyle(fontSize: 16)),
                 Text('${total.toStringAsFixed(2)} MAD',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
               ],
@@ -748,7 +751,7 @@ class _CartContentState extends ConsumerState<CartContent> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
-                  'Add at least one non-supplement item to place this order.',
+                  l10n.addNonSupplementItem,
                   style: TextStyle(
                     color: theme.colorScheme.error,
                     fontSize: 13,
@@ -765,7 +768,7 @@ class _CartContentState extends ConsumerState<CartContent> {
               child: _loading
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                   : Text(
-                editingOrder != null ? 'Update Order' : 'Place Order',
+                editingOrder != null ? l10n.updateOrder : l10n.placeOrder,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -834,6 +837,7 @@ class _ComboMenuCard extends ConsumerWidget {
             (c) => c.isCombo && c.comboMenu?.id == combo.id);
     final totalInCart = allInCart.fold<int>(0, (s, c) => s + c.quantity);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     // Build a short summary: fixed items + choice group labels
     final parts = <String>[];
@@ -986,8 +990,9 @@ class _ComboMenuCard extends ConsumerWidget {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             final theme = Theme.of(ctx);
+            final l10n = AppLocalizations.of(ctx)!;
             return AlertDialog(
-              title: Text('Customize ${combo.name}'),
+              title: Text('${l10n.customize} ${combo.name}'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1001,7 +1006,7 @@ class _ComboMenuCard extends ConsumerWidget {
                         Padding(
                           padding: const EdgeInsets.only(top: 12, bottom: 8),
                           child: Text(
-                            'Choose your ${groupName.toLowerCase()}',
+                            '${l10n.chooseYour} ${groupName.toLowerCase()}',
                             style: const TextStyle(
                                 fontWeight: FontWeight.w600, fontSize: 14),
                           ),
@@ -1059,7 +1064,7 @@ class _ComboMenuCard extends ConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
@@ -1068,7 +1073,7 @@ class _ComboMenuCard extends ConsumerWidget {
                         .addComboWithChoices(combo, selections);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Add to order'),
+                  child: Text(l10n.addToOrder),
                 ),
               ],
             );

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pos_v1/app/shared/cashed_menu_image.dart';
 import 'package:pos_v1/core/repositories/storage_repository.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 import '../../../core/appconstants.dart';
 import '../../../core/models/category.dart';
@@ -34,19 +35,20 @@ class ComboMenuPage extends ConsumerWidget {
     ref.watch(categoryListProvider(AppConstants.shopId));
     final selectedCategoryId =
     ref.watch(_comboListCategoryFilterProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            title: const Text('Combo Menus'),
+            title: Text(l10n.comboMenus),
             floating: true,
             pinned: true,
             actions: [
               IconButton(
                 icon: const Icon(Icons.category_outlined),
-                tooltip: 'Manage combo categories',
+                tooltip: l10n.manageComboCategories,
                 onPressed: () => _showComboCategoriesSheet(
                     context, ref, categoriesAsync.value ?? []),
               ),
@@ -60,7 +62,7 @@ class ComboMenuPage extends ConsumerWidget {
                     itemCategories: itemCategoriesAsync.value ?? [],
                   ),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('New Combo'),
+                  label: Text(l10n.newCombo),
                   style: FilledButton.styleFrom(
                       visualDensity: VisualDensity.compact),
                 ),
@@ -104,7 +106,7 @@ class ComboMenuPage extends ConsumerWidget {
                       Icon(Icons.error_outline_rounded,
                           size: 48, color: scheme.error),
                       const SizedBox(height: 12),
-                      Text('Error: $e',
+                      Text('${l10n.error}: $e',
                           style:
                           TextStyle(color: scheme.onSurfaceVariant)),
                     ],
@@ -217,7 +219,7 @@ class _CategoryChips extends StatelessWidget {
           if (i == 0) {
             final selected = selectedId == null;
             return _FilterChip(
-              label: 'All',
+              label: AppLocalizations.of(context)!.all,
               selected: selected,
               onTap: () => onSelect(null),
             );
@@ -247,6 +249,7 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -356,19 +359,19 @@ class _EmptyState extends StatelessWidget {
               size: 48, color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 20),
-        Text('No combos yet',
+        Text(l10n.noCombosYet,
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
                 color: scheme.onSurface)),
         const SizedBox(height: 8),
-        Text('Create your first combo menu',
+        Text(l10n.createFirstComboMenu,
             style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add),
-          label: const Text('Create Combo'),
+          label: Text(l10n.createCombo),
         ),
       ],
     );
@@ -392,6 +395,7 @@ class _ComboCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final itemSummary = combo.comboMenuItems
         .where((ci) => ci.menuItem != null)
         .map((ci) => ci.quantity > 1
@@ -470,7 +474,7 @@ class _ComboCard extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'Inactive',
+                              l10n.inactive,
                               style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -533,18 +537,19 @@ class _ComboCard extends ConsumerWidget {
 
   void _confirmDelete(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Remove combo?'),
+        title: Text(l10n.removeComboQuestion),
         content: Text(
-            'This will permanently remove "${combo.name}" from your menu.'),
+            '${l10n.permanentlyRemoveFromMenu} "${combo.name}" ${l10n.fromYourMenu}'),
         actions: [
           TextButton(
               onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-              child: const Text('Cancel')),
+              child: Text(l10n.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
             onPressed: () async {
@@ -554,7 +559,7 @@ class _ComboCard extends ConsumerWidget {
                   comboId: combo.id, shopId: AppConstants.shopId);
               Navigator.of(context, rootNavigator: true).pop();
             },
-            child: const Text('Remove'),
+            child: Text(l10n.remove),
           ),
         ],
       ),
@@ -645,10 +650,11 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedItems.isEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content:
-          const Text('Add at least one item to the combo'),
+          Text(l10n.addOneItemToCombo),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10)),
@@ -708,6 +714,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final activeItems =
     widget.menuItems.where((i) => i.isActive).toList();
     final filteredItems = _itemCategoryFilter == null
@@ -750,7 +757,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _isEdit ? 'Edit Combo' : 'New Combo',
+                    _isEdit ? l10n.editCombo : l10n.newCombo,
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
@@ -768,7 +775,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                   )
                       : FilledButton(
                     onPressed: _save,
-                    child: Text(_isEdit ? 'Save' : 'Create'),
+                    child: Text(_isEdit ? l10n.save : l10n.create),
                   ),
                 ],
               ),
@@ -847,7 +854,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              'Tap to add photo',
+                              l10n.tapToAddPhoto,
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
@@ -861,20 +868,20 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                     const SizedBox(height: 20),
 
                     // Name
-                    _FormLabel(label: 'Combo Name'),
+                    _FormLabel(label: l10n.comboNameField),
                     TextFormField(
                       controller: _nameCtrl,
                       textCapitalization: TextCapitalization.words,
                       decoration: _inputDecoration(context,
-                          hint: 'e.g. Family Meal',
+                          hint: l10n.exampleFamilyMeal,
                           icon: Icons.restaurant_menu_rounded),
                       validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Required' : null,
+                      v == null || v.trim().isEmpty ? l10n.requiredField : null,
                     ),
                     const SizedBox(height: 20),
 
                     // Price
-                    _FormLabel(label: 'Price'),
+                    _FormLabel(label: l10n.price),
                     TextFormField(
                       controller: _priceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -885,36 +892,36 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                           suffixText: 'MAD'),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty)
-                          return 'Required';
+                          return l10n.requiredField;
                         if (double.tryParse(v.trim()) == null)
-                          return 'Invalid number';
+                          return l10n.invalidNumber;
                         return null;
                       },
                     ),
                     const SizedBox(height: 20),
 
                     // Description
-                    _FormLabel(label: 'Description (optional)'),
+                    _FormLabel(label: l10n.descriptionOptional),
                     TextFormField(
                       controller: _descCtrl,
                       maxLines: 2,
                       decoration: _inputDecoration(context,
-                          hint: 'Short description…',
+                          hint: l10n.shortDescription,
                           icon: Icons.notes_rounded),
                     ),
                     const SizedBox(height: 20),
 
                     // Category
-                    _FormLabel(label: 'Category (optional)'),
+                    _FormLabel(label: l10n.categoryOptional),
                     DropdownButtonFormField<String?>(
                       value: _selectedCategoryId,
                       decoration: _inputDecoration(context,
-                          hint: 'No category',
+                          hint: l10n.noCategory,
                           icon: Icons.category_outlined),
                       items: [
-                        const DropdownMenuItem<String?>(
+                        DropdownMenuItem<String?>(
                             value: null,
-                            child: Text('— No category —')),
+                            child: Text(l10n.noCategory)),
                         ...widget.categories.map((cat) =>
                             DropdownMenuItem<String?>(
                                 value: cat.id,
@@ -929,7 +936,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                     Row(
                       children: [
                         Text(
-                          'INCLUDED ITEMS',
+                          l10n.includedItemsUpper,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -948,7 +955,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '${_selectedItems.length} selected',
+                            '${_selectedItems.length} ${l10n.selected}',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -974,7 +981,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                           itemBuilder: (_, i) {
                             if (i == 0) {
                               return _FilterChip(
-                                label: 'All',
+                                label: l10n.all,
                                 selected: _itemCategoryFilter == null,
                                 onTap: () => setState(
                                         () => _itemCategoryFilter = null),
@@ -1234,7 +1241,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Long-press a selected item to assign a choice group (e.g. "drink"). Items sharing the same group become pick-one options.',
+                              l10n.choiceGroupHint,
                               style: TextStyle(
                                   fontSize: 12,
                                   color: scheme.onSurfaceVariant),
@@ -1256,6 +1263,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
 
   void _showChoiceGroupDialog(String menuItemId) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final ctrl =
     TextEditingController(text: _choiceGroups[menuItemId] ?? '');
     final existingGroups = _choiceGroups.values
@@ -1269,13 +1277,13 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20)),
-        title: const Text('Choice group'),
+        title: Text(l10n.choiceGroup),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Items sharing the same group name become pick-one choices. Leave empty for a fixed item.',
+              l10n.choiceGroupDescription,
               style: TextStyle(
                   fontSize: 13, color: scheme.onSurfaceVariant),
             ),
@@ -1285,7 +1293,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               autofocus: true,
               textCapitalization: TextCapitalization.none,
               decoration: _inputDecoration(ctx,
-                  hint: 'e.g. drink, dessert…',
+                  hint: l10n.choiceGroupExample,
                   icon: Icons.swap_horiz_rounded),
             ),
             if (existingGroups.isNotEmpty) ...[
@@ -1309,7 +1317,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               setState(() => _choiceGroups.remove(menuItemId));
               Navigator.pop(ctx);
             },
-            child: const Text('Remove group'),
+            child: Text(l10n.removeGroup),
           ),
           FilledButton(
             onPressed: () {
@@ -1323,7 +1331,7 @@ class _ComboFormSheetState extends State<_ComboFormSheet> {
               });
               Navigator.pop(ctx);
             },
-            child: const Text('Save'),
+            child: Text(l10n.save),
           ),
         ],
       ),
@@ -1368,6 +1376,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync =
     ref.watch(comboCategoryListProvider(AppConstants.shopId));
 
@@ -1399,7 +1408,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
                   horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  Text('Combo Categories',
+                  Text(l10n.comboCategories,
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -1431,7 +1440,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'NEW CATEGORY',
+                            l10n.newCategory,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1448,7 +1457,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
                                   textCapitalization:
                                   TextCapitalization.words,
                                   decoration: _inputDecoration(context,
-                                      hint: 'Category name',
+                                      hint: l10n.categoryName,
                                       icon: Icons.label_outline_rounded),
                                   onSubmitted: (_) => _add(),
                                 ),
@@ -1487,7 +1496,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
                             child: Padding(
                               padding:
                               const EdgeInsets.symmetric(vertical: 16),
-                              child: Text('No categories yet',
+                              child: Text(l10n.noCategoriesYet,
                                   style: TextStyle(
                                       color: scheme.onSurfaceVariant)),
                             ),
@@ -1497,7 +1506,7 @@ class _ComboCategoriesSheetState extends ConsumerState<_ComboCategoriesSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'EXISTING CATEGORIES',
+                              l10n.existingCategories,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,

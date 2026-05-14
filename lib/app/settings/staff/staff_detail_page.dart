@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_v1/core/models/shift.dart';
 import 'package:pos_v1/core/models/staff_stats.dart';
 import 'package:pos_v1/core/viewmodels/staff_dashboard_viewmodel.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class StaffDetailPage extends ConsumerStatefulWidget {
   const StaffDetailPage({super.key, required this.staff});
@@ -33,6 +35,7 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage>
   Widget build(BuildContext context) {
     final staffId = widget.staff['id'] as String;
     final name = widget.staff['name'] as String;
+    final l10n = AppLocalizations.of(context)!;
     final latestShiftAsync = ref.watch(staffLatestShiftProvider(staffId));
     final scheme = Theme.of(context).colorScheme;
 
@@ -48,8 +51,8 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage>
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
-                Tab(text: 'Last Shift'),
-                Tab(text: 'All Shifts'),
+                Tab(text: l10n.lastShift),
+                Tab(text: l10n.allShifts),
               ],
             ),
             flexibleSpace: FlexibleSpaceBar(
@@ -105,7 +108,7 @@ class _StaffDetailPageState extends ConsumerState<StaffDetailPage>
               error: (e, _) => Center(child: Text('$e')),
               data: (shift) {
                 if (shift == null) {
-                  return const Center(child: Text('No shifts yet'));
+                  return Center(child: Text(l10n.noShiftsYet));
                 }
                 return _LastShiftTab(shift: shift);
               },
@@ -158,6 +161,7 @@ class _AllShiftsTabState extends ConsumerState<_AllShiftsTab> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final statsAsync = ref.watch(staffStatsProvider(widget.staffId));
     final shiftsAsync = ref.watch(staffShiftsProvider(widget.staffId));
 
@@ -178,7 +182,7 @@ class _AllShiftsTabState extends ConsumerState<_AllShiftsTab> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: _SectionLabel('Shift history', scheme: scheme),
+            child: _SectionLabel(l10n.shiftHistory, scheme: scheme),
           ),
         ),
         shiftsAsync.when(
@@ -189,7 +193,7 @@ class _AllShiftsTabState extends ConsumerState<_AllShiftsTab> {
               SliverFillRemaining(child: Center(child: Text('$e'))),
           data: (shifts) => shifts.isEmpty
               ? const SliverFillRemaining(
-            child: Center(child: Text('No shifts yet')),
+            child: Center(child: Text(l10n.noShiftsYet)),
           )
               : SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
@@ -270,7 +274,7 @@ class _LastShiftTab extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      isActive ? 'Active shift' : 'Closed shift',
+                      isActive ? l10n.activeShift : l10n.closedShift,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -300,7 +304,7 @@ class _LastShiftTab extends StatelessWidget {
             children: [
               Expanded(
                 child: _ShiftTime(
-                  label: 'Start',
+                  label: l10n.start,
                   value: _fmt(openedAt),
                   color: Colors.green,
                 ),
@@ -308,7 +312,7 @@ class _LastShiftTab extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _ShiftTime(
-                  label: 'End',
+                  label: l10n.end,
                   value: closedAt != null ? _fmt(closedAt) : '--:--',
                   color: scheme.error,
                 ),
@@ -322,26 +326,26 @@ class _LastShiftTab extends StatelessWidget {
           const SizedBox(height: 20),
 
           // ── Orders summary ─────────────────────────────────────────
-          _SectionLabel('Orders', scheme: scheme),
+          _SectionLabel(l10n.orders, scheme: scheme),
           const SizedBox(height: 10),
           Row(
             children: [
               _MiniStatCard(
-                label: 'Total',
+                label: l10n.total,
                 value: '${orders.length}',
                 icon: Icons.receipt_long_rounded,
                 color: scheme.primary,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
-                label: 'Done',
+                label: l10n.done,
                 value: '${done.length}',
                 icon: Icons.check_circle_outline_rounded,
                 color: Colors.green,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
-                label: 'Cancelled',
+                label: l10n.cancelled,
                 value: '$cancelled',
                 icon: Icons.cancel_outlined,
                 color: Colors.red,
@@ -349,7 +353,7 @@ class _LastShiftTab extends StatelessWidget {
               if (pending > 0) ...[
                 const SizedBox(width: 8),
                 _MiniStatCard(
-                  label: 'Pending',
+                  label: l10n.pending,
                   value: '$pending',
                   icon: Icons.hourglass_empty_rounded,
                   color: Colors.orange,
@@ -360,26 +364,26 @@ class _LastShiftTab extends StatelessWidget {
           const SizedBox(height: 20),
 
           // ── Revenue breakdown ──────────────────────────────────────
-          _SectionLabel('Revenue', scheme: scheme),
+          _SectionLabel(l10n.revenue, scheme: scheme),
           const SizedBox(height: 10),
           Row(
             children: [
               _RevenueStatCard(
-                label: 'Cash',
+                label: l10n.cash,
                 value: cashRevenue,
                 icon: Icons.payments_rounded,
                 color: Colors.green,
               ),
               const SizedBox(width: 8),
               _RevenueStatCard(
-                label: 'Card',
+                label: l10n.card,
                 value: cardRevenue,
                 icon: Icons.credit_card_rounded,
                 color: Colors.blue,
               ),
               const SizedBox(width: 8),
               _RevenueStatCard(
-                label: 'Total',
+                label: l10n.total,
                 value: totalRevenue,
                 icon: Icons.account_balance_wallet_rounded,
                 color: Colors.orange,
@@ -395,7 +399,7 @@ class _LastShiftTab extends StatelessWidget {
               children: [
                 if (totalTips > 0) ...[
                   _RevenueStatCard(
-                    label: 'Tips',
+                    label: l10n.tips,
                     value: totalTips,
                     icon: Icons.volunteer_activism_rounded,
                     color: Colors.purple,
@@ -404,7 +408,7 @@ class _LastShiftTab extends StatelessWidget {
                 ],
                 if (passationAmount > 0)
                   _RevenueStatCard(
-                    label: 'Passation',
+                    label: l10n.passation,
                     value: passationAmount,
                     icon: Icons.rotate_right_rounded,
                     color: Colors.deepOrange,
@@ -433,6 +437,7 @@ class _AllTimeStats extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final cashRevenue = stats.cashRevenue;
     final cardRevenue = stats.cardRevenue;
     final totalRevenue = stats.totalRevenue;
@@ -444,26 +449,26 @@ class _AllTimeStats extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _SectionLabel('Overview', scheme: scheme),
+          _SectionLabel(l10n.overview, scheme: scheme),
           const SizedBox(height: 10),
           Row(
             children: [
               _MiniStatCard(
-                label: 'Shifts',
+                label: l10n.shifts,
                 value: '${stats.totalShifts}',
                 icon: Icons.work_history_rounded,
                 color: scheme.primary,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
-                label: 'Orders',
+                label: l10n.orders,
                 value: '${stats.totalOrders}',
                 icon: Icons.receipt_long_rounded,
                 color: Colors.orange,
               ),
               const SizedBox(width: 8),
               _MiniStatCard(
-                label: 'Avg shift',
+                label: l10n.avgShift,
                 value: '${stats.avgShiftDuration != null ? stats.avgShiftDuration : '--'}m',
                 icon: Icons.timer_rounded,
                 color: Colors.blue,
@@ -471,26 +476,26 @@ class _AllTimeStats extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          _SectionLabel('Revenue breakdown', scheme: scheme),
+          _SectionLabel(l10n.revenueBreakdown, scheme: scheme),
           const SizedBox(height: 10),
           Row(
             children: [
               _RevenueStatCard(
-                label: 'Cash',
+                label: l10n.cash,
                 value: cashRevenue,
                 icon: Icons.payments_rounded,
                 color: Colors.green,
               ),
               const SizedBox(width: 8),
               _RevenueStatCard(
-                label: 'Card',
+                label: l10n.card,
                 value: cardRevenue,
                 icon: Icons.credit_card_rounded,
                 color: Colors.blue,
               ),
               const SizedBox(width: 8),
               _RevenueStatCard(
-                label: 'Total',
+                label: l10n.total,
                 value: totalRevenue,
                 icon: Icons.account_balance_wallet_rounded,
                 color: Colors.orange,
@@ -504,7 +509,7 @@ class _AllTimeStats extends StatelessWidget {
               children: [
                 if (totalTips > 0) ...[
                   _RevenueStatCard(
-                    label: 'Tips',
+                    label: l10n.tips,
                     value: totalTips,
                     icon: Icons.volunteer_activism_rounded,
                     color: Colors.purple,
@@ -513,7 +518,7 @@ class _AllTimeStats extends StatelessWidget {
                 ],
                 if (passationAmount > 0)
                   _RevenueStatCard(
-                    label: 'Passation',
+                    label: l10n.passation,
                     value: passationAmount,
                     icon: Icons.rotate_right_rounded,
                     color: Colors.deepOrange,
@@ -569,7 +574,7 @@ class _CashHandoverBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Cash to hand over',
+                  l10n.cashToHandOver,
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -714,11 +719,8 @@ class _ShiftCard extends StatelessWidget {
   }
 
   String _fmtDate(DateTime dt) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    final localeName = Localizations.localeOf(context).toLanguageTag();
+    return DateFormat.yMMMd(localeName).format(dt);
   }
 
   String _fmtTime(DateTime dt) =>

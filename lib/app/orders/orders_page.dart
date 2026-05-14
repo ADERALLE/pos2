@@ -67,6 +67,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
                         shopId: isManager ? AppConstants.shopId : null,
                         cashierId: isManager ? null : staff.id,
                         providerContainer: ProviderScope.containerOf(context),
+                        searchFieldLabelText: l10n.searchByOrderId,
                       ),
                     );
                   },
@@ -137,7 +138,7 @@ class _ActiveOrdersTab extends ConsumerWidget {
     return ordersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
-        child: Text(e is PostgrestException ? e.message : 'Error'),
+        child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
       ),
       data: (orders) => orders.isEmpty
           ? _EmptyState(icon: Icons.receipt_long, message: AppLocalizations.of(context)!.noActiveOrders)
@@ -201,7 +202,7 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
     return ordersAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
-        child: Text(e is PostgrestException ? e.message : 'Error'),
+        child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
       ),
       data: (orders) => orders.isEmpty
           ? Center(child: Text(AppLocalizations.of(context)!.noOrderHistory))
@@ -223,6 +224,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -473,7 +475,7 @@ class _OrderItemsGrouped extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'COMBO',
+                        l10n.comboLabel,
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
@@ -565,7 +567,7 @@ class _OrderItemsGrouped extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
-                          'Notes: ${item.orderNotes.map((n) => n.note).join(', ')}',
+                          '${l10n.notes}: ${item.orderNotes.map((n) => n.note).join(', ')}',
                           style: TextStyle(
                             fontSize: 12,
                             fontStyle: FontStyle.italic,
@@ -593,13 +595,19 @@ class _OrderItemsGrouped extends StatelessWidget {
 // ── search delegate ───────────────────────────────────────────────────────────
 
 class _OrderSearchDelegate extends SearchDelegate<Order?> {
-  _OrderSearchDelegate({required this.shopId, required this.cashierId, required this.providerContainer});
+  _OrderSearchDelegate({
+    required this.shopId,
+    required this.cashierId,
+    required this.providerContainer,
+    required this.searchFieldLabelText,
+  });
   final String? shopId;
   final String? cashierId;
   final ProviderContainer providerContainer;
+  final String searchFieldLabelText;
 
   @override
-  String get searchFieldLabel => 'Search by order ID…';
+  String get searchFieldLabel => searchFieldLabelText;
 
   @override
   List<Widget> buildActions(BuildContext context) => [
@@ -634,6 +642,7 @@ class _OrderSearchDelegate extends SearchDelegate<Order?> {
 
   Widget _buildBody(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (query.trim().isEmpty) {
       return Center(
@@ -642,7 +651,7 @@ class _OrderSearchDelegate extends SearchDelegate<Order?> {
           children: [
             Icon(Icons.search_rounded, size: 56, color: scheme.onSurface.withOpacity(0.2)),
             const SizedBox(height: 12),
-            Text('Type to search orders',
+            Text(l10n.typeToSearchOrders,
                 style: TextStyle(color: scheme.onSurface.withOpacity(0.4))),
           ],
         ),
@@ -654,7 +663,7 @@ class _OrderSearchDelegate extends SearchDelegate<Order?> {
         final searchAsync = ref.watch(orderSearchProvider);
         return searchAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => Center(child: Text('${l10n.error}: $e')),
           data: (orders) {
             if (orders.isEmpty) {
               return Center(
@@ -664,7 +673,7 @@ class _OrderSearchDelegate extends SearchDelegate<Order?> {
                     Icon(Icons.receipt_long_outlined, size: 56,
                         color: scheme.onSurface.withOpacity(0.2)),
                     const SizedBox(height: 12),
-                    Text('No orders match "$query"',
+                    Text('${l10n.noOrdersMatch} "$query"',
                         style: TextStyle(color: scheme.onSurface.withOpacity(0.4))),
                   ],
                 ),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_v1/app/home/notification_bell.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
 import 'package:pos_v1/core/appconstants.dart';
@@ -110,13 +111,8 @@ class _HomeAppBarState extends State<_HomeAppBar> {
         ? l10n.goodAfternoon
         : l10n.goodEvening;
 
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final dateStr =
-        '${days[_now.weekday - 1]}, ${months[_now.month - 1]} ${_now.day}';
+    final localeName = Localizations.localeOf(context).toLanguageTag();
+    final dateStr = DateFormat.MMMEd(localeName).format(_now);
     final timeStr =
         '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}:${_now.second.toString().padLeft(2, '0')}';
 
@@ -711,7 +707,7 @@ class _ShiftOrderTile extends ConsumerWidget {
                     padding: EdgeInsets.zero,
                     icon: Icon(Icons.check_circle_outline_rounded,
                         color: Colors.green.shade600, size: 20),
-                    tooltip: 'Mark as paid',
+                    tooltip: AppLocalizations.of(context)!.markAsPaid,
                     onPressed: () => _openPayment(context, ref),
                   ),
                 ),
@@ -734,6 +730,7 @@ class _CartSidePanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final total = ref.read(cartProvider.notifier).total;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: 280,
@@ -751,7 +748,7 @@ class _CartSidePanel extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Current order',
+                  l10n.currentOrder,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.3,
@@ -867,7 +864,7 @@ class _CartSidePanel extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total',
+                      l10n.total,
                       style: Theme.of(context)
                           .textTheme
                           .titleSmall
@@ -893,7 +890,7 @@ class _CartSidePanel extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Review order'),
+                  child: Text(l10n.reviewOrder),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton(
@@ -903,7 +900,7 @@ class _CartSidePanel extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Clear'),
+                  child: Text(l10n.clear),
                 ),
               ],
             ),
@@ -990,6 +987,7 @@ class _ShiftDialogState extends State<_ShiftDialog> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(widget.title,
@@ -1001,7 +999,7 @@ class _ShiftDialogState extends State<_ShiftDialog> {
             controller: _controller,
             autofocus: !widget.showPassation,
             decoration: InputDecoration(
-              hintText: 'Note (optional)',
+              hintText: l10n.noteOptional,
               border:
               OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               contentPadding: const EdgeInsets.symmetric(
@@ -1016,10 +1014,10 @@ class _ShiftDialogState extends State<_ShiftDialog> {
               keyboardType:
               const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
-                labelText: 'Passation amount',
+                labelText: l10n.passationAmount,
                 hintText: '0.00',
                 suffixText: 'MAD',
-                helperText: 'Cash taken from register at shift start',
+                helperText: l10n.cashTakenFromRegister,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10)),
                 contentPadding: const EdgeInsets.symmetric(
@@ -1032,7 +1030,7 @@ class _ShiftDialogState extends State<_ShiftDialog> {
       actions: [
         TextButton(
           onPressed: _loading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: _loading ? null : _submit,
@@ -1087,6 +1085,7 @@ class _LogoutButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return IconButton(
       icon: const Icon(Icons.logout_rounded),
       onPressed: () => showDialog(
@@ -1094,21 +1093,21 @@ class _LogoutButton extends ConsumerWidget {
         builder: (_) => AlertDialog(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Logout',
-              style: TextStyle(fontWeight: FontWeight.w600)),
-          content: const Text('Are you sure you want to logout?'),
+          title: Text(l10n.logout,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          content: Text(l10n.logoutQuestion),
           actions: [
             TextButton(
               onPressed: () =>
                   Navigator.of(context, rootNavigator: true).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
                 ref.read(authProvider.notifier).logout();
               },
-              child: Text('Logout', style: TextStyle(color: scheme.error)),
+              child: Text(l10n.logout, style: TextStyle(color: scheme.error)),
             ),
           ],
         ),

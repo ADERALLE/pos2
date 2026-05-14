@@ -209,7 +209,7 @@ class _PaymentDialogState extends State<PaymentDialog> {
                   Icon(Icons.warning_amber_rounded, size: 14, color: scheme.error),
                   const SizedBox(width: 4),
                   Text(
-                    'Sum: ${_splitSum.toStringAsFixed(2)} / ${widget.total.toStringAsFixed(2)} MAD',
+                    '${l10n.sum}: ${_splitSum.toStringAsFixed(2)} / ${widget.total.toStringAsFixed(2)} MAD',
                     style: TextStyle(fontSize: 12, color: scheme.error),
                   ),
                 ]),

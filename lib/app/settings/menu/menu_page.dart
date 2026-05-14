@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pos_v1/core/repositories/storage_repository.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/appconstants.dart';
 import '../../../core/models/category.dart';
@@ -25,19 +26,20 @@ class MenuPage extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoryListProvider(AppConstants.shopId));
     final itemsAsync = ref.watch(menuItemListProvider(AppConstants.shopId));
     final selectedCategoryId = ref.watch(menuCategoryFilterProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            title: const Text('Menu'),
+            title: Text(l10n.menu),
             floating: true,
             pinned: true,
             actions: [
               IconButton(
                 icon: const Icon(Icons.category_outlined),
-                tooltip: 'Manage categories',
+                tooltip: l10n.manageCategories,
                 onPressed: () => _showCategoriesSheet(
                     context, ref, categoriesAsync.value ?? []),
               ),
@@ -47,7 +49,7 @@ class MenuPage extends ConsumerWidget {
                   onPressed: () =>
                       _showItemForm(context, ref, categoriesAsync.value ?? []),
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Item'),
+                  label: Text(l10n.addItem),
                   style: FilledButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                   ),
@@ -89,7 +91,7 @@ class MenuPage extends ConsumerWidget {
                       Text(
                         e is PostgrestException
                             ? e.message
-                            : 'Something went wrong',
+                            : l10n.somethingWentWrong,
                         style: TextStyle(color: scheme.onSurfaceVariant),
                       ),
                     ],
@@ -106,8 +108,8 @@ class MenuPage extends ConsumerWidget {
                   return SliverFillRemaining(
                     child: _EmptyState(
                       message: selectedCategoryId != null
-                          ? 'No items in this category'
-                          : 'No menu items yet',
+                          ? l10n.noItemsInCategory
+                          : l10n.noMenuItemsYet,
                       onAdd: () => _showItemForm(
                           context, ref, categoriesAsync.value ?? []),
                     ),
@@ -141,7 +143,7 @@ class MenuPage extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             _SectionHeader(
-                              title: cat?.label ?? 'Uncategorised',
+                              title: cat?.label ?? l10n.uncategorised,
                               count: sectionItems.length,
                               isSupp: cat?.isSupp ?? false,
                             ),
@@ -216,6 +218,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Text(
@@ -252,7 +255,7 @@ class _SectionHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              'SUPP',
+              l10n.supplementBadge,
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
@@ -354,6 +357,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -375,13 +379,13 @@ class _EmptyState extends StatelessWidget {
               color: scheme.onSurface),
         ),
         const SizedBox(height: 8),
-        Text('Tap below to add your first item',
+        Text(l10n.tapBelowAddFirstItem,
             style: TextStyle(fontSize: 13, color: scheme.onSurfaceVariant)),
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add),
-          label: const Text('Add Menu Item'),
+          label: Text(l10n.addMenuItem),
         ),
       ],
     );
@@ -399,6 +403,7 @@ class _CategoryChips extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (categories.isEmpty) return const SizedBox();
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return SizedBox(
       height: 52,
@@ -412,7 +417,7 @@ class _CategoryChips extends ConsumerWidget {
           if (i == 0) {
             final selected = selectedId == null;
             return _FilterChip(
-              label: 'All',
+              label: l10n.all,
               selected: selected,
               onTap: () =>
               ref.read(menuCategoryFilterProvider.notifier).state = null,
@@ -485,6 +490,7 @@ class _MenuItemTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final category =
         categories.where((c) => c.id == item.categoryId).firstOrNull;
 
@@ -550,7 +556,7 @@ class _MenuItemTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Inactive',
+                            l10n.inactive,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -577,7 +583,7 @@ class _MenuItemTile extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete_outline_rounded, color: scheme.error),
-              tooltip: 'Remove',
+              tooltip: l10n.remove,
               onPressed: () => _confirmDelete(context, ref),
             ),
           ],
@@ -588,13 +594,14 @@ class _MenuItemTile extends ConsumerWidget {
 
   void _confirmDelete(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Remove menu item?'),
+        title: Text(l10n.removeMenuItemQuestion),
         content: Text(
-            'This will permanently remove "${item.name}" from the menu.'),
+            '${l10n.permanentlyRemoveFromMenu} "${item.name}" ${l10n.fromTheMenu}'),
         actions: [
           TextButton(
               onPressed: () {
@@ -602,7 +609,7 @@ class _MenuItemTile extends ConsumerWidget {
 
                 Navigator.of(context, rootNavigator: true).pop();
               },
-              child: const Text('Cancel')),
+              child: Text(l10n.cancel)),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
             onPressed: () async {
@@ -612,7 +619,7 @@ class _MenuItemTile extends ConsumerWidget {
                   itemId: item.id, shopId: AppConstants.shopId);
               Navigator.of(context, rootNavigator: true).pop();
             },
-            child: const Text('Remove'),
+            child: Text(l10n.remove),
           ),
         ],
       ),
@@ -725,6 +732,7 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -760,7 +768,7 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _isEdit ? 'Edit Menu Item' : 'Add Menu Item',
+                    _isEdit ? l10n.editMenuItem : l10n.addMenuItem,
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
@@ -778,7 +786,7 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
                   )
                       : FilledButton(
                     onPressed: _submit,
-                    child: Text(_isEdit ? 'Save' : 'Add'),
+                    child: Text(_isEdit ? l10n.save : l10n.add),
                   ),
                 ],
               ),
@@ -836,7 +844,7 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Tap to add photo',
+                                l10n.tapToAddPhoto,
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
@@ -867,20 +875,20 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
                       const SizedBox(height: 20),
 
                       // Name
-                      _FormLabel(label: 'Item Name'),
+                      _FormLabel(label: l10n.itemName),
                       TextFormField(
                         controller: _nameController,
                         textCapitalization: TextCapitalization.words,
                         decoration: _sharedInputDecoration(context,
-                            hint: 'e.g. Chicken Burger',
+                            hint: l10n.exampleChickenBurger,
                             icon: Icons.fastfood_rounded),
                         validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Required' : null,
+                        v == null || v.trim().isEmpty ? l10n.requiredField : null,
                       ),
                       const SizedBox(height: 20),
 
                       // Price
-                      _FormLabel(label: 'Price'),
+                      _FormLabel(label: l10n.price),
                       TextFormField(
                         controller: _priceController,
                         keyboardType: const TextInputType.numberWithOptions(
@@ -890,24 +898,26 @@ class _MenuItemFormSheetState extends ConsumerState<_MenuItemFormSheet> {
                             icon: Icons.payments_outlined,
                             suffixText: 'MAD'),
                         validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
+                          if (v == null || v.trim().isEmpty) {
+                            return l10n.requiredField;
+                          }
                           if (double.tryParse(v.trim()) == null)
-                            return 'Invalid price';
+                            return l10n.invalidPrice;
                           return null;
                         },
                       ),
                       const SizedBox(height: 20),
 
                       // Category
-                      _FormLabel(label: 'Category'),
+                      _FormLabel(label: l10n.category),
                       DropdownButtonFormField<String?>(
                         value: _categoryId,
                         decoration: _sharedInputDecoration(context,
-                            hint: 'Select a category',
+                            hint: l10n.selectCategory,
                             icon: Icons.category_outlined),
                         items: [
-                          const DropdownMenuItem(
-                              value: null, child: Text('No category')),
+                          DropdownMenuItem(
+                              value: null, child: Text(l10n.noCategory)),
                           ...widget.categories.map((c) => DropdownMenuItem(
                               value: c.id, child: Text(c.label))),
                         ],
@@ -1014,6 +1024,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync =
     ref.watch(categoryListProvider(AppConstants.shopId));
 
@@ -1046,7 +1057,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
               const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: Row(
                 children: [
-                  Text('Categories',
+                  Text(l10n.categories,
                       style: Theme.of(context)
                           .textTheme
                           .titleMedium
@@ -1078,7 +1089,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'ADD NEW CATEGORY',
+                            l10n.addNewCategory,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -1095,7 +1106,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                                   textCapitalization:
                                   TextCapitalization.words,
                                   decoration: _sharedInputDecoration(context,
-                                      hint: 'Category name',
+                                      hint: l10n.categoryName,
                                       icon: Icons.label_outline_rounded),
                                   onSubmitted: (_) => _add(),
                                 ),
@@ -1131,13 +1142,13 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                                   horizontal: 12),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12)),
-                              title: const Text('Supplement category',
-                                  style: TextStyle(
+                              title: Text(l10n.supplementCategory,
+                                  style: const TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500)),
-                              subtitle: const Text(
-                                  'Items cannot be ordered alone',
-                                  style: TextStyle(fontSize: 12)),
+                              subtitle: Text(
+                                  l10n.itemsCannotBeOrderedAlone,
+                                  style: const TextStyle(fontSize: 12)),
                               value: _isSupp,
                               onChanged: (v) => setState(() => _isSupp = v),
                             ),
@@ -1159,7 +1170,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                               padding:
                               const EdgeInsets.symmetric(vertical: 16),
                               child: Text(
-                                'No categories yet',
+                                l10n.noCategoriesYet,
                                 style: TextStyle(
                                     color: scheme.onSurfaceVariant),
                               ),
@@ -1170,7 +1181,7 @@ class _CategoriesSheetState extends ConsumerState<_CategoriesSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'EXISTING CATEGORIES',
+                              l10n.existingCategories,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -1313,7 +1324,7 @@ class _CategoryListTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'SUPP',
+                            l10n.supplementBadge,
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -1370,7 +1381,7 @@ class _CategoryListTile extends ConsumerWidget {
                     textCapitalization: TextCapitalization.words,
                     decoration: _sharedInputDecoration(
                       context,
-                      hint: 'Category name',
+                      hint: l10n.categoryName,
                       icon: Icons.label_outline_rounded,
                     ),
                     onSubmitted: (_) => onSave(),
@@ -1389,8 +1400,8 @@ class _CategoryListTile extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 12),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
-                      title: const Text('Supplement',
-                          style: TextStyle(fontSize: 14)),
+                      title: Text(l10n.supplement,
+                          style: const TextStyle(fontSize: 14)),
                       value: editIsSupp,
                       onChanged: editSaving ? null : onEditIsSupp,
                     ),
@@ -1408,7 +1419,7 @@ class _CategoryListTile extends ConsumerWidget {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10)),
                           ),
-                          child: const Text('Cancel'),
+                          child: Text(l10n.cancel),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -1428,7 +1439,7 @@ class _CategoryListTile extends ConsumerWidget {
                               child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   color: Colors.white))
-                              : const Text('Save'),
+                              : Text(l10n.save),
                         ),
                       ),
                     ],

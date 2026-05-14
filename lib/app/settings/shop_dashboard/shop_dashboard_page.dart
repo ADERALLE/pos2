@@ -1,8 +1,10 @@
 // lib/app/dashboard/shop_dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shop_dashboard_viewmodel.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -35,6 +37,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
 
   /// Opens the appropriate picker for the current [RangeMode].
   Future<void> _openDatePicker() async {
+    final l10n = AppLocalizations.of(context)!;
     switch (_range.mode) {
     // ── Single day ──────────────────────────────────────────────────────────
       case RangeMode.day:
@@ -55,7 +58,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
           initialDate: _range.from,
           firstDate: DateTime(2020),
           lastDate: DateTime.now(),
-          helpText: 'Select start of 7-day window',
+          helpText: l10n.selectStartOf7DayWindow,
         );
         if (picked != null) {
           setState(() => _range = DateRange(
@@ -72,7 +75,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
           initialDate: _range.from,
           firstDate: DateTime(2020),
           lastDate: DateTime.now(),
-          helpText: 'Select any day in the week',
+          helpText: l10n.selectAnyDayInWeek,
         );
         if (picked != null) {
           final monday = picked.subtract(Duration(days: picked.weekday - 1));
@@ -116,6 +119,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
   Widget build(BuildContext context) {
     final shopId = ref.watch(currentStaffProvider)?.shopId;
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (shopId == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -128,7 +132,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Dashboard'),
+            Text(l10n.dashboard),
             // ── Tappable date label ──────────────────────────────────────────
             GestureDetector(
               onTap: _openDatePicker,
@@ -178,11 +182,11 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
               _KpiGrid(summary: summary),
               const SizedBox(height: 28),
               _SectionHeader(
-                label: 'Orders by hour',
+                label: l10n.ordersByHour,
                 trailing: summary.totalOrders == 0
                     ? null
                     : Text(
-                  '${summary.totalOrders} total',
+                  '${summary.totalOrders} ${l10n.totalShort}',
                   style: TextStyle(
                     fontSize: 12,
                     color: scheme.onSurface.withOpacity(0.45),
@@ -193,7 +197,7 @@ class _ShopDashboardPageState extends ConsumerState<ShopDashboardPage> {
               _HourlyChart(buckets: summary.ordersByHour, color: scheme.primary),
               const SizedBox(height: 28),
               if (summary.topItems.isNotEmpty) ...[
-                const _SectionHeader(label: 'Top items'),
+                _SectionHeader(label: l10n.topItems),
                 const SizedBox(height: 10),
                 ...summary.topItems.asMap().entries.map(
                       (e) => _TopItemTile(
@@ -237,11 +241,6 @@ class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
   late int _year;
   late int _month;
 
-  static const _months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -253,6 +252,8 @@ class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final now    = DateTime.now();
+    final l10n = AppLocalizations.of(context)!;
+    final localeName = Localizations.localeOf(context).toLanguageTag();
 
     return AlertDialog(
       title: Row(
@@ -294,7 +295,7 @@ class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  _months[i].substring(0, 3),
+                  DateFormat.MMM(localeName).format(DateTime(_year, m)),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -313,11 +314,11 @@ class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, DateTime(_year, _month)),
-          child: const Text('Select'),
+          child: Text(l10n.select),
         ),
       ],
     );
@@ -358,9 +359,10 @@ class _YearPickerDialogState extends State<_YearPickerDialog> {
     final scheme  = Theme.of(context).colorScheme;
     final now     = DateTime.now();
     final years   = List.generate(now.year - 2019, (i) => 2020 + i);
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
-      title: const Text('Select year'),
+      title: Text(l10n.selectYear),
       content: SizedBox(
         width: 240,
         child: GridView.builder(
@@ -400,11 +402,11 @@ class _YearPickerDialogState extends State<_YearPickerDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, _year),
-          child: const Text('Select'),
+          child: Text(l10n.select),
         ),
       ],
     );
@@ -544,6 +546,7 @@ class _KpiGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Row(
@@ -551,7 +554,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.receipt_long_rounded,
-                label: 'Orders',
+                label: l10n.orders,
                 value: '${summary.totalOrders}',
                 color: Colors.orange,
               ),
@@ -560,7 +563,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.payments_rounded,
-                label: 'Revenue',
+                label: l10n.revenue,
                 value: '${summary.totalRevenue.toStringAsFixed(2)} MAD',
                 color: Colors.blue,
               ),
@@ -573,7 +576,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.money_rounded,
-                label: 'Cash',
+                label: l10n.cash,
                 value: '${summary.cashRevenue.toStringAsFixed(2)} MAD',
                 color: Colors.green,
               ),
@@ -582,7 +585,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.credit_card_rounded,
-                label: 'Card',
+                label: l10n.card,
                 value: '${summary.cardRevenue.toStringAsFixed(2)} MAD',
                 color: scheme.primary,
               ),
@@ -595,7 +598,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.insights_rounded,
-                label: 'Avg order',
+                label: l10n.avgOrder,
                 value: '${summary.avgOrderValue.toStringAsFixed(2)} MAD',
                 color: Colors.purple,
               ),
@@ -604,7 +607,7 @@ class _KpiGrid extends StatelessWidget {
             Expanded(
               child: _KpiCard(
                 icon: Icons.volunteer_activism_rounded,
-                label: 'Tips',
+                label: l10n.tips,
                 value: '${summary.totalTips.toStringAsFixed(2)} MAD',
                 color: Colors.pink,
               ),
@@ -815,6 +818,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 32),
       child: Column(
@@ -822,7 +826,7 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.inbox_rounded, size: 48, color: scheme.onSurface.withOpacity(0.2)),
           const SizedBox(height: 12),
           Text(
-            'No orders for ${range.label}',
+            '${l10n.noOrdersFor} ${range.label}',
             style: TextStyle(color: scheme.onSurface.withOpacity(0.4)),
           ),
         ],
@@ -840,16 +844,17 @@ class _ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.error_outline_rounded, size: 48, color: scheme.error.withOpacity(0.6)),
           const SizedBox(height: 12),
-          Text('Failed to load summary',
+          Text(l10n.failedToLoadSummary,
               style: TextStyle(color: scheme.onSurface.withOpacity(0.6))),
           const SizedBox(height: 8),
-          FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
+          FilledButton.tonal(onPressed: onRetry, child: Text(l10n.retry)),
         ],
       ),
     );

@@ -4,6 +4,7 @@ import '../../../core/appconstants.dart';
 import '../../../core/models/size_config.dart';
 import '../../../core/models/staff.dart';
 import '../../../core/viewmodels/staff_viewmodel.dart';
+import '../../../i10n/app_localizations.dart';
 
 // ── Staff List Page ───────────────────────────────────────────────────────────
 
@@ -15,18 +16,19 @@ class StaffListPage extends ConsumerWidget {
     SizeConfig().init(context);
     final scheme = Theme.of(context).colorScheme;
     final staffAsync = ref.watch(staffListProvider(AppConstants.shopId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showStaffForm(context, ref),
         icon: const Icon(Icons.person_add_alt_1_rounded),
-        label: const Text('Add Staff'),
+        label: Text(l10n.addStaff),
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            title: const Text('Staff'),
+            title: Text(l10n.staff),
             floating: true,
             pinned: true,
           ),
@@ -47,7 +49,7 @@ class StaffListPage extends ConsumerWidget {
                       Icon(Icons.error_outline_rounded,
                           size: 48, color: scheme.error),
                       const SizedBox(height: 12),
-                      Text('Error: $e',
+                      Text('${l10n.error}: $e',
                           style: TextStyle(color: scheme.onSurfaceVariant)),
                     ],
                   ),
@@ -72,7 +74,7 @@ class StaffListPage extends ConsumerWidget {
                 return SliverList(
                   delegate: SliverChildListDelegate([
                     if (managers.isNotEmpty) ...[
-                      _SectionHeader(title: 'Managers', count: managers.length),
+                      _SectionHeader(title: l10n.managers, count: managers.length),
                       const SizedBox(height: 8),
                       _StaffCard(
                         children: [
@@ -86,7 +88,7 @@ class StaffListPage extends ConsumerWidget {
                       const SizedBox(height: 24),
                     ],
                     if (others.isNotEmpty) ...[
-                      _SectionHeader(title: 'Team', count: others.length),
+                      _SectionHeader(title: l10n.team, count: others.length),
                       const SizedBox(height: 8),
                       _StaffCard(
                         children: [
@@ -212,6 +214,7 @@ class _StaffTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final roleColor = _roleColor(staff.role, scheme);
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: () => showModalBottomSheet(
@@ -298,7 +301,7 @@ class _StaffTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            '${staff.pin!.length}-digit PIN',
+                            '${staff.pin!.length}-${l10n.digitPin}',
                             style: TextStyle(
                               fontSize: 11,
                               color: scheme.onSurfaceVariant,
@@ -315,7 +318,7 @@ class _StaffTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'No PIN',
+                            l10n.noPin,
                             style: TextStyle(
                               fontSize: 11,
                               color: scheme.onSurfaceVariant,
@@ -333,7 +336,7 @@ class _StaffTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Inactive',
+                            l10n.inactive,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -359,7 +362,7 @@ class _StaffTile extends ConsumerWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete_outline_rounded, color: scheme.error),
-              tooltip: 'Remove',
+              tooltip: l10n.remove,
               onPressed: () => _confirmDelete(context, ref),
             ),
           ],
@@ -370,19 +373,20 @@ class _StaffTile extends ConsumerWidget {
 
   void _confirmDelete(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape:
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Remove staff member?'),
+        title: Text(l10n.removeStaffMemberQuestion),
         content: Text(
-          'This will permanently remove ${staff.name} from the team. This action cannot be undone.',
+          '${l10n.permanentlyRemoveFromMenu} ${staff.name} ${l10n.fromTheTeam}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: scheme.error),
@@ -393,7 +397,7 @@ class _StaffTile extends ConsumerWidget {
                   staffId: staff.id, shopId: AppConstants.shopId);
               Navigator.of(context, rootNavigator: true).pop();
             },
-            child: const Text('Remove'),
+            child: Text(l10n.remove),
           ),
         ],
       ),
@@ -410,6 +414,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -424,7 +429,7 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'No staff yet',
+          l10n.noStaffYet,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -433,14 +438,14 @@ class _EmptyState extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Add your first team member to get started',
+          l10n.addFirstTeamMember,
           style: TextStyle(fontSize: 14, color: scheme.onSurfaceVariant),
         ),
         const SizedBox(height: 24),
         FilledButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.person_add_alt_1_rounded),
-          label: const Text('Add Staff Member'),
+          label: Text(l10n.addStaffMember),
         ),
       ],
     );
@@ -504,13 +509,14 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
   }
 
   String? _validatePin(String? v) {
+    final l10n = AppLocalizations.of(context)!;
     if (v == null || v.trim().isEmpty) return null; // PIN is optional
     final trimmed = v.trim();
     if (trimmed.length != _pinMaxLength) {
-      return 'PIN must be exactly $_pinMaxLength digits';
+      return '${l10n.pinExactDigitsPrefix} $_pinMaxLength ${l10n.pinExactDigitsSuffix}';
     }
     if (!RegExp(r'^\d+$').hasMatch(trimmed)) {
-      return 'PIN must contain digits only';
+      return l10n.pinDigitsOnly;
     }
     return null;
   }
@@ -549,6 +555,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -584,7 +591,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    _isEdit ? 'Edit Staff Member' : 'Add Staff Member',
+                    _isEdit ? l10n.editStaffMember : l10n.addStaffMember,
                     style: Theme.of(context)
                         .textTheme
                         .titleMedium
@@ -603,7 +610,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                   )
                       : FilledButton(
                     onPressed: _submit,
-                    child: Text(_isEdit ? 'Save' : 'Add'),
+                    child: Text(_isEdit ? l10n.save : l10n.add),
                   ),
                 ],
               ),
@@ -624,31 +631,31 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // ── Name ──────────────────────────────────────────────
-                      _FormLabel(label: 'Full Name'),
+                      _FormLabel(label: l10n.fullName),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _nameController,
                         textCapitalization: TextCapitalization.words,
                         decoration: _inputDecoration(
                           context,
-                          hint: 'e.g. John Doe',
+                          hint: l10n.exampleJohnDoe,
                           icon: Icons.person_outline_rounded,
                         ),
                         validator: (v) =>
                         v == null || v.trim().isEmpty
-                            ? 'Name is required'
+                            ? l10n.nameIsRequired
                             : null,
                       ),
                       const SizedBox(height: 20),
 
                       // ── Role ──────────────────────────────────────────────
-                      _FormLabel(label: 'Role'),
+                      _FormLabel(label: l10n.role),
                       const SizedBox(height: 6),
                       DropdownButtonFormField<StaffRole>(
                         value: _role,
                         decoration: _inputDecoration(
                           context,
-                          hint: 'Select role',
+                          hint: l10n.selectRole,
                           icon: Icons.badge_outlined,
                         ),
                         items: StaffRole.values
@@ -684,7 +691,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
 
                       // ── PIN length picker (managers only) ─────────────────
                       if (_role == StaffRole.manager) ...[
-                        _FormLabel(label: 'PIN Length'),
+                        _FormLabel(label: l10n.pinLength),
                         const SizedBox(height: 8),
                         _PinLengthPicker(
                           value: _managerPinLength,
@@ -701,7 +708,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                       // ── PIN field ─────────────────────────────────────────
                       Row(
                         children: [
-                          _FormLabel(label: 'PIN'),
+                          _FormLabel(label: l10n.pin),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -713,8 +720,8 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              '$_pinMaxLength digits'
-                                  '${_role == StaffRole.manager ? ' · Manager' : ''}',
+                              '$_pinMaxLength ${l10n.digits}'
+                                  '${_role == StaffRole.manager ? ' · ${l10n.manager}' : ''}',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -726,7 +733,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                           ),
                           const Spacer(),
                           Text(
-                            'Optional',
+                            l10n.optional,
                             style: TextStyle(
                               fontSize: 12,
                               color: scheme.onSurfaceVariant,
@@ -742,7 +749,7 @@ class _StaffFormSheetState extends State<_StaffFormSheet> {
                         obscureText: !_pinVisible,
                         decoration: _inputDecoration(
                           context,
-                          hint: 'Enter $_pinMaxLength-digit PIN (optional)',
+                          hint: '${l10n.enterDigitPinOptional} ($_pinMaxLength)',
                           icon: Icons.lock_outline_rounded,
                         ).copyWith(
                           counterText: '',
@@ -902,7 +909,7 @@ class _NoPinNotice extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'If no PIN is set, this staff member can log in without entering one.',
+              l10n.noPinNotice,
               style: TextStyle(
                 fontSize: 12,
                 color: scheme.onSurfaceVariant,
@@ -923,6 +930,7 @@ class _ManagerPinNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -936,8 +944,7 @@ class _ManagerPinNotice extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Manager accounts use a $pinLength-digit PIN for enhanced security. '
-                  'You can adjust the length above.',
+              '${l10n.managerPinNoticePrefix} $pinLength-${l10n.managerPinNoticeSuffix}',
               style: TextStyle(fontSize: 12, color: Colors.amber.shade800),
             ),
           ),

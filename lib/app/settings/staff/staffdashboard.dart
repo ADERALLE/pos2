@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/viewmodels/staff_dashboard_viewmodel.dart';
+import 'package:pos_v1/i10n/app_localizations.dart';
 
 class StaffDashboardPage extends ConsumerWidget {
   const StaffDashboardPage({super.key});
@@ -10,13 +11,14 @@ class StaffDashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final staffAsync = ref.watch(staffListProvider(AppConstants.shopId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const SliverAppBar(
-            title: Text('Staff dashboard'),
+          SliverAppBar(
+            title: Text(l10n.staffDashboardTitle),
             pinned: true,
             floating: true,
           ),
