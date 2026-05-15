@@ -27,7 +27,7 @@ class InventoryDetailPage extends ConsumerWidget {
     final menuItemsAsync =
         ref.watch(menuItemListProvider(AppConstants.shopId));
 
-    final item = itemsAsync.valueOrNull
+    final item = itemsAsync.value
         ?.where((i) => i.id == itemId)
         .firstOrNull;
 
@@ -38,11 +38,11 @@ class InventoryDetailPage extends ConsumerWidget {
       );
     }
 
-    final recipes = (recipesAsync.valueOrNull ?? [])
+    final recipes = (recipesAsync.value ?? [])
         .where((r) => r.inventoryItemId == itemId)
         .toList();
 
-    final menuItems = menuItemsAsync.valueOrNull ?? [];
+    final menuItems = menuItemsAsync.value ?? [];
 
     return Scaffold(
       body: CustomScrollView(
@@ -178,7 +178,7 @@ class InventoryDetailPage extends ConsumerWidget {
       BuildContext context, WidgetRef ref, InventoryItem item) {
     final staff = ref.read(currentStaffProvider);
     final shift =
-        ref.read(activeShiftProvider(staff!.id)).valueOrNull;
+        ref.read(activeShiftProvider(staff!.id)).value;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -662,7 +662,7 @@ class _EditItemFormState extends ConsumerState<_EditItemForm> {
     try {
       await ref
           .read(inventoryItemListProvider(AppConstants.shopId).notifier)
-          .update(widget.item.copyWith(
+          .updateItem(widget.item.copyWith(
             label: label,
             unitType: _unitType,
             stopOrdersOnEmpty: _stopOnEmpty,

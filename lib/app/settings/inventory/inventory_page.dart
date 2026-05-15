@@ -216,7 +216,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
       final notifier =
           ref.read(inventoryItemListProvider(AppConstants.shopId).notifier);
       if (widget.editing != null) {
-        await notifier.update(widget.editing!.copyWith(
+        await notifier.updateItem(widget.editing!.copyWith(
           label: label,
           unitType: _unitType,
           currentStock: stock,
@@ -240,6 +240,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
     final isEdit = widget.editing != null;
 
     return Padding(

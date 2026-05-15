@@ -28,7 +28,7 @@ class InventoryItemList extends _$InventoryItemList {
     try {
       return await ref.read(inventoryRepositoryProvider).getInventoryItems(shopId);
     } catch (e) {
-      if (_isNetworkError(e)) return state.valueOrNull ?? [];
+      if (_isNetworkError(e)) return state.value ?? [];
       rethrow;
     }
   }
@@ -74,7 +74,7 @@ class InventoryItemList extends _$InventoryItemList {
     await refresh(shopId);
   }
 
-  Future<void> update(InventoryItem item) async {
+  Future<void> updateItem(InventoryItem item) async {
     await ref.read(inventoryRepositoryProvider).upsertInventoryItem(
           id: item.id,
           shopId: item.shopId,
@@ -103,7 +103,7 @@ class InventoryRecipeList extends _$InventoryRecipeList {
           .read(inventoryRepositoryProvider)
           .getRecipesForShop(shopId);
     } catch (e) {
-      if (_isNetworkError(e)) return state.valueOrNull ?? [];
+      if (_isNetworkError(e)) return state.value ?? [];
       rethrow;
     }
   }
@@ -152,9 +152,9 @@ class InventoryRecipeList extends _$InventoryRecipeList {
 @riverpod
 Set<String> outOfStockMenuItemIds(Ref ref, String shopId) {
   final items =
-      ref.watch(inventoryItemListProvider(shopId)).valueOrNull ?? [];
+      ref.watch(inventoryItemListProvider(shopId)).value ?? [];
   final recipes =
-      ref.watch(inventoryRecipeListProvider(shopId)).valueOrNull ?? [];
+      ref.watch(inventoryRecipeListProvider(shopId)).value ?? [];
 
   final blockedInventoryIds = items
       .where((i) => i.stopOrdersOnEmpty && i.currentStock <= 0)
