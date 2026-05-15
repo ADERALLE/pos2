@@ -173,6 +173,8 @@ class InventoryDetailPage extends ConsumerWidget {
       ),
     );
   }
+
+  void _showAdjustmentSheet(
       BuildContext context, WidgetRef ref, InventoryItem item) {
     final staff = ref.read(currentStaffProvider);
     final shift =
