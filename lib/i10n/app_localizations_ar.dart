@@ -744,4 +744,83 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sum => 'المجموع';
+
+  @override
+  String get inventory => 'المخزون';
+  @override
+  String get inventorySubtitle => 'إدارة المخزون والوصفات';
+  @override
+  String get inventoryItem => 'عنصر مخزون';
+  @override
+  String get addInventoryItem => 'إضافة عنصر';
+  @override
+  String get noInventoryItems => 'لا توجد عناصر في المخزون';
+  @override
+  String get addFirstInventoryItem => 'أضف أول عنصر';
+  @override
+  String get editInventoryItem => 'تعديل العنصر';
+  @override
+  String get newInventoryItem => 'عنصر جديد';
+  @override
+  String get deleteInventoryItemQuestion => 'حذف العنصر؟';
+  @override
+  String get deleteInventoryItemMessage => 'سيؤدي الحذف إلى إزالة جميع الوصفات المرتبطة.';
+  @override
+  String get currentStock => 'المخزون الحالي';
+  @override
+  String get unitType => 'الوحدة';
+  @override
+  String get unitUnit => 'وحدة (قطعة)';
+  @override
+  String get unitGrams => 'غرام (g)';
+  @override
+  String get unitMl => 'مليلتر (ml)';
+  @override
+  String get stopOrdersOnEmpty => 'حظر الطلبات عند النفاد';
+  @override
+  String get stopOrdersOnEmptySubtitle => 'لا يمكن طلب العناصر المرتبطة بهذه المكون عند نفاد المخزون';
+  @override
+  String get outOfStock => 'نفد المخزون';
+  @override
+  String get linkedRecipes => 'الوصفات المرتبطة';
+  @override
+  String get linkMenuItem => 'ربط عنصر قائمة';
+  @override
+  String get noLinkedRecipes => 'لا توجد وصفات — هذه المكون غير مرتبط بأي عنصر في القائمة.';
+  @override
+  String get editRecipe => 'تعديل الوصفة';
+  @override
+  String get usagePerUnit => 'الاستهلاك لكل وحدة مباعة';
+  @override
+  String get manualAdjustment => 'تسوية يدوية';
+  @override
+  String get adjustmentRefill => 'إعادة تعبئة';
+  @override
+  String get adjustmentWaste => 'هدر';
+  @override
+  String get adjustmentCorrection => 'تصحيح';
+  @override
+  String get adjustmentNewStock => 'مخزون جديد';
+  @override
+  String get adjustmentDelta => 'فرق +/-';
+  @override
+  String get adjustmentAmountAdded => 'الكمية المضافة';
+  @override
+  String get adjustmentAmountLost => 'الكمية المفقودة';
+  @override
+  String get adjustmentAbsoluteHint => 'مثال: 42 (يستبدل المخزون الحالي)';
+  @override
+  String get adjustmentDeltaHint => 'مثال: -3 (فقدان) أو +2 (إرجاع)';
+  @override
+  String get confirm => 'تأكيد';
+  @override
+  String get shiftStockUsage => 'استهلاك المخزون';
+  @override
+  String get stockExpectedUsage => 'الاستهلاك المتوقع';
+  @override
+  String get stockManualRefills => 'إعادة التعبئة اليدوية';
+  @override
+  String get stockAdjustments => 'التسويات';
+  @override
+  String get noStockDataForShift => 'لا توجد بيانات مخزون لهذه الوردية';
 }

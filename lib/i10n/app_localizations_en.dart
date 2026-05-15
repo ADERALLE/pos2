@@ -745,4 +745,83 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sum => 'Sum';
+
+  @override
+  String get inventory => 'Inventory';
+  @override
+  String get inventorySubtitle => 'Manage stock and recipes';
+  @override
+  String get inventoryItem => 'Inventory item';
+  @override
+  String get addInventoryItem => 'Add item';
+  @override
+  String get noInventoryItems => 'No stock items';
+  @override
+  String get addFirstInventoryItem => 'Add the first stock item';
+  @override
+  String get editInventoryItem => 'Edit item';
+  @override
+  String get newInventoryItem => 'New item';
+  @override
+  String get deleteInventoryItemQuestion => 'Delete item?';
+  @override
+  String get deleteInventoryItemMessage => 'Deleting will also remove all linked recipes.';
+  @override
+  String get currentStock => 'Current stock';
+  @override
+  String get unitType => 'Unit';
+  @override
+  String get unitUnit => 'Unit (piece)';
+  @override
+  String get unitGrams => 'Grams (g)';
+  @override
+  String get unitMl => 'Millilitres (ml)';
+  @override
+  String get stopOrdersOnEmpty => 'Block orders when empty';
+  @override
+  String get stopOrdersOnEmptySubtitle => 'Items linked to this ingredient cannot be ordered when out of stock';
+  @override
+  String get outOfStock => 'Out of stock';
+  @override
+  String get linkedRecipes => 'Linked recipes';
+  @override
+  String get linkMenuItem => 'Link a menu item';
+  @override
+  String get noLinkedRecipes => 'No recipes — this ingredient is not linked to any menu item.';
+  @override
+  String get editRecipe => 'Edit recipe';
+  @override
+  String get usagePerUnit => 'Usage per unit sold';
+  @override
+  String get manualAdjustment => 'Manual adjustment';
+  @override
+  String get adjustmentRefill => 'Refill';
+  @override
+  String get adjustmentWaste => 'Waste';
+  @override
+  String get adjustmentCorrection => 'Correction';
+  @override
+  String get adjustmentNewStock => 'New stock value';
+  @override
+  String get adjustmentDelta => 'Delta +/-';
+  @override
+  String get adjustmentAmountAdded => 'Quantity added';
+  @override
+  String get adjustmentAmountLost => 'Quantity lost';
+  @override
+  String get adjustmentAbsoluteHint => 'e.g. 42  (replaces current stock)';
+  @override
+  String get adjustmentDeltaHint => 'e.g. -3  (loss) or +2  (return)';
+  @override
+  String get confirm => 'Confirm';
+  @override
+  String get shiftStockUsage => 'Stock usage';
+  @override
+  String get stockExpectedUsage => 'Expected usage';
+  @override
+  String get stockManualRefills => 'Manual refills';
+  @override
+  String get stockAdjustments => 'Adjustments';
+  @override
+  String get noStockDataForShift => 'No stock data for this shift';
 }

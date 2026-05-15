@@ -5,6 +5,7 @@ import '../../core/models/order.dart';
 import '../../core/models/order_item.dart';
 import '../../core/models/shift.dart';
 import '../../core/repositories/order_repository.dart';
+import '../../core/viewmodels/inventory_viewmodel.dart';
 import '../../i10n/app_localizations.dart';
 
 class ShiftSummaryPage extends ConsumerWidget {
@@ -188,13 +189,13 @@ class _ShiftHeaderCard extends StatelessWidget {
 
 // ── Stats body (hero banner + mini cards + orders) ────────────────────────────
 
-class _ShiftStatsBody extends StatelessWidget {
+class _ShiftStatsBody extends ConsumerWidget {
   const _ShiftStatsBody({required this.shift, required this.data});
   final Shift shift;
   final Map<String, dynamic> data;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
@@ -313,20 +314,156 @@ class _ShiftStatsBody extends StatelessWidget {
         ],
 
         // ── Order list ─────────────────────────────────────────────────
-        if (orders.isNotEmpty) ...[
-          const SizedBox(height: 24),
+        if (orders.isNotEmpty) ...[          const SizedBox(height: 24),
           _SectionLabel(
               '${l10n.ordersCount} (${orders.length})',
               scheme: scheme),
           const SizedBox(height: 8),
           ...orders.map((o) => _OrderTile(order: o)),
         ],
+
+        // ── Stock usage ──────────────────────────────────────────────────────────
+        const SizedBox(height: 24),
+        _StockUsageSection(shiftId: shift.id, ref: ref),
       ],
     );
   }
 }
 
+// ── Stock Usage Section ───────────────────────────────────────────────────────
+
+class _StockUsageSection extends StatelessWidget {
+  const _StockUsageSection({required this.shiftId, required this.ref});
+  final String shiftId;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final usageAsync = ref.watch(shiftStockUsageProvider(shiftId));
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionLabel(l10n.shiftStockUsage, scheme: scheme),
+        const SizedBox(height: 10),
+        usageAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Text('$e',
+              style: TextStyle(color: scheme.error, fontSize: 12)),
+          data: (rows) {
+            if (rows.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  l10n.noStockDataForShift,
+                  style: TextStyle(
+                      color: scheme.onSurface.withOpacity(0.5),
+                      fontSize: 13),
+                ),
+              );
+            }
+            return Column(
+              children: rows.map((row) {
+                final label = row['label'] as String;
+                final unit = row['unit_type'] as String;
+                final usage = (row['expected_usage'] as double);
+                final refills = (row['manual_refills'] as double);
+                final adjustments = (row['adjustments'] as double);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: scheme.outlineVariant.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(label,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13)),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${l10n.stockExpectedUsage}: ${usage.toStringAsFixed(1)} $unit',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color:
+                                      scheme.onSurface.withOpacity(0.6)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (refills > 0)
+                        _StockBadge(
+                          value: '+${refills.toStringAsFixed(1)}',
+                          label: l10n.stockManualRefills,
+                          color: Colors.green,
+                        ),
+                      if (adjustments != 0) ...[
+                        const SizedBox(width: 6),
+                        _StockBadge(
+                          value: adjustments > 0
+                              ? '+${adjustments.toStringAsFixed(1)}'
+                              : adjustments.toStringAsFixed(1),
+                          label: l10n.stockAdjustments,
+                          color: Colors.orange,
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _StockBadge extends StatelessWidget {
+  const _StockBadge(
+      {required this.value, required this.label, required this.color});
+  final String value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(value,
+              style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  color: color)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 9, color: color.withOpacity(0.8))),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Shared small widgets ──────────────────────────────────────────────────────
+
 
 class _CashHandoverBanner extends StatelessWidget {
   const _CashHandoverBanner({required this.cashToHandOver});

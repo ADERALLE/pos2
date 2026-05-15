@@ -1,4 +1,5 @@
 import 'package:pos_v1/core/models/order.dart';
+import 'package:pos_v1/core/repositories/inventory_repository.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
 import 'package:pos_v1/core/services/offline_queue_service.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
@@ -56,6 +57,12 @@ class SyncService extends _$SyncService {
           paymentMethod: payload['payment_method'] as String? ?? 'cash',
           tip:           (payload['tip'] as num?)?.toDouble() ?? 0,
         );
+        // Déduire le stock après sync offline — idempotent
+        try {
+          await ref
+              .read(inventoryRepositoryProvider)
+              .deductOrderStock(payload['order_id'] as String);
+        } catch (_) {}
         await queue.removePendingMarkDone(payload['order_id'] as String);
         hasChanged = true;
       } catch (_) {}

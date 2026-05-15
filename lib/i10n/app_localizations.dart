@@ -1557,6 +1557,46 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sum'**
   String get sum;
+
+  String get inventory;
+  String get inventorySubtitle;
+  String get inventoryItem;
+  String get addInventoryItem;
+  String get noInventoryItems;
+  String get addFirstInventoryItem;
+  String get editInventoryItem;
+  String get newInventoryItem;
+  String get deleteInventoryItemQuestion;
+  String get deleteInventoryItemMessage;
+  String get currentStock;
+  String get unitType;
+  String get unitUnit;
+  String get unitGrams;
+  String get unitMl;
+  String get stopOrdersOnEmpty;
+  String get stopOrdersOnEmptySubtitle;
+  String get outOfStock;
+  String get linkedRecipes;
+  String get linkMenuItem;
+  String get noLinkedRecipes;
+  String get editRecipe;
+  String get usagePerUnit;
+  String get manualAdjustment;
+  String get adjustmentRefill;
+  String get adjustmentWaste;
+  String get adjustmentCorrection;
+  String get adjustmentNewStock;
+  String get adjustmentDelta;
+  String get adjustmentAmountAdded;
+  String get adjustmentAmountLost;
+  String get adjustmentAbsoluteHint;
+  String get adjustmentDeltaHint;
+  String get confirm;
+  String get shiftStockUsage;
+  String get stockExpectedUsage;
+  String get stockManualRefills;
+  String get stockAdjustments;
+  String get noStockDataForShift;
 }
 
 class _AppLocalizationsDelegate

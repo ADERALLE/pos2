@@ -4,11 +4,13 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
+import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/models/order_item.dart';
+import 'package:pos_v1/core/repositories/inventory_repository.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
 import 'package:pos_v1/core/services/connectivity_service.dart';
 import 'package:pos_v1/core/services/offline_queue_service.dart';
@@ -66,6 +68,10 @@ class ActiveOrders extends _$ActiveOrders {
       cardAmount: payment.cardAmount,
       tip: payment.tip,
     );
+    // Déduire le stock — idempotent, safe en cas de retry
+    try {
+      await ref.read(inventoryRepositoryProvider).deductOrderStock(orderId);
+    } catch (_) {}
     await refresh(shopId);
     ref.invalidate(shiftOrdersProvider);
     ref.invalidate(shopOrderHistoryProvider(shopId));
@@ -225,6 +231,10 @@ class MyActiveOrders extends _$MyActiveOrders {
         cardAmount: payment.cardAmount,
         tip: payment.tip,
       );
+      // Déduire le stock — idempotent, safe en cas de retry
+      try {
+        await ref.read(inventoryRepositoryProvider).deductOrderStock(orderId);
+      } catch (_) {}
       if (!ref.mounted) return;
       await refresh(cashierId);
       ref.invalidate(shiftOrdersProvider);
@@ -364,8 +374,6 @@ class Cart extends _$Cart {
     }
   }
 
-  /// Adds a combo with specific choice selections.
-  /// Different selections produce different cart entries (via cartKey).
   void addComboWithChoices(ComboMenu combo, Map<String, String> choices) {
     final item = CartItem(comboMenu: combo, selectedChoices: Map.of(choices));
     final key = item.cartKey;
@@ -382,6 +390,95 @@ class Cart extends _$Cart {
       state = [...state, item];
     }
   }
+
+  // ── Stock-aware add methods (RPC 1) ────────────────────────────────────────
+  // Cache TTL : 5s par clé (targetId + qty + choiceIds).
+  // Offline → skip le check et laisse ajouter (optimiste).
+
+  final _stockCache = <String, ({bool available, DateTime cachedAt})>{};
+  static const _cacheTtl = Duration(seconds: 5);
+
+  /// Vérifie le stock puis ajoute l'item. Retourne false si bloqué.
+  Future<bool> tryAddItem(MenuItem item) async {
+    final existingQty = state
+        .where((c) => c.cartKey == item.id)
+        .fold(0, (s, c) => s + c.quantity);
+    final ok = await _checkStock(
+      targetId: item.id,
+      isCombo: false,
+      requestedQty: (existingQty + 1).toDouble(),
+      selectedItemIds: [],
+    );
+    if (ok) addItem(item);
+    return ok;
+  }
+
+  /// Vérifie le stock puis ajoute le combo sans choices. Retourne false si bloqué.
+  Future<bool> tryAddCombo(ComboMenu combo) async {
+    final existingQty = state
+        .where((c) => c.isCombo && c.comboMenu?.id == combo.id)
+        .fold(0, (s, c) => s + c.quantity);
+    final ok = await _checkStock(
+      targetId: combo.id,
+      isCombo: true,
+      requestedQty: (existingQty + 1).toDouble(),
+      selectedItemIds: [],
+    );
+    if (ok) addCombo(combo);
+    return ok;
+  }
+
+  /// Vérifie le stock puis ajoute le combo avec choices. Retourne false si bloqué.
+  Future<bool> tryAddComboWithChoices(ComboMenu combo, Map<String, String> choices) async {
+    final selectedItemIds = choices.values.toList();
+    final existingQty = state
+        .where((c) => c.isCombo && c.comboMenu?.id == combo.id)
+        .fold(0, (s, c) => s + c.quantity);
+    final ok = await _checkStock(
+      targetId: combo.id,
+      isCombo: true,
+      requestedQty: (existingQty + 1).toDouble(),
+      selectedItemIds: selectedItemIds,
+    );
+    if (ok) addComboWithChoices(combo, choices);
+    return ok;
+  }
+
+  Future<bool> _checkStock({
+    required String targetId,
+    required bool isCombo,
+    required double requestedQty,
+    required List<String> selectedItemIds,
+  }) async {
+    if (!ref.read(isOnlineProvider)) return true;
+
+    final sortedIds = [...selectedItemIds]..sort();
+    final cacheKey = '${targetId}_${requestedQty}_${sortedIds.join(",")}';
+
+    final cached = _stockCache[cacheKey];
+    if (cached != null &&
+        DateTime.now().difference(cached.cachedAt) < _cacheTtl) {
+      return cached.available;
+    }
+
+    try {
+      final available =
+          await ref.read(inventoryRepositoryProvider).checkStockAvailability(
+                targetId: targetId,
+                isCombo: isCombo,
+                shopId: AppConstants.shopId,
+                requestedQty: requestedQty,
+                selectedItemIds: selectedItemIds,
+              );
+      _stockCache[cacheKey] = (available: available, cachedAt: DateTime.now());
+      return available;
+    } catch (_) {
+      // En cas d'erreur réseau inattendue, fail open (ne pas bloquer l'utilisateur)
+      return true;
+    }
+  }
+
+  void invalidateStockCache() => _stockCache.clear();
 
   void removeItem(String cartKey) {
     state = state.where((c) => c.cartKey != cartKey).toList();

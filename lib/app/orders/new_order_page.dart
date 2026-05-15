@@ -7,6 +7,7 @@ import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/combo_menu_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/inventory_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/menu_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
 import 'package:pos_v1/core/viewmodels/shift_viewmodel.dart';
@@ -401,78 +402,144 @@ class _CategoryChip extends StatelessWidget {
 
 // ── menu item card ────────────────────────────────────────────────────────────
 
-class _MenuItemCard extends ConsumerWidget {
+class _MenuItemCard extends ConsumerStatefulWidget {
   const _MenuItemCard({required this.item});
   final MenuItem item;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final inCart = ref.watch(cartProvider).where((c) => c.cartKey == item.id).firstOrNull;
+  ConsumerState<_MenuItemCard> createState() => _MenuItemCardState();
+}
+
+class _MenuItemCardState extends ConsumerState<_MenuItemCard> {
+  bool _tapping = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final inCart = ref
+        .watch(cartProvider)
+        .where((c) => c.cartKey == widget.item.id)
+        .firstOrNull;
+    final blockedIds =
+        ref.watch(outOfStockMenuItemIdsProvider(AppConstants.shopId));
+    final isOutOfStock = blockedIds.contains(widget.item.id);
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => ref.read(cartProvider.notifier).addItem(item),
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  item.imageUrl != null && item.imageUrl!.isNotEmpty
-                      ? CachedMenuImage(url: item.imageUrl!)
-                      : _buildPlaceholder(theme),
-                  if (inCart != null)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${inCart.quantity}',
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
+      onTap: isOutOfStock
+          ? null
+          : () async {
+              if (_tapping) return;
+              setState(() => _tapping = true);
+              final ok = await ref
+                  .read(cartProvider.notifier)
+                  .tryAddItem(widget.item);
+              if (!ok && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content:
+                      Text('${widget.item.name} est épuisé'),
+                  backgroundColor: theme.colorScheme.error,
+                  duration: const Duration(seconds: 2),
+                ));
+              }
+              if (mounted) setState(() => _tapping = false);
+            },
+      child: Opacity(
+        opacity: isOutOfStock ? 0.45 : 1.0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    widget.item.imageUrl != null &&
+                            widget.item.imageUrl!.isNotEmpty
+                        ? CachedMenuImage(url: widget.item.imageUrl!)
+                        : _buildPlaceholder(theme),
+                    if (inCart != null)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${inCart.quantity}',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                    // Épuisé overlay
+                    if (isOutOfStock)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error.withOpacity(0.15),
+                          ),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.error,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Épuisé',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(item.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 2),
-                  Text('${item.price.toStringAsFixed(2)} MAD',
-                      style: TextStyle(
-                          fontSize: 11,
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w700)),
-                ],
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.item.name,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 2),
+                    Text(
+                        '${widget.item.price.toStringAsFixed(2)} MAD',
+                        style: TextStyle(
+                            fontSize: 11,
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -482,7 +549,9 @@ class _MenuItemCard extends ConsumerWidget {
     return Container(
       color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
       child: Center(
-        child: Icon(Icons.fastfood, size: 28, color: theme.colorScheme.primary.withOpacity(0.35)),
+        child: Icon(Icons.fastfood,
+            size: 28,
+            color: theme.colorScheme.primary.withOpacity(0.35)),
       ),
     );
   }
@@ -845,18 +914,23 @@ class _TabChip extends StatelessWidget {
 
 // ── combo menu card ──────────────────────────────────────────────────────────
 
-class _ComboMenuCard extends ConsumerWidget {
+class _ComboMenuCard extends ConsumerStatefulWidget {
   const _ComboMenuCard({required this.combo});
   final ComboMenu combo;
 
-  /// Whether this combo contains at least one choice group.
-  bool get _hasChoices =>
-      combo.comboMenuItems.any((ci) => ci.choiceGroup != null);
+  @override
+  ConsumerState<_ComboMenuCard> createState() => _ComboMenuCardState();
+}
 
-  /// Returns choice groups: groupName → list of ComboMenuItems in that group.
+class _ComboMenuCardState extends ConsumerState<_ComboMenuCard> {
+  bool _tapping = false;
+
+  bool get _hasChoices =>
+      widget.combo.comboMenuItems.any((ci) => ci.choiceGroup != null);
+
   Map<String, List<ComboMenuItem>> get _choiceGroups {
     final map = <String, List<ComboMenuItem>>{};
-    for (final ci in combo.comboMenuItems) {
+    for (final ci in widget.combo.comboMenuItems) {
       if (ci.choiceGroup != null) {
         map.putIfAbsent(ci.choiceGroup!, () => []).add(ci);
       }
@@ -864,18 +938,33 @@ class _ComboMenuCard extends ConsumerWidget {
     return map;
   }
 
+  /// Un combo est bloqué si :
+  /// - un de ses items fixes est épuisé, OU
+  /// - TOUS les choix d'un groupe sont épuisés (aucun choix disponible)
+  bool _isComboBlocked(Set<String> blockedIds) {
+    if (blockedIds.isEmpty) return false;
+    final fixedItems =
+        widget.combo.comboMenuItems.where((ci) => ci.choiceGroup == null);
+    if (fixedItems.any((ci) => blockedIds.contains(ci.menuItemId))) return true;
+    for (final group in _choiceGroups.values) {
+      if (group.every((ci) => blockedIds.contains(ci.menuItemId))) return true;
+    }
+    return false;
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // For combos with choices, count all matching cart entries
+  Widget build(BuildContext context) {
     final allInCart = ref.watch(cartProvider).where(
-            (c) => c.isCombo && c.comboMenu?.id == combo.id);
+        (c) => c.isCombo && c.comboMenu?.id == widget.combo.id);
     final totalInCart = allInCart.fold<int>(0, (s, c) => s + c.quantity);
+    final blockedIds =
+        ref.watch(outOfStockMenuItemIdsProvider(AppConstants.shopId));
+    final isBlocked = _isComboBlocked(blockedIds);
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    // Build a short summary: fixed items + choice group labels
     final parts = <String>[];
-    for (final ci in combo.comboMenuItems) {
+    for (final ci in widget.combo.comboMenuItems) {
       if (ci.choiceGroup == null && ci.menuItem != null) {
         parts.add(ci.quantity > 1
             ? '${ci.quantity}x ${ci.menuItem!.name}'
@@ -892,123 +981,165 @@ class _ComboMenuCard extends ConsumerWidget {
     final itemSummary = parts.join(', ');
 
     return GestureDetector(
-      onTap: () {
-        if (_hasChoices) {
-          _showChoiceDialog(context, ref);
-        } else {
-          ref.read(cartProvider.notifier).addCombo(combo);
-        }
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image area
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  combo.imageUrl != null && combo.imageUrl!.isNotEmpty
-                      ? CachedMenuImage(url: combo.imageUrl!)
-                      : Container(
-                    color: theme.colorScheme.tertiaryContainer.withOpacity(0.4),
-                    child: Center(
-                      child: Icon(Icons.restaurant_menu,
-                          size: 28,
-                          color: theme.colorScheme.tertiary.withOpacity(0.6)),
-                    ),
-                  ),
-                  // COMBO badge
-                  Positioned(
-                    top: 4,
-                    left: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.tertiary,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _hasChoices ? 'COMBO+' : 'COMBO',
-                        style: TextStyle(
-                          fontSize: 8,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onTertiary,
-                        ),
+      onTap: isBlocked
+          ? null
+          : () async {
+              if (_tapping) return;
+              if (_hasChoices) {
+                _showChoiceDialog(context, ref);
+              } else {
+                setState(() => _tapping = true);
+                final ok = await ref
+                    .read(cartProvider.notifier)
+                    .tryAddCombo(widget.combo);
+                if (!ok && mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('${widget.combo.name} est épuisé'),
+                    backgroundColor: theme.colorScheme.error,
+                    duration: const Duration(seconds: 2),
+                  ));
+                }
+                if (mounted) setState(() => _tapping = false);
+              }
+            },
+      child: Opacity(
+        opacity: isBlocked ? 0.45 : 1.0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image area
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    widget.combo.imageUrl != null && widget.combo.imageUrl!.isNotEmpty
+                        ? CachedMenuImage(url: widget.combo.imageUrl!)
+                        : Container(
+                      color: theme.colorScheme.tertiaryContainer.withOpacity(0.4),
+                      child: Center(
+                        child: Icon(Icons.restaurant_menu,
+                            size: 28,
+                            color: theme.colorScheme.tertiary.withOpacity(0.6)),
                       ),
                     ),
-                  ),
-                  if (totalInCart > 0)
+                    // COMBO badge
                     Positioned(
                       top: 4,
-                      right: 4,
+                      left: 4,
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary,
-                          shape: BoxShape.circle,
+                          color: theme.colorScheme.tertiary,
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          '$totalInCart',
-                          style: const TextStyle(
-                            fontSize: 10,
+                          _hasChoices ? 'COMBO+' : 'COMBO',
+                          style: TextStyle(
+                            fontSize: 8,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: theme.colorScheme.onTertiary,
                           ),
                         ),
                       ),
                     ),
-                ],
+                    if (totalInCart > 0)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$totalInCart',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Épuisé overlay
+                    if (isBlocked)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.error.withOpacity(0.15),
+                          ),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.error,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'Épuisé',
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            // Text area
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(combo.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  if (itemSummary.isNotEmpty) ...[
-                    const SizedBox(height: 1),
+              // Text area
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.combo.name,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    if (itemSummary.isNotEmpty) ...[
+                      const SizedBox(height: 1),
+                      Text(
+                        itemSummary,
+                        style: TextStyle(fontSize: 9, color: theme.hintColor),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 2),
                     Text(
-                      itemSummary,
-                      style: TextStyle(fontSize: 9, color: theme.hintColor),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      '${widget.combo.price.toStringAsFixed(2)} MAD',
+                      style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w700),
                     ),
                   ],
-                  const SizedBox(height: 2),
-                  Text(
-                    '${combo.price.toStringAsFixed(2)} MAD',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w700),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-
   void _showChoiceDialog(BuildContext context, WidgetRef ref) {
     final groups = _choiceGroups;
     // Pre-select the first option in each group.
@@ -1026,7 +1157,7 @@ class _ComboMenuCard extends ConsumerWidget {
             final theme = Theme.of(ctx);
             final l10n = AppLocalizations.of(ctx)!;
             return AlertDialog(
-              title: Text('${l10n.customize} ${combo.name}'),
+              title: Text('${l10n.customize} ${widget.combo.name}'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -1101,11 +1232,19 @@ class _ComboMenuCard extends ConsumerWidget {
                   child: Text(l10n.cancel),
                 ),
                 FilledButton(
-                  onPressed: () {
-                    ref
+                  onPressed: () async {
+                    final ok = await ref
                         .read(cartProvider.notifier)
-                        .addComboWithChoices(combo, selections);
+                        .tryAddComboWithChoices(widget.combo, selections);
                     Navigator.pop(ctx);
+                    if (!ok && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text('${widget.combo.name} est épuisé'),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.error,
+                        duration: const Duration(seconds: 2),
+                      ));
+                    }
                   },
                   child: Text(l10n.addToOrder),
                 ),
