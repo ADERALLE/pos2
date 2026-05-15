@@ -403,6 +403,7 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -411,10 +412,10 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Ajustement manuel',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(l10n.manualAdjustment,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          Text('${widget.item.label} — stock actuel : '
+          Text('${widget.item.label} — ${l10n.currentStock} : '
               '${widget.item.currentStock.toStringAsFixed(1)} ${widget.item.unitType}',
               style:
                   TextStyle(color: scheme.onSurface.withOpacity(0.6))),
@@ -422,10 +423,10 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
 
           // Type selector
           SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'refill', label: Text('Refill'), icon: Icon(Icons.add_circle_outline)),
-              ButtonSegment(value: 'waste', label: Text('Perte'), icon: Icon(Icons.remove_circle_outline)),
-              ButtonSegment(value: 'correction', label: Text('Correction'), icon: Icon(Icons.tune_rounded)),
+            segments: [
+              ButtonSegment(value: 'refill', label: Text(l10n.adjustmentRefill), icon: const Icon(Icons.add_circle_outline)),
+              ButtonSegment(value: 'waste', label: Text(l10n.adjustmentWaste), icon: const Icon(Icons.remove_circle_outline)),
+              ButtonSegment(value: 'correction', label: Text(l10n.adjustmentCorrection), icon: const Icon(Icons.tune_rounded)),
             ],
             selected: {_type},
             onSelectionChanged: (s) => setState(() => _type = s.first),
@@ -435,15 +436,15 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
           // Correction sous-mode
           if (_type == 'correction') ...[
             SegmentedButton<bool>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                     value: true,
-                    label: Text('Nouveau stock'),
-                    icon: Icon(Icons.pin_outlined)),
+                    label: Text(l10n.adjustmentNewStock),
+                    icon: const Icon(Icons.pin_outlined)),
                 ButtonSegment(
                     value: false,
-                    label: Text('Delta +/-'),
-                    icon: Icon(Icons.compare_arrows_rounded)),
+                    label: Text(l10n.adjustmentDelta),
+                    icon: const Icon(Icons.compare_arrows_rounded)),
               ],
               selected: {_correctionIsSet},
               onSelectionChanged: (s) =>
@@ -456,11 +457,11 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
           TextField(
             controller: _amountCtrl,
             keyboardType: const TextInputType.numberWithOptions(
-                decimal: true, signed: !true), // signed only for correction_delta
+                decimal: true, signed: !true),
             decoration: InputDecoration(
-              labelText: _amountLabel(),
+              labelText: _amountLabel(l10n),
               suffixText: widget.item.unitType,
-              hintText: _amountHint(),
+              hintText: _amountHint(l10n),
               border: const OutlineInputBorder(),
             ),
           ),
@@ -472,25 +473,25 @@ class _AdjustmentSheetState extends ConsumerState<_AdjustmentSheet> {
                 ? const SizedBox(
                     height: 20, width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Confirmer'),
+                : Text(l10n.confirm),
           ),
         ],
       ),
     );
   }
 
-  String _amountLabel() {
-    if (_type == 'refill') return 'Quantité ajoutée';
-    if (_type == 'waste') return 'Quantité perdue';
-    if (_correctionIsSet) return 'Stock réel constaté';
-    return 'Ajustement (+/-)';
+  String _amountLabel(AppLocalizations l10n) {
+    if (_type == 'refill') return l10n.adjustmentAmountAdded;
+    if (_type == 'waste') return l10n.adjustmentAmountLost;
+    if (_correctionIsSet) return l10n.adjustmentNewStock;
+    return l10n.adjustmentDelta;
   }
 
-  String _amountHint() {
+  String _amountHint(AppLocalizations l10n) {
     if (_type == 'refill') return 'ex: 10';
     if (_type == 'waste') return 'ex: 1.5';
-    if (_correctionIsSet) return 'ex: 42  (remplace le stock actuel)';
-    return 'ex: -3  (perte) ou +2  (retour)';
+    if (_correctionIsSet) return l10n.adjustmentAbsoluteHint;
+    return l10n.adjustmentDeltaHint;
   }
 }
 
@@ -564,6 +565,7 @@ class _RecipeFormState extends ConsumerState<_RecipeForm> {
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
+      padding: EdgeInsets.fromLTRB(
           24, 24, 24, MediaQuery.of(context).viewInsets.bottom + 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
