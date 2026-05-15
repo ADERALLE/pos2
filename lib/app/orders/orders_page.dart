@@ -28,6 +28,11 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
   void initState() {
     super.initState();
     _tab = TabController(length: 2, vsync: this);
+    _tab.addListener(() {
+      if (_tab.indexIsChanging) {
+        ref.read(selectedCashierIdProvider.notifier).state = null;
+      }
+    });
   }
 
   @override
@@ -120,6 +125,83 @@ class _OrdersPageState extends ConsumerState<OrdersPage>
   }
 }
 
+// ── cashier filter bar (manager only) ────────────────────────────────────────
+
+class _CashierFilterBar extends ConsumerWidget {
+  const _CashierFilterBar({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    final selectedId = ref.watch(selectedCashierIdProvider);
+    final staffAsync = ref.watch(shopStaffListProvider(AppConstants.shopId));
+
+    return staffAsync.when(
+      loading: () => const SizedBox(height: 48, child: Center(child: LinearProgressIndicator())),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (staffList) {
+        if (staffList.isEmpty) return const SizedBox.shrink();
+        return SizedBox(
+          height: 48,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            children: [
+              // "All" chip
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: const Text('All'),
+                  selected: selectedId == null,
+                  onSelected: (_) =>
+                  ref.read(selectedCashierIdProvider.notifier).state = null,
+                  selectedColor: scheme.primary.withOpacity(0.15),
+                  checkmarkColor: scheme.primary,
+                  labelStyle: TextStyle(
+                    color: selectedId == null ? scheme.primary : scheme.onSurface,
+                    fontWeight: selectedId == null ? FontWeight.w700 : FontWeight.normal,
+                  ),
+                ),
+              ),
+              // One chip per staff member
+              ...staffList.map((s) {
+                final isSelected = selectedId == s.id;
+                final isManagerRole = s.role == 'manager';
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    avatar: isSelected
+                        ? null
+                        : Icon(
+                      isManagerRole
+                          ? Icons.manage_accounts_outlined
+                          : Icons.person_outline_rounded,
+                      size: 16,
+                      color: isManagerRole
+                          ? scheme.tertiary
+                          : scheme.onSurfaceVariant,
+                    ),
+                    label: Text(s.name),
+                    selected: isSelected,
+                    onSelected: (_) => ref.read(selectedCashierIdProvider.notifier).state =
+                    isSelected ? null : s.id,
+                    selectedColor: scheme.primary.withOpacity(0.15),
+                    checkmarkColor: scheme.primary,
+                    labelStyle: TextStyle(
+                      color: isSelected ? scheme.primary : scheme.onSurface,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 // ── active orders ─────────────────────────────────────────────────────────────
 
 class _ActiveOrdersTab extends ConsumerWidget {
@@ -129,11 +211,12 @@ class _ActiveOrdersTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final staff = ref.watch(currentStaffProvider)!;
     final isManager = staff.role == StaffRole.manager;
-    print(staff);
 
     final ordersAsync = isManager
         ? ref.watch(activeOrdersProvider(AppConstants.shopId))
         : ref.watch(myActiveOrdersProvider(staff.id));
+
+    final selectedCashierId = isManager ? ref.watch(selectedCashierIdProvider) : null;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -147,28 +230,40 @@ class _ActiveOrdersTab extends ConsumerWidget {
               .refresh(staff.id);
         }
       },
-      child: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
-        ),
-        data: (orders) => orders.isEmpty
-            ? SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: _EmptyState(
-                    icon: Icons.receipt_long,
-                    message: AppLocalizations.of(context)!.noActiveOrders,
-                  ),
-                ),
-              )
-            : ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: orders.length,
-                itemBuilder: (_, i) => _OrderCard(order: orders[i]),
+      child: Column(
+        children: [
+          if (isManager) const _CashierFilterBar(),
+          Expanded(
+            child: ordersAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
               ),
+              data: (allOrders) {
+                final orders = selectedCashierId != null
+                    ? allOrders.where((o) => o.cashierId == selectedCashierId).toList()
+                    : allOrders;
+                return orders.isEmpty
+                    ? SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: _EmptyState(
+                      icon: Icons.receipt_long,
+                      message: AppLocalizations.of(context)!.noActiveOrders,
+                    ),
+                  ),
+                )
+                    : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  itemCount: orders.length,
+                  itemBuilder: (_, i) => _OrderCard(order: orders[i]),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -222,6 +317,8 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
         ? ref.watch(shopOrderHistoryProvider(AppConstants.shopId))
         : ref.watch(myOrderHistoryProvider(staff.id));
 
+    final selectedCashierId = isManager ? ref.watch(selectedCashierIdProvider) : null;
+
     return RefreshIndicator(
       onRefresh: () async {
         if (isManager) {
@@ -232,28 +329,43 @@ class _OrderHistoryTabState extends ConsumerState<_OrderHistoryTab> {
           await ref.read(myOrderHistoryProvider(staff.id).future);
         }
       },
-      child: ordersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(e is PostgrestException ? e.message : AppLocalizations.of(context)!.error),
-        ),
-        data: (orders) => orders.isEmpty
-            ? SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(
-                    child: Text(AppLocalizations.of(context)!.noOrderHistory),
-                  ),
-                ),
-              )
-            : ListView.separated(
-                physics: const AlwaysScrollableScrollPhysics(),
-                controller: _scrollController,
-                itemCount: orders.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (_, i) => _OrderCard(order: orders[i], readonly: true),
+      child: Column(
+        children: [
+          if (isManager) const _CashierFilterBar(),
+          Expanded(
+            child: ordersAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Text(e is PostgrestException
+                    ? e.message
+                    : AppLocalizations.of(context)!.error),
               ),
+              data: (allOrders) {
+                final orders = selectedCashierId != null
+                    ? allOrders.where((o) => o.cashierId == selectedCashierId).toList()
+                    : allOrders;
+                return orders.isEmpty
+                    ? SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Center(
+                      child: Text(AppLocalizations.of(context)!.noOrderHistory),
+                    ),
+                  ),
+                )
+                    : ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller: _scrollController,
+                  itemCount: orders.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) =>
+                      _OrderCard(order: orders[i], readonly: true),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -268,20 +380,23 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, size: 64, color: scheme.onSurface.withOpacity(0.2)),
-        const SizedBox(height: 16),
-        Text(
-          message,
-          style: TextStyle(
-            color: scheme.onSurface.withOpacity(0.5),
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(icon, size: 64, color: scheme.onSurface.withOpacity(0.2)),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: scheme.onSurface.withOpacity(0.5),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -426,7 +541,7 @@ class _OrderCard extends ConsumerWidget {
                     backgroundColor: Colors.red.withOpacity(0.1),
                   ),
                   icon: Icon(Icons.close_rounded, color: Colors.red.shade700, size: 20),
-                tooltip: AppLocalizations.of(context)!.cancelOrder,
+                  tooltip: AppLocalizations.of(context)!.cancelOrder,
                   onPressed: () {
                     if (isManager) {
                       ref.read(activeOrdersProvider(AppConstants.shopId).notifier)
@@ -468,33 +583,73 @@ class _OrderItemsGrouped extends StatelessWidget {
   const _OrderItemsGrouped({required this.orderItems});
   final List<OrderItem> orderItems;
 
+  // Strips the " #N" unit suffix written by _buildItemsPayload.
+  static final _unitSuffixRegex = RegExp(r' #\d+$');
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    // Partition items: those whose name contains " – " belong to a combo,
-    // others are standalone.
     final List<Widget> rows = [];
-    final Map<String, List<OrderItem>> comboGroups = {};
     final List<OrderItem> standaloneItems = [];
+
+    // Step 1: collect all combo items, bucketing each "#N" unit separately.
+    // unitBuckets: fullPrefix (e.g. "Burger Combo #2") → its sub-items.
+    final Map<String, List<OrderItem>> unitBuckets = {};
+    final Map<String, String> prefixToBaseName = {}; // fullPrefix → baseName
 
     for (final item in orderItems) {
       final sepIdx = item.name.indexOf(_comboSeparator);
-      if (sepIdx > 0) {
-        final comboName = item.name.substring(0, sepIdx);
-        comboGroups.putIfAbsent(comboName, () => []).add(item);
+      if (sepIdx <= 0) { standaloneItems.add(item); continue; }
+      final fullPrefix = item.name.substring(0, sepIdx);
+      final baseName = fullPrefix.replaceAll(_unitSuffixRegex, '').trim();
+      unitBuckets.putIfAbsent(fullPrefix, () => []).add(item);
+      prefixToBaseName[fullPrefix] = baseName;
+    }
+
+    // Step 2: for each unit, build a choices fingerprint = baseName + sorted sub-item names.
+    // Units with the same fingerprint had the same combo + same choices → group them.
+    // { fingerprint → { baseName, subItems (representative), instanceCount, totalPrice } }
+    final Map<String, ({String comboName, List<OrderItem> subItems, int instanceCount, double totalPrice})>
+    merged = {};
+
+    for (final entry in unitBuckets.entries) {
+      final fullPrefix = entry.key;
+      final unitItems = entry.value;
+      final baseName = prefixToBaseName[fullPrefix]!;
+
+      final subNames = (unitItems.map((i) =>
+          i.name.substring(i.name.indexOf(_comboSeparator) + _comboSeparator.length)).toList()
+        ..sort()).join('|');
+      final fingerprint = '$baseName\x00$subNames';
+
+      final unitPrice = unitItems.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
+
+      if (merged.containsKey(fingerprint)) {
+        final existing = merged[fingerprint]!;
+        merged[fingerprint] = (
+        comboName: existing.comboName,
+        subItems: existing.subItems,
+        instanceCount: existing.instanceCount + 1,
+        totalPrice: existing.totalPrice + unitPrice,
+        );
       } else {
-        standaloneItems.add(item);
+        merged[fingerprint] = (
+        comboName: baseName,
+        subItems: unitItems,
+        instanceCount: 1,
+        totalPrice: unitPrice,
+        );
       }
     }
 
     // Render combo groups
-    for (final entry in comboGroups.entries) {
-      final comboName = entry.key;
-      final items = entry.value;
-      // The combo price is stored on the last item of the group (see order_viewmodel).
-      final comboPrice = items.fold<double>(0, (s, i) => s + i.unitPrice * i.quantity);
+    for (final combo in merged.values) {
+      final comboName = combo.comboName;
+      final items = combo.subItems;
+      final instanceCount = combo.instanceCount;
+      final comboPrice = combo.totalPrice;
 
       rows.add(
         Container(
@@ -530,12 +685,36 @@ class _OrderItemsGrouped extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        comboName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
+                      child: Row(
+                        children: [
+                          if (instanceCount > 1) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: scheme.primary,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '×$instanceCount',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: scheme.onPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                          ],
+                          Expanded(
+                            child: Text(
+                              comboName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Text(

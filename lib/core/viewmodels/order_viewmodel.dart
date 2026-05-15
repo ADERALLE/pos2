@@ -426,10 +426,10 @@ class Cart extends _$Cart {
   /// Standalone items are matched by [menuItemId]; combo groups are matched
   /// by name (stripping the " #N" unit-suffix added at submit time).
   void loadOrderForEdit(
-    Order order,
-    List<MenuItem> menuItems,
-    List<ComboMenu> comboMenus,
-  ) {
+      Order order,
+      List<MenuItem> menuItems,
+      List<ComboMenu> comboMenus,
+      ) {
     const sep = ' \u2013 '; // " – " used in submitOrder
     final comboSuffixRegex = RegExp(r' #\d+$');
 
@@ -465,7 +465,7 @@ class Cart extends _$Cart {
       for (final item in items) {
         final ci = combo.comboMenuItems
             .where((ci) =>
-                ci.menuItemId == item.menuItemId && ci.choiceGroup != null)
+        ci.menuItemId == item.menuItemId && ci.choiceGroup != null)
             .firstOrNull;
         if (ci != null) {
           selectedChoices[ci.choiceGroup!] = ci.menuItemId;
@@ -474,10 +474,10 @@ class Cart extends _$Cart {
 
       // If we already have this combo+choices combination, increment quantity.
       final tempItem =
-          CartItem(comboMenu: combo, selectedChoices: Map.of(selectedChoices));
+      CartItem(comboMenu: combo, selectedChoices: Map.of(selectedChoices));
       final key = tempItem.cartKey;
       final existingIdx =
-          cartItems.indexWhere((c) => c.isCombo && c.cartKey == key);
+      cartItems.indexWhere((c) => c.isCombo && c.cartKey == key);
       if (existingIdx >= 0) {
         cartItems[existingIdx].quantity++;
       } else {
@@ -609,6 +609,26 @@ class Cart extends _$Cart {
       return true;
     }
   }
+}
+
+// ── manager cashier filter ────────────────────────────────────────────────────
+
+/// Holds the cashier ID the manager has chosen to filter by; null = show all.
+final selectedCashierIdProvider = StateProvider<String?>((ref) => null);
+
+/// Fetches the list of all staff (id + name) for the shop so the manager can
+/// pick one from a filter chip row.
+@riverpod
+Future<List<({String id, String name, String role})>> shopStaffList(Ref ref, String shopId) async {
+  final client = ref.read(orderRepositoryProvider).client;
+  final data = await client
+      .from('staff')
+      .select('id, name, role')
+      .eq('shop_id', shopId)
+      .order('name');
+  return (data as List)
+      .map((e) => (id: e['id'] as String, name: e['name'] as String, role: e['role'] as String))
+      .toList();
 }
 
 // ── order search ──────────────────────────────────────────────────────────────

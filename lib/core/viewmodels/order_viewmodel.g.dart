@@ -574,7 +574,7 @@ final class CartProvider extends $NotifierProvider<Cart, List<CartItem>> {
   }
 }
 
-String _$cartHash() => r'675fb1c8dcdcbfc9e35a7f560eb70343f0bb1256';
+String _$cartHash() => r'189c6f70eb493759c03f1d3943177db9dfb7bc31';
 
 abstract class _$Cart extends $Notifier<List<CartItem>> {
   List<CartItem> build();
@@ -592,6 +592,100 @@ abstract class _$Cart extends $Notifier<List<CartItem>> {
             >;
     element.handleCreate(ref, build);
   }
+}
+
+/// Fetches the list of all staff (id + name) for the shop so the manager can
+/// pick one from a filter chip row.
+
+@ProviderFor(shopStaffList)
+final shopStaffListProvider = ShopStaffListFamily._();
+
+/// Fetches the list of all staff (id + name) for the shop so the manager can
+/// pick one from a filter chip row.
+
+final class ShopStaffListProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<({String id, String name, String role})>>,
+          List<({String id, String name, String role})>,
+          FutureOr<List<({String id, String name, String role})>>
+        >
+    with
+        $FutureModifier<List<({String id, String name, String role})>>,
+        $FutureProvider<List<({String id, String name, String role})>> {
+  /// Fetches the list of all staff (id + name) for the shop so the manager can
+  /// pick one from a filter chip row.
+  ShopStaffListProvider._({
+    required ShopStaffListFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'shopStaffListProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$shopStaffListHash();
+
+  @override
+  String toString() {
+    return r'shopStaffListProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<({String id, String name, String role})>>
+  $createElement($ProviderPointer pointer) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<({String id, String name, String role})>> create(Ref ref) {
+    final argument = this.argument as String;
+    return shopStaffList(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ShopStaffListProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$shopStaffListHash() => r'd89d09a0bb9928fd552393a15ffe6a84751ac23d';
+
+/// Fetches the list of all staff (id + name) for the shop so the manager can
+/// pick one from a filter chip row.
+
+final class ShopStaffListFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<({String id, String name, String role})>>,
+          String
+        > {
+  ShopStaffListFamily._()
+    : super(
+        retry: null,
+        name: r'shopStaffListProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// Fetches the list of all staff (id + name) for the shop so the manager can
+  /// pick one from a filter chip row.
+
+  ShopStaffListProvider call(String shopId) =>
+      ShopStaffListProvider._(argument: shopId, from: this);
+
+  @override
+  String toString() => r'shopStaffListProvider';
 }
 
 @ProviderFor(OrderSearch)
