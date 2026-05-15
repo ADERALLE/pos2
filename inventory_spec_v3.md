@@ -39,8 +39,14 @@ CREATE TABLE public.inventory_transactions (
   inventory_item_id   UUID NOT NULL REFERENCES public.inventory_items(id),
   order_id            UUID REFERENCES public.orders(id),          -- nullable
   shift_id            UUID REFERENCES public.shifts(id),          -- nullable
-  type                TEXT NOT NULL CHECK (type IN ('sale', 'refill', 'waste', 'correction')),
-  amount              NUMERIC NOT NULL,  -- négatif pour sales/waste, positif pour refill/correction
+  type                TEXT NOT NULL CHECK (type IN ('sale', 'refill', 'waste', 'correction_set', 'correction_delta')),
+  amount              NUMERIC NOT NULL,
+  -- Conventions de signe par type :
+  --   sale             → toujours négatif  (ex: -2.5)
+  --   refill           → toujours positif  (ex: +10)
+  --   waste            → toujours négatif  (ex: -1)
+  --   correction_set   → toujours positif  (valeur absolue du nouveau stock, ex: 42)
+  --   correction_delta → signé             (ex: -3 pour perte, +5 pour ajout)
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ```
@@ -194,39 +200,62 @@ $$;
 
 ### RPC 3 — `manual_stock_adjustment`
 
-**Signature corrigée :**
+**Deux modes de correction disponibles :**
+- `correction_set` : **set absolu** — le user saisit le stock réel constaté (ex: inventaire physique). `p_amount` doit être ≥ 0.
+- `correction_delta` : **delta signé** — le user saisit une variation (ex: -3 pour un paquet de café périmé, +2 pour un retour fournisseur). `p_amount` peut être négatif.
+
+**Signature :**
 ```sql
 CREATE OR REPLACE FUNCTION manual_stock_adjustment(
   p_inventory_item_id UUID,
-  p_shop_id           UUID,   -- AJOUTÉ pour RLS
+  p_shop_id           UUID,   -- pour RLS
   p_shift_id          UUID,
-  p_type              TEXT,
-  p_amount            NUMERIC
+  p_type              TEXT,   -- 'refill' | 'waste' | 'correction_set' | 'correction_delta'
+  p_amount            NUMERIC -- voir conventions ci-dessous
 )
 RETURNS VOID
 LANGUAGE plpgsql
 AS $$
+DECLARE
+  v_transaction_amount NUMERIC;
 BEGIN
   -- Validation du type
-  IF p_type NOT IN ('refill', 'waste', 'correction') THEN
-    RAISE EXCEPTION 'Invalid transaction type: %. Expected: refill, waste, correction', p_type;
+  IF p_type NOT IN ('refill', 'waste', 'correction_set', 'correction_delta') THEN
+    RAISE EXCEPTION 'Invalid transaction type: %. Expected: refill, waste, correction_set, correction_delta', p_type;
   END IF;
 
-  -- Validation de l'amount
-  IF p_amount = 0 THEN
-    RAISE EXCEPTION 'Amount cannot be zero';
+  -- Validation de l'amount selon le type
+  -- refill / waste : le caller passe un montant POSITIF, la RPC applique le signe
+  IF p_type IN ('refill', 'waste') AND p_amount <= 0 THEN
+    RAISE EXCEPTION 'Amount must be positive for type %', p_type;
+  END IF;
+  -- correction_set : stock absolu → doit être >= 0
+  IF p_type = 'correction_set' AND p_amount < 0 THEN
+    RAISE EXCEPTION 'Amount must be >= 0 for correction_set (absolute stock value)';
+  END IF;
+  -- correction_delta : delta signé → ne peut pas être 0
+  IF p_type = 'correction_delta' AND p_amount = 0 THEN
+    RAISE EXCEPTION 'Amount cannot be zero for correction_delta';
   END IF;
 
-  -- Convention: le caller passe toujours un amount positif.
-  -- La RPC applique le signe selon le type.
+  -- Mise à jour du stock
   UPDATE inventory_items
   SET current_stock = CASE
-    WHEN p_type = 'refill'     THEN current_stock + p_amount
-    WHEN p_type = 'waste'      THEN GREATEST(current_stock - p_amount, 0)
-    WHEN p_type = 'correction' THEN p_amount  -- correction = set absolu
+    WHEN p_type = 'refill'           THEN current_stock + p_amount
+    WHEN p_type = 'waste'            THEN GREATEST(current_stock - p_amount, 0)
+    WHEN p_type = 'correction_set'   THEN p_amount                              -- reset absolu
+    WHEN p_type = 'correction_delta' THEN GREATEST(current_stock + p_amount, 0) -- delta signé, clamp à 0
   END
   WHERE id = p_inventory_item_id
     AND shop_id = p_shop_id;  -- RLS guard
+
+  -- Montant stocké dans inventory_transactions (toujours en convention "impact réel")
+  v_transaction_amount := CASE
+    WHEN p_type = 'refill'           THEN p_amount   -- positif
+    WHEN p_type = 'waste'            THEN -p_amount  -- négatif
+    WHEN p_type = 'correction_set'   THEN p_amount   -- valeur absolue du nouveau stock
+    WHEN p_type = 'correction_delta' THEN p_amount   -- delta signé tel quel
+  END;
 
   INSERT INTO inventory_transactions
     (shop_id, inventory_item_id, shift_id, type, amount)
@@ -235,11 +264,7 @@ BEGIN
     p_inventory_item_id,
     p_shift_id,
     p_type,
-    CASE
-      WHEN p_type = 'refill'     THEN p_amount
-      WHEN p_type = 'waste'      THEN -p_amount
-      WHEN p_type = 'correction' THEN p_amount
-    END
+    v_transaction_amount
   );
 END;
 $$;
@@ -307,8 +332,12 @@ class InventoryRepository {
     required String inventoryItemId,
     required String shopId,
     required String shiftId,
-    required String type,   // 'refill' | 'waste' | 'correction'
-    required double amount, // toujours positif, la RPC applique le signe
+    required String type,    // 'refill' | 'waste' | 'correction_set' | 'correction_delta'
+    required double amount,
+    // • refill           → positif (ex: 10.0)
+    // • waste            → positif (la RPC applique le signe, ex: 1.0)
+    // • correction_set   → positif >= 0 (nouveau stock absolu, ex: 42.0)
+    // • correction_delta → signé   (ex: -3.0 pour perte, +2.0 pour retour)
   });
 
   Future<List<InventoryItem>> getInventoryItems(String shopId);
@@ -432,8 +461,16 @@ Nouveau tile dans Settings (section "Management") → route `/settings/inventory
       → Section "Recettes liées" : list des menu_items avec usage_value
           → Ajouter/modifier/supprimer un lien menu_item ↔ inventory_item
       → Bouton "Ajustement manuel" → bottom sheet
-          → Type : Refill / Waste / Correction
-          → Montant (toujours positif)
+          → Type (segmented button) :
+              • Refill      → champ "Quantité ajoutée" (positif)
+              • Waste       → champ "Quantité perdue"  (positif, ex: produit abîmé)
+              • Correction  → deux sous-modes via toggle :
+                  ◦ "Remettre à zéro / nouveau stock"  (correction_set)
+                    → champ "Stock réel constaté" (≥ 0)
+                    → use case : inventaire physique, reset complet
+                  ◦ "Ajustement ponctuel"               (correction_delta)
+                    → champ signé "+/-" avec boutons ▲▼ ou saisie libre
+                    → use case : paquet périmé (-3), retour fournisseur (+2)
           → Confirmation → appel RPC 3
 
 /shift-summary (déjà existant)
@@ -453,3 +490,4 @@ Nouveau tile dans Settings (section "Management") → route `/settings/inventory
 | `stop_orders_on_empty` | Niveau `inventory_items` | Simple et correct pour le cas d'usage POS |
 | Combo unpack dans RPC 2 | Non nécessaire | Flutter aplatit déjà les combos en `order_items` individuels |
 | Trigger de RPC 2 | `markDone()` uniquement | Correspond exactement à `OrderStatus.done` |
+| Mode correction | `correction_set` + `correction_delta` | Set absolu pour inventaire physique / reset ; delta signé pour pertes ponctuelles |
