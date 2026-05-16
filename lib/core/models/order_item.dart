@@ -14,6 +14,8 @@ abstract class OrderItem with _$OrderItem {
     @JsonKey(name: 'unit_price') required double unitPrice,
     required int quantity,
     required double subtotal,
+    @JsonKey(name: 'redo_count') @Default(0) int redoCount,
+    @JsonKey(name: 'cancel_count') @Default(0) int cancelCount,
     @JsonKey(name: 'order_notes') @Default([]) List<OrderNote> orderNotes,
   }) = _OrderItem;
 

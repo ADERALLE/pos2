@@ -170,11 +170,27 @@ class OrderRepository {
     String? tableLabel,
     String? note,
   }) async {
-    // Compute new total from items list.
-    final newTotal = items.fold<double>(
-      0,
-      (sum, i) => sum + (i['unit_price'] as double) * (i['quantity'] as int),
-    );
+    // Replace all existing items — preserve redo_count and cancel_count by matching
+    // on menu_item_id + name.
+    final existing = await _client
+        .from('order_items')
+        .select('menu_item_id, name, redo_count, cancel_count')
+        .eq('order_id', orderId);
+    final redoMap = <String, int>{};
+    final cancelMap = <String, int>{};
+    for (final row in existing as List) {
+      final key = '${row['menu_item_id']}_${row['name']}';
+      redoMap[key]   = (row['redo_count']   as int? ?? 0);
+      cancelMap[key] = (row['cancel_count'] as int? ?? 0);
+    }
+
+    // Recompute total accounting for any existing cancel discounts.
+    final newTotal = items.fold<double>(0, (sum, i) {
+      final key = '${i['menu_item_id']}_${i['name']}';
+      final cancelled = cancelMap[key] ?? 0;
+      final billableQty = ((i['quantity'] as int) - cancelled).clamp(0, i['quantity'] as int);
+      return sum + (i['unit_price'] as double) * billableQty;
+    });
 
     // Update the order header (label, note, total).
     await _client.from('orders').update({
@@ -183,10 +199,17 @@ class OrderRepository {
       'total': newTotal,
     }).eq('id', orderId);
 
-    // Replace all existing items.
     await _client.from('order_items').delete().eq('order_id', orderId);
     await _client.from('order_items').insert(
-      items.map((i) => {...i, 'order_id': orderId}).toList(),
+      items.map((i) {
+        final key = '${i['menu_item_id']}_${i['name']}';
+        return {
+          ...i,
+          'order_id':     orderId,
+          'redo_count':   redoMap[key]   ?? 0,
+          'cancel_count': cancelMap[key] ?? 0,
+        };
+      }).toList(),
     );
 
     final full = await _client
@@ -195,6 +218,32 @@ class OrderRepository {
         .eq('id', orderId)
         .single();
     return Order.fromJson(full);
+  }
+
+  /// Marks an order item as needing to be remade (redo) and deducts extra stock.
+  /// [prevRedoCount] is the current value before this call — used for SQL idempotency.
+  Future<void> redoOrderItem({
+    required String orderItemId,
+    required int prevRedoCount,
+  }) async {
+    await _client.rpc('redo_order_item_stock', params: {
+      'p_order_item_id': orderItemId,
+      'p_prev_redo_count': prevRedoCount,
+    });
+  }
+
+  /// Marks an order item as cancelled (wasted, not replaced).
+  /// Decrements the order total by unit_price — stock is NOT additionally deducted
+  /// (the wasted unit is already counted in `quantity` for stock purposes).
+  /// [prevCancelCount] is the current value before this call — used for SQL idempotency.
+  Future<void> cancelOrderItem({
+    required String orderItemId,
+    required int prevCancelCount,
+  }) async {
+    await _client.rpc('cancel_order_item', params: {
+      'p_order_item_id':     orderItemId,
+      'p_prev_cancel_count': prevCancelCount,
+    });
   }
 
   Future<Map<String, dynamic>> getShiftSummary(String shiftId) async {

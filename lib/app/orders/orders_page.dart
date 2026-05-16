@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
+import 'package:pos_v1/app/shared/incidents_sheet.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/viewmodels/auth_viewmodel.dart';
@@ -509,6 +510,22 @@ class _OrderCard extends ConsumerWidget {
               const SizedBox(width: 8),
               IconButton(
                 style: IconButton.styleFrom(
+                  backgroundColor: Colors.deepOrange.withOpacity(0.1),
+                ),
+                icon: Icon(Icons.warning_amber_rounded, color: Colors.deepOrange.shade600, size: 20),
+                tooltip: AppLocalizations.of(context)!.incidentsTooltip,
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                  builder: (_) => IncidentsSheet(order: order),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                style: IconButton.styleFrom(
                   backgroundColor: Colors.green.withOpacity(0.1),
                 ),
                 icon: Icon(Icons.check_rounded, color: Colors.green.shade700, size: 20),
@@ -746,9 +763,38 @@ class _OrderItemsGrouped extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          subName,
-                          style: const TextStyle(fontSize: 13),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              subName,
+                              style: TextStyle(
+                                fontSize: 13,
+                                decoration: item.cancelCount >= item.quantity
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                            ),
+                            if (item.redoCount > 0 || item.cancelCount > 0)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 3),
+                                child: Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    if (item.redoCount > 0)
+                                      _IncidentBadge(
+                                        label: l10n.redoCount(item.redoCount),
+                                        color: Colors.orange,
+                                      ),
+                                    if (item.cancelCount > 0)
+                                      _IncidentBadge(
+                                        label: l10n.cancelCount(item.cancelCount),
+                                        color: Colors.red,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     ],
@@ -784,8 +830,35 @@ class _OrderItemsGrouped extends StatelessWidget {
                   children: [
                     Text(
                       item.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        decoration: item.cancelCount >= item.quantity
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: item.cancelCount >= item.quantity
+                            ? scheme.onSurface.withOpacity(0.4)
+                            : null,
+                      ),
                     ),
+                    if (item.redoCount > 0 || item.cancelCount > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: Wrap(
+                          spacing: 4,
+                          children: [
+                            if (item.redoCount > 0)
+                              _IncidentBadge(
+                                label: l10n.redoCount(item.redoCount),
+                                color: Colors.orange,
+                              ),
+                            if (item.cancelCount > 0)
+                              _IncidentBadge(
+                                label: l10n.cancelCount(item.cancelCount),
+                                color: Colors.red,
+                              ),
+                          ],
+                        ),
+                      ),
                     if (item.orderNotes.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
@@ -802,8 +875,16 @@ class _OrderItemsGrouped extends StatelessWidget {
                 ),
               ),
               Text(
-                '${(item.unitPrice * item.quantity).toStringAsFixed(2)} MAD',
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                '${(item.unitPrice * (item.quantity - item.cancelCount)).toStringAsFixed(2)} MAD',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  decoration: item.cancelCount >= item.quantity
+                      ? TextDecoration.lineThrough
+                      : null,
+                  color: item.cancelCount >= item.quantity
+                      ? scheme.onSurface.withOpacity(0.4)
+                      : null,
+                ),
               ),
             ],
           ),
@@ -812,6 +893,33 @@ class _OrderItemsGrouped extends StatelessWidget {
     }
 
     return Column(children: rows);
+  }
+}
+
+// ── small incident badge used inside _OrderItemsGrouped ──────────────────────
+
+class _IncidentBadge extends StatelessWidget {
+  const _IncidentBadge({required this.label, required this.color});
+  final String label;
+  final MaterialColor color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.shade100,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: color.shade800,
+        ),
+      ),
+    );
   }
 }
 

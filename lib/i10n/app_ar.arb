@@ -295,5 +295,17 @@
   "lowStockThreshold": "حد تنبيه انخفاض المخزون",
   "lowStockThresholdHint": "مثال: 50  (اختياري، اتركه فارغًا للتعطيل)",
   "lowStockAlertTitle": "مخزون منخفض",
-  "lowStockAlertBody": "{itemName} على وشك النفاد ({stock} {unit} متبقي)"
+  "lowStockAlertBody": "{itemName} على وشك النفاد ({stock} {unit} متبقي)",
+  "redoItem": "إعادة تحضير",
+  "redoItemTooltip": "تحديد هذا العنصر كمعاد تحضيره (يتم خصم المخزون مرة أخرى، السعر ثابت)",
+  "redoItemConfirm": "إعادة تحضير {name}؟",
+  "redoItemConfirmBody": "سيتم خصم المخزون مرة أخرى. سعر العميل يبقى ثابتًا.",
+  "redoCount": "أعيد {count}x",
+  "incidents": "الحوادث",
+  "incidentsTooltip": "إدارة إعادة التحضير والإلغاء",
+  "cancelItem": "إلغاء",
+  "cancelItemTooltip": "إلغاء هذا العنصر (المخزون مستهلك، السعر يُحذف من الفاتورة)",
+  "cancelItemConfirm": "إلغاء {name}؟",
+  "cancelItemConfirmBody": "سيُحذف هذا العنصر من الفاتورة. لن يتم استرداد المخزون المستهلك.",
+  "cancelCount": "ملغى {count}x"
 }

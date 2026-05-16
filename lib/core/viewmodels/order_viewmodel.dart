@@ -83,6 +83,33 @@ class ActiveOrders extends _$ActiveOrders {
     await refresh(shopId);
     ref.invalidate(shopOrderHistoryProvider(shopId));
   }
+
+  /// Marks an order item as remade (redo) — deducts stock without changing price.
+  Future<void> redoOrderItem({
+    required String orderItemId,
+    required int prevRedoCount,
+    required String shopId,
+  }) async {
+    await ref.read(orderRepositoryProvider).redoOrderItem(
+      orderItemId: orderItemId,
+      prevRedoCount: prevRedoCount,
+    );
+    await refresh(shopId);
+    ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+  }
+
+  /// Marks an order item as cancelled (wasted, not replaced) — reduces order total.
+  Future<void> cancelOrderItem({
+    required String orderItemId,
+    required int prevCancelCount,
+    required String shopId,
+  }) async {
+    await ref.read(orderRepositoryProvider).cancelOrderItem(
+      orderItemId: orderItemId,
+      prevCancelCount: prevCancelCount,
+    );
+    await refresh(shopId);
+  }
 }
 
 // ── order history (manager) ───────────────────────────────────────────────────
@@ -271,6 +298,33 @@ class MyActiveOrders extends _$MyActiveOrders {
         state = AsyncData(state.value!.where((o) => o.id != orderId).toList());
       }
     }
+  }
+
+  /// Marks an order item as remade (redo) — deducts stock without changing price.
+  Future<void> redoOrderItem({
+    required String orderItemId,
+    required int prevRedoCount,
+    required String cashierId,
+  }) async {
+    await ref.read(orderRepositoryProvider).redoOrderItem(
+      orderItemId: orderItemId,
+      prevRedoCount: prevRedoCount,
+    );
+    await refresh(cashierId);
+    ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+  }
+
+  /// Marks an order item as cancelled (wasted, not replaced) — reduces order total.
+  Future<void> cancelOrderItem({
+    required String orderItemId,
+    required int prevCancelCount,
+    required String cashierId,
+  }) async {
+    await ref.read(orderRepositoryProvider).cancelOrderItem(
+      orderItemId: orderItemId,
+      prevCancelCount: prevCancelCount,
+    );
+    await refresh(cashierId);
   }
 }
 

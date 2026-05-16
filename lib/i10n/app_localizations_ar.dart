@@ -832,4 +832,28 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String lowStockAlertBody(String itemName, String stock, String unit) =>
       '$itemName على وشك النفاد ($stock $unit متبقي)';
+  @override
+  String get redoItem => 'إعادة تحضير';
+  @override
+  String get redoItemTooltip => 'تحديد هذا العنصر كمعاد تحضيره';
+  @override
+  String redoItemConfirm(String name) => 'إعادة تحضير $name؟';
+  @override
+  String get redoItemConfirmBody => 'سيتم خصم المخزون مرة أخرى. سعر العميل يبقى ثابتًا.';
+  @override
+  String redoCount(int count) => 'أعيد ×$count';
+  @override
+  String get incidents => 'الحوادث';
+  @override
+  String get incidentsTooltip => 'إدارة إعادة التحضير والإلغاء';
+  @override
+  String get cancelItem => 'إلغاء';
+  @override
+  String get cancelItemTooltip => 'إلغاء هذا العنصر (المخزون مستهلك، السعر يُحذف من الفاتورة)';
+  @override
+  String cancelItemConfirm(String name) => 'إلغاء $name؟';
+  @override
+  String get cancelItemConfirmBody => 'سيُحذف هذا العنصر من الفاتورة. لن يتم استرداد المخزون المستهلك.';
+  @override
+  String cancelCount(int count) => 'ملغى ×$count';
 }

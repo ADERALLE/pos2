@@ -295,5 +295,17 @@
   "lowStockThreshold": "Low stock alert threshold",
   "lowStockThresholdHint": "e.g. 50  (optional, leave empty to disable)",
   "lowStockAlertTitle": "Low stock",
-  "lowStockAlertBody": "{itemName} is running low ({stock} {unit} remaining)"
+  "lowStockAlertBody": "{itemName} is running low ({stock} {unit} remaining)",
+  "redoItem": "Remake",
+  "redoItemTooltip": "Mark this item as remade (extra stock deducted, price unchanged)",
+  "redoItemConfirm": "Remake {name}?",
+  "redoItemConfirmBody": "Stock will be deducted again. The customer price remains unchanged.",
+  "redoCount": "Remade {count}x",
+  "incidents": "Incidents",
+  "incidentsTooltip": "Manage remakes & cancellations",
+  "cancelItem": "Cancel",
+  "cancelItemTooltip": "Cancel this item (stock consumed, price removed from bill)",
+  "cancelItemConfirm": "Cancel {name}?",
+  "cancelItemConfirmBody": "This item will be removed from the bill. The stock that was already consumed will NOT be refunded.",
+  "cancelCount": "Cancelled {count}x"
 }

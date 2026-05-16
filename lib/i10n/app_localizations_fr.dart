@@ -843,4 +843,26 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String lowStockAlertBody(String itemName, String stock, String unit) =>
       '$itemName est presque épuisé ($stock $unit restant)';
-}
+  @override
+  String get redoItem => 'Refaire';
+  @override
+  String get redoItemTooltip => 'Marquer cet article comme refait (stock déduit à nouveau, prix inchangé)';
+  @override
+  String redoItemConfirm(String name) => 'Refaire $name ?';
+  @override
+  String get redoItemConfirmBody => 'Le stock sera déduit une nouvelle fois. Le prix client reste inchangé.';
+  @override
+  String redoCount(int count) => 'Refait ×$count';  @override
+  String get incidents => 'Incidents';
+  @override
+  String get incidentsTooltip => 'Gérer les reconfections et annulations';
+  @override
+  String get cancelItem => 'Annuler';
+  @override
+  String get cancelItemTooltip => 'Annuler cet article (stock consommé, prix retiré de la facture)';
+  @override
+  String cancelItemConfirm(String name) => 'Annuler $name ?';
+  @override
+  String get cancelItemConfirmBody => 'Cet article sera retiré de la facture. Le stock déjà consommé ne sera PAS recrédité.';
+  @override
+  String cancelCount(int count) => 'Annulé ×$count';}

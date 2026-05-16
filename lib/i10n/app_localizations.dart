@@ -1601,6 +1601,18 @@ abstract class AppLocalizations {
   String get lowStockThresholdHint;
   String get lowStockAlertTitle;
   String lowStockAlertBody(String itemName, String stock, String unit);
+  String get redoItem;
+  String get redoItemTooltip;
+  String redoItemConfirm(String name);
+  String get redoItemConfirmBody;
+  String redoCount(int count);
+  String get incidents;
+  String get incidentsTooltip;
+  String get cancelItem;
+  String get cancelItemTooltip;
+  String cancelItemConfirm(String name);
+  String get cancelItemConfirmBody;
+  String cancelCount(int count);
 }
 
 class _AppLocalizationsDelegate

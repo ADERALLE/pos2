@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:pos_v1/app/home/notification_bell.dart';
 import 'package:pos_v1/app/shared/payment_dialog.dart';
+import 'package:pos_v1/app/shared/incidents_sheet.dart';
 import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/staff.dart';
 import 'package:pos_v1/core/repositories/order_repository.dart';
@@ -700,6 +701,25 @@ class _ShiftOrderTile extends ConsumerWidget {
                       },
                     ),
                   ),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: Icon(Icons.warning_amber_rounded,
+                        color: Colors.deepOrange.shade600, size: 18),
+                    tooltip: l10n.incidentsTooltip,
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(20))),
+                      builder: (_) => IncidentsSheet(order: order),
+                    ),
+                  ),
+                ),
                 SizedBox(
                   width: 36,
                   height: 36,

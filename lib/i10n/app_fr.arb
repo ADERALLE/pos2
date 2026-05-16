@@ -295,5 +295,17 @@
   "lowStockThreshold": "Seuil d'alerte stock bas",
   "lowStockThresholdHint": "ex. 50  (facultatif, laisser vide pour désactiver)",
   "lowStockAlertTitle": "Stock bas",
-  "lowStockAlertBody": "{itemName} est presque épuisé ({stock} {unit} restant)"
+  "lowStockAlertBody": "{itemName} est presque épuisé ({stock} {unit} restant)",
+  "redoItem": "Refaire",
+  "redoItemTooltip": "Marquer cet article comme refait (stock déduit à nouveau, prix inchangé)",
+  "redoItemConfirm": "Refaire {name} ?",
+  "redoItemConfirmBody": "Le stock sera déduit une nouvelle fois. Le prix client reste inchangé.",
+  "redoCount": "Refait {count}x",
+  "incidents": "Incidents",
+  "incidentsTooltip": "Gérer les reconfections et annulations",
+  "cancelItem": "Annuler",
+  "cancelItemTooltip": "Annuler cet article (stock consommé, prix retiré de la facture)",
+  "cancelItemConfirm": "Annuler {name} ?",
+  "cancelItemConfirmBody": "Cet article sera retiré de la facture. Le stock déjà consommé ne sera PAS recrédité.",
+  "cancelCount": "Annulé {count}x"
 }
