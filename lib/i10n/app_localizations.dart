@@ -1597,6 +1597,10 @@ abstract class AppLocalizations {
   String get stockManualRefills;
   String get stockAdjustments;
   String get noStockDataForShift;
+  String get lowStockThreshold;
+  String get lowStockThresholdHint;
+  String get lowStockAlertTitle;
+  String lowStockAlertBody(String itemName, String stock, String unit);
 }
 
 class _AppLocalizationsDelegate

@@ -63,6 +63,7 @@ class InventoryItemList extends _$InventoryItemList {
     required String unitType,
     double currentStock = 0,
     bool stopOrdersOnEmpty = false,
+    double? lowStockThreshold,
   }) async {
     await ref.read(inventoryRepositoryProvider).upsertInventoryItem(
           shopId: shopId,
@@ -70,6 +71,7 @@ class InventoryItemList extends _$InventoryItemList {
           unitType: unitType,
           currentStock: currentStock,
           stopOrdersOnEmpty: stopOrdersOnEmpty,
+          lowStockThreshold: lowStockThreshold,
         );
     await refresh(shopId);
   }
@@ -82,6 +84,7 @@ class InventoryItemList extends _$InventoryItemList {
           unitType: item.unitType,
           currentStock: item.currentStock,
           stopOrdersOnEmpty: item.stopOrdersOnEmpty,
+          lowStockThreshold: item.lowStockThreshold,
         );
     await refresh(item.shopId);
   }

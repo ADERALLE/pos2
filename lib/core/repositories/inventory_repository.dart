@@ -35,6 +35,7 @@ class InventoryRepository {
     required String unitType,
     double currentStock = 0,
     bool stopOrdersOnEmpty = false,
+    double? lowStockThreshold,
   }) async {
     final data = await _client
         .from('inventory_items')
@@ -45,6 +46,7 @@ class InventoryRepository {
           'unit_type': unitType,
           'current_stock': currentStock,
           'stop_orders_on_empty': stopOrdersOnEmpty,
+          'low_stock_threshold': lowStockThreshold,
         })
         .select()
         .single();

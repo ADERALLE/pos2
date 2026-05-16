@@ -291,5 +291,9 @@
   "stockExpectedUsage": "الاستهلاك المتوقع",
   "stockManualRefills": "إعادة التعبئة اليدوية",
   "stockAdjustments": "التسويات",
-  "noStockDataForShift": "لا توجد بيانات مخزون لهذه الوردية"
+  "noStockDataForShift": "لا توجد بيانات مخزون لهذه الوردية",
+  "lowStockThreshold": "حد تنبيه انخفاض المخزون",
+  "lowStockThresholdHint": "مثال: 50  (اختياري، اتركه فارغًا للتعطيل)",
+  "lowStockAlertTitle": "مخزون منخفض",
+  "lowStockAlertBody": "{itemName} على وشك النفاد ({stock} {unit} متبقي)"
 }

@@ -192,6 +192,7 @@ class _InventoryItemForm extends ConsumerStatefulWidget {
 class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
   final _labelCtrl = TextEditingController();
   final _stockCtrl = TextEditingController();
+  final _thresholdCtrl = TextEditingController();
   String _unitType = 'unit';
   bool _stopOnEmpty = false;
   bool _loading = false;
@@ -204,6 +205,9 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
       _stockCtrl.text = widget.editing!.currentStock.toString();
       _unitType = widget.editing!.unitType;
       _stopOnEmpty = widget.editing!.stopOrdersOnEmpty;
+      if (widget.editing!.lowStockThreshold != null) {
+        _thresholdCtrl.text = widget.editing!.lowStockThreshold!.toString();
+      }
     }
   }
 
@@ -211,6 +215,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
   void dispose() {
     _labelCtrl.dispose();
     _stockCtrl.dispose();
+    _thresholdCtrl.dispose();
     super.dispose();
   }
 
@@ -218,6 +223,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
     final label = _labelCtrl.text.trim();
     if (label.isEmpty) return;
     final stock = double.tryParse(_stockCtrl.text.trim()) ?? 0;
+    final threshold = double.tryParse(_thresholdCtrl.text.trim());
 
     setState(() => _loading = true);
     try {
@@ -229,6 +235,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
           unitType: _unitType,
           currentStock: stock,
           stopOrdersOnEmpty: _stopOnEmpty,
+          lowStockThreshold: threshold,
         ));
       } else {
         await notifier.create(
@@ -237,6 +244,7 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
           unitType: _unitType,
           currentStock: stock,
           stopOrdersOnEmpty: _stopOnEmpty,
+          lowStockThreshold: threshold,
         );
       }
       if (mounted) Navigator.pop(context);
@@ -313,6 +321,20 @@ class _InventoryItemFormState extends ConsumerState<_InventoryItemForm> {
             subtitle: Text(l10n.stopOrdersOnEmptySubtitle),
             activeColor: scheme.error,
             contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 12),
+
+          // Low stock threshold
+          TextField(
+            controller: _thresholdCtrl,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.lowStockThreshold,
+              hintText: l10n.lowStockThresholdHint,
+              suffixText: _unitType,
+              border: const OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: 20),
 

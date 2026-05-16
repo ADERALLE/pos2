@@ -823,4 +823,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get stockAdjustments => 'التسويات';
   @override
   String get noStockDataForShift => 'لا توجد بيانات مخزون لهذه الوردية';
+  @override
+  String get lowStockThreshold => 'حد تنبيه انخفاض المخزون';
+  @override
+  String get lowStockThresholdHint => 'مثال: 50  (اختياري، اتركه فارغًا للتعطيل)';
+  @override
+  String get lowStockAlertTitle => 'مخزون منخفض';
+  @override
+  String lowStockAlertBody(String itemName, String stock, String unit) =>
+      '$itemName على وشك النفاد ($stock $unit متبقي)';
 }

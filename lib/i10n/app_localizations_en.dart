@@ -824,4 +824,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stockAdjustments => 'Adjustments';
   @override
   String get noStockDataForShift => 'No stock data for this shift';
+  @override
+  String get lowStockThreshold => 'Low stock alert threshold';
+  @override
+  String get lowStockThresholdHint => 'e.g. 50  (optional, leave empty to disable)';
+  @override
+  String get lowStockAlertTitle => 'Low stock';
+  @override
+  String lowStockAlertBody(String itemName, String stock, String unit) =>
+      '$itemName is running low ($stock $unit remaining)';
 }

@@ -291,5 +291,9 @@
   "stockExpectedUsage": "Consommation prévue",
   "stockManualRefills": "Refills manuels",
   "stockAdjustments": "Ajustements",
-  "noStockDataForShift": "Aucune donnée de stock pour ce service"
+  "noStockDataForShift": "Aucune donnée de stock pour ce service",
+  "lowStockThreshold": "Seuil d'alerte stock bas",
+  "lowStockThresholdHint": "ex. 50  (facultatif, laisser vide pour désactiver)",
+  "lowStockAlertTitle": "Stock bas",
+  "lowStockAlertBody": "{itemName} est presque épuisé ({stock} {unit} restant)"
 }

@@ -235,6 +235,8 @@ class _StockCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final isLow = item.stopOrdersOnEmpty && item.currentStock <= 0;
+    final isNearThreshold = item.lowStockThreshold != null &&
+        item.currentStock <= item.lowStockThreshold!;
 
     return Card(
       child: Padding(
@@ -254,9 +256,37 @@ class _StockCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: isLow ? scheme.error : scheme.primary,
+                    color: isLow
+                        ? scheme.error
+                        : isNearThreshold
+                            ? Colors.orange
+                            : scheme.primary,
                   ),
                 ),
+                if (item.lowStockThreshold != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notifications_active_rounded,
+                        size: 12,
+                        color: isNearThreshold
+                            ? Colors.orange
+                            : scheme.onSurface.withOpacity(0.4),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${l10n.lowStockThreshold}: ${item.lowStockThreshold!.toStringAsFixed(item.unitType == "unit" ? 0 : 1)} ${item.unitType}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isNearThreshold
+                              ? Colors.orange
+                              : scheme.onSurface.withOpacity(0.45),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
             const Spacer(),

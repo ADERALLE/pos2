@@ -834,4 +834,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get stockAdjustments => 'Ajustements';
   @override
   String get noStockDataForShift => 'Aucune donnée de stock pour ce service';
+  @override
+  String get lowStockThreshold => 'Seuil d\'alerte stock bas';
+  @override
+  String get lowStockThresholdHint => 'ex. 50  (facultatif, laisser vide pour désactiver)';
+  @override
+  String get lowStockAlertTitle => 'Stock bas';
+  @override
+  String lowStockAlertBody(String itemName, String stock, String unit) =>
+      '$itemName est presque épuisé ($stock $unit restant)';
 }

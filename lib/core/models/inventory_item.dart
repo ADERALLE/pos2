@@ -12,6 +12,7 @@ abstract class InventoryItem with _$InventoryItem {
     @JsonKey(name: 'unit_type') required String unitType,
     @JsonKey(name: 'current_stock') required double currentStock,
     @JsonKey(name: 'stop_orders_on_empty') required bool stopOrdersOnEmpty,
+    @JsonKey(name: 'low_stock_threshold') double? lowStockThreshold,
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _InventoryItem;
 

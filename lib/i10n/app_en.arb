@@ -291,5 +291,9 @@
   "stockExpectedUsage": "Expected usage",
   "stockManualRefills": "Manual refills",
   "stockAdjustments": "Adjustments",
-  "noStockDataForShift": "No stock data for this shift"
+  "noStockDataForShift": "No stock data for this shift",
+  "lowStockThreshold": "Low stock alert threshold",
+  "lowStockThresholdHint": "e.g. 50  (optional, leave empty to disable)",
+  "lowStockAlertTitle": "Low stock",
+  "lowStockAlertBody": "{itemName} is running low ({stock} {unit} remaining)"
 }

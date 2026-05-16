@@ -153,13 +153,31 @@ class _NotifTile extends ConsumerWidget {
   // Detect notification type from the trigger's title strings
   bool get _isShiftNotif => notif.staffId != null;
   bool get _isDailySummary => notif.title.contains('Daily summary');
+  bool get _isLowStock => notif.title == 'low_stock';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final (icon, color) = _resolveIconAndColor(scheme);
-    final isClickable = _isShiftNotif || _isDailySummary;
+    final isClickable = _isShiftNotif || _isDailySummary || _isLowStock;
+
+    // For low_stock notifications, build a human-readable title/body from the
+    // pipe-separated body: "label|itemId|stock|unitType"
+    final String displayTitle;
+    final String displayBody;
+    if (_isLowStock) {
+      final parts = notif.body.split('|');
+      final itemLabel = parts.isNotEmpty ? parts[0] : '?';
+      final stock = parts.length >= 3 ? parts[2] : '?';
+      final unit = parts.length >= 4 ? parts[3] : '';
+      displayTitle = l10n.lowStockAlertTitle;
+      displayBody = l10n.lowStockAlertBody(itemLabel, stock, unit);
+    } else {
+      displayTitle = notif.title;
+      displayBody = notif.body;
+    }
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -187,7 +205,7 @@ class _NotifTile extends ConsumerWidget {
             color: color.withOpacity(notif.isRead ? 0.5 : 1.0), size: 22),
       ),
       title: Text(
-        notif.title,
+        displayTitle,
         style: TextStyle(
           fontWeight: notif.isRead ? FontWeight.w400 : FontWeight.w600,
           fontSize: 14,
@@ -201,7 +219,7 @@ class _NotifTile extends ConsumerWidget {
         children: [
           const SizedBox(height: 2),
           Text(
-            notif.body,
+            displayBody,
             style: TextStyle(
               fontSize: 13,
               color: notif.isRead
@@ -242,6 +260,9 @@ class _NotifTile extends ConsumerWidget {
     if (_isDailySummary) {
       return (Icons.bar_chart_rounded, Colors.blue);
     }
+    if (_isLowStock) {
+      return (Icons.inventory_2_rounded, Colors.orange);
+    }
     if (notif.title.contains('started')) {
       return (Icons.play_arrow_rounded, Colors.green);
     }
@@ -252,6 +273,15 @@ class _NotifTile extends ConsumerWidget {
   }
 
   void _handleNavigation(BuildContext context) {
+    if (_isLowStock) {
+      // body format: "label|itemId|stock|unitType"
+      final parts = notif.body.split('|');
+      if (parts.length >= 2) {
+        context.push('/settings/inventory/${parts[1]}');
+      }
+      return;
+    }
+
     if (_isShiftNotif && notif.staffId != null) {
       // → settings/staff-dashboard/:staffId
       context.push(
