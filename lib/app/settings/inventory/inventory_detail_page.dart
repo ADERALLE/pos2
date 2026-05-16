@@ -683,6 +683,7 @@ class _EditItemForm extends ConsumerStatefulWidget {
 
 class _EditItemFormState extends ConsumerState<_EditItemForm> {
   late final TextEditingController _labelCtrl;
+  late final TextEditingController _thresholdCtrl;
   late String _unitType;
   late bool _stopOnEmpty;
   bool _loading = false;
@@ -691,6 +692,9 @@ class _EditItemFormState extends ConsumerState<_EditItemForm> {
   void initState() {
     super.initState();
     _labelCtrl = TextEditingController(text: widget.item.label);
+    _thresholdCtrl = TextEditingController(
+      text: widget.item.lowStockThreshold?.toString() ?? '',
+    );
     _unitType = widget.item.unitType;
     _stopOnEmpty = widget.item.stopOrdersOnEmpty;
   }
@@ -698,12 +702,14 @@ class _EditItemFormState extends ConsumerState<_EditItemForm> {
   @override
   void dispose() {
     _labelCtrl.dispose();
+    _thresholdCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     final label = _labelCtrl.text.trim();
     if (label.isEmpty) return;
+    final threshold = double.tryParse(_thresholdCtrl.text.trim());
 
     setState(() => _loading = true);
     try {
@@ -713,6 +719,7 @@ class _EditItemFormState extends ConsumerState<_EditItemForm> {
             label: label,
             unitType: _unitType,
             stopOrdersOnEmpty: _stopOnEmpty,
+            lowStockThreshold: threshold,
           ));
       if (mounted) Navigator.pop(context);
     } finally {
@@ -764,6 +771,17 @@ class _EditItemFormState extends ConsumerState<_EditItemForm> {
             title: Text(l10n.stopOrdersOnEmpty),
             activeColor: scheme.error,
             contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _thresholdCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: InputDecoration(
+              labelText: l10n.lowStockThreshold,
+              hintText: l10n.lowStockThresholdHint,
+              suffixText: _unitType,
+              border: const OutlineInputBorder(),
+            ),
           ),
           const SizedBox(height: 20),
           FilledButton(

@@ -402,6 +402,37 @@ class _CategoryChip extends StatelessWidget {
 
 // ── menu item card ────────────────────────────────────────────────────────────
 
+/// Returns a comma-separated string of the inventory ingredient labels that are
+/// blocking an order for the given [menuItemIds].
+/// Uses the local Riverpod state (no RPC) — covers both the `stopOrdersOnEmpty`
+/// case and the "effective stock exhausted by pending orders" case, since in
+/// both cases the offending ingredients are those with `stopOrdersOnEmpty = true`
+/// linked to the menu item(s).
+/// Falls back to [fallback] when no such ingredient is found locally
+/// (should not happen in practice).
+String _blockingIngredientLabel(
+  List<String> menuItemIds,
+  WidgetRef ref, {
+  required String fallback,
+}) {
+  final recipes =
+      ref.read(inventoryRecipeListProvider(AppConstants.shopId)).value ?? [];
+  final items =
+      ref.read(inventoryItemListProvider(AppConstants.shopId)).value ?? [];
+
+  final linkedInventoryIds = recipes
+      .where((r) => menuItemIds.contains(r.menuItemId))
+      .map((r) => r.inventoryItemId)
+      .toSet();
+
+  final blocking = items
+      .where((i) => linkedInventoryIds.contains(i.id) && i.stopOrdersOnEmpty)
+      .map((i) => i.label)
+      .toList();
+
+  return blocking.isNotEmpty ? blocking.join(', ') : fallback;
+}
+
 class _MenuItemCard extends ConsumerStatefulWidget {
   const _MenuItemCard({required this.item});
   final MenuItem item;
@@ -434,9 +465,11 @@ class _MenuItemCardState extends ConsumerState<_MenuItemCard> {
                   .read(cartProvider.notifier)
                   .tryAddItem(widget.item);
               if (!ok && mounted) {
+                final ingredient = _blockingIngredientLabel(
+                  [widget.item.id], ref, fallback: widget.item.name);
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content:
-                      Text('${widget.item.name} est épuisé'),
+                  content: Text(
+                      '$ingredient — ${AppLocalizations.of(context)!.outOfStock}'),
                   backgroundColor: theme.colorScheme.error,
                   duration: const Duration(seconds: 2),
                 ));
@@ -810,19 +843,45 @@ class _CartContentState extends ConsumerState<CartContent> {
                       ),
                       Text('${c.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: _isCartItemBlocked(c, blockedIds)
-                            ? () {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(c.displayName +
-                                      (AppLocalizations.of(context)!.outOfStock.isNotEmpty
-                                          ? ' — ${AppLocalizations.of(context)!.outOfStock}'
-                                          : ' est épuisé')),
-                                  backgroundColor: theme.colorScheme.error,
-                                  duration: const Duration(seconds: 2),
-                                ));
-                              }
-                            : () => ref.read(cartProvider.notifier).updateQuantity(c.cartKey, c.quantity + 1),
+                        icon: Icon(
+                          Icons.add_circle_outline,
+                          color: _isCartItemBlocked(c, blockedIds)
+                              ? theme.colorScheme.onSurface.withOpacity(0.3)
+                              : null,
+                        ),
+                        onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final bool ok;
+                          if (!c.isCombo) {
+                            ok = await ref.read(cartProvider.notifier).tryAddItem(c.menuItem!);
+                          } else if (c.selectedChoices.isNotEmpty) {
+                            ok = await ref.read(cartProvider.notifier).tryAddComboWithChoices(c.comboMenu!, c.selectedChoices);
+                          } else {
+                            ok = await ref.read(cartProvider.notifier).tryAddCombo(c.comboMenu!);
+                          }
+                          if (!ok && mounted) {
+                            final menuItemIds = c.isCombo
+                                ? (c.selectedChoices.isNotEmpty
+                                    ? [
+                                        ...c.comboMenu!.comboMenuItems
+                                            .where((ci) => ci.choiceGroup == null)
+                                            .map((ci) => ci.menuItemId),
+                                        ...c.selectedChoices.values,
+                                      ]
+                                    : c.comboMenu!.comboMenuItems
+                                        .map((ci) => ci.menuItemId)
+                                        .toList())
+                                : [c.menuItem!.id];
+                            final ingredient = _blockingIngredientLabel(
+                                menuItemIds, ref, fallback: c.displayName);
+                            messenger.showSnackBar(SnackBar(
+                              content: Text(
+                                  '$ingredient — ${AppLocalizations.of(context)!.outOfStock}'),
+                              backgroundColor: theme.colorScheme.error,
+                              duration: const Duration(seconds: 2),
+                            ));
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -1013,8 +1072,14 @@ class _ComboMenuCardState extends ConsumerState<_ComboMenuCard> {
                     .read(cartProvider.notifier)
                     .tryAddCombo(widget.combo);
                 if (!ok && mounted) {
+                  final allMenuItemIds = widget.combo.comboMenuItems
+                      .map((ci) => ci.menuItemId)
+                      .toList();
+                  final ingredient = _blockingIngredientLabel(
+                      allMenuItemIds, ref, fallback: widget.combo.name);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('${widget.combo.name} est épuisé'),
+                    content: Text(
+                        '$ingredient — ${AppLocalizations.of(context)!.outOfStock}'),
                     backgroundColor: theme.colorScheme.error,
                     duration: const Duration(seconds: 2),
                   ));
@@ -1258,8 +1323,17 @@ class _ComboMenuCardState extends ConsumerState<_ComboMenuCard> {
                         .tryAddComboWithChoices(widget.combo, selections);
                     Navigator.pop(ctx);
                     if (!ok && context.mounted) {
+                      final fixedIds = widget.combo.comboMenuItems
+                          .where((ci) => ci.choiceGroup == null)
+                          .map((ci) => ci.menuItemId)
+                          .toList();
+                      final selectedIds = selections.values.toList();
+                      final ingredient = _blockingIngredientLabel(
+                          [...fixedIds, ...selectedIds], ref,
+                          fallback: widget.combo.name);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text('${widget.combo.name} est épuisé'),
+                        content: Text(
+                            '$ingredient — ${AppLocalizations.of(context)!.outOfStock}'),
                         backgroundColor:
                             Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 2),
