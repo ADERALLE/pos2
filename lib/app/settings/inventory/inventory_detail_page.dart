@@ -55,8 +55,9 @@ class InventoryDetailPage extends ConsumerWidget {
               .refresh(AppConstants.shopId);
         },
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-        slivers: [
+          physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics()),
+          slivers: [
           SliverAppBar(
             title: Text(item.label),
             floating: true,
