@@ -60,10 +60,11 @@ BEGIN
       v_quantity, v_cancel;
   END IF;
 
-  -- Incrémenter cancel_count et diminuer le subtotal de l'item
+  -- Incrémenter cancel_count — subtotal est une colonne générée (unit_price * quantity),
+  -- on ne peut pas l'écrire. Le total réel affiché côté Flutter utilise
+  -- unit_price * (quantity - cancel_count). On ne met à jour que orders.total.
   UPDATE order_items
-     SET cancel_count = cancel_count + 1,
-         subtotal     = GREATEST(subtotal - v_unit_price, 0)
+     SET cancel_count = cancel_count + 1
    WHERE id = p_order_item_id;
 
   -- Diminuer le total de la commande
