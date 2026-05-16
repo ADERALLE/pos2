@@ -76,59 +76,73 @@ CREATE INDEX idx_inventory_items_shop_id
 -- Retourne false si un ingredient bloquant manque de stock prédit.
 -- Prend en compte les choice groups : seuls les menu_item_ids sélectionnés
 -- sont vérifiés (p_selected_item_ids), pas tous les items du combo.
+-- p_extra_pending : usage supplémentaire déjà engagé par le cart Flutter
+--   (items en cours d'ajout, pas encore soumis comme orders DB).
+--   Format JSONB : { "inventory_item_id_uuid": usage_numeric, ... }
 
 CREATE OR REPLACE FUNCTION check_stock_availability(
   p_target_id         UUID,
   p_is_combo          BOOLEAN,
   p_shop_id           UUID,
   p_requested_qty     NUMERIC,
-  p_selected_item_ids UUID[]  -- IDs des menu_items choisis dans les choice groups
+  p_selected_item_ids UUID[],
+  p_extra_pending     JSONB    DEFAULT '{}'
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  v_menu_item_ids UUID[];
   v_inv_item      RECORD;
   v_pending_used  NUMERIC;
+  v_cart_used     NUMERIC;
   v_available     NUMERIC;
 BEGIN
-  -- 1. Résoudre les menu_item_ids à vérifier
-  IF p_is_combo THEN
-    SELECT ARRAY_AGG(DISTINCT cmi.menu_item_id)
-    INTO v_menu_item_ids
-    FROM combo_menu_items cmi
-    WHERE cmi.combo_menu_id = p_target_id
-      AND (
-        cmi.choice_group IS NULL                          -- items fixes toujours inclus
-        OR cmi.menu_item_id = ANY(p_selected_item_ids)    -- item choisi dans le choice group seulement
-      );
-  ELSE
-    v_menu_item_ids := ARRAY[p_target_id];
-  END IF;
+  -- ── 1. Itérer sur chaque ingrédient bloquant, avec usage agrégé correct ───
+  --
+  -- Pour un item simple :
+  --   usage_per_combo_unit = ir.usage_value  (cmi_qty = 1 implicite)
+  -- Pour un combo :
+  --   usage_per_combo_unit = SUM(ir.usage_value * cmi.quantity)
+  --   groupé par inventory_item, en tenant compte de cmi.quantity
+  --   (ex: 2x Orange → 2 × 600g = 1200g par combo commandé)
 
-  -- 2. Aucune recette liée → pas de contrainte stock → disponible
-  IF NOT EXISTS (
-    SELECT 1 FROM inventory_recipes ir
-    WHERE ir.menu_item_id = ANY(v_menu_item_ids)
-      AND ir.shop_id = p_shop_id
-  ) THEN
-    RETURN true;
-  END IF;
-
-  -- 3. Pour chaque inventory_item bloquant, calculer le stock prédit
   FOR v_inv_item IN
+
+    -- ── Cas simple item ───────────────────────────────────────────────────
     SELECT
       ii.id,
       ii.current_stock,
-      ir.usage_value
+      ir.usage_value AS usage_per_unit
     FROM inventory_recipes ir
     JOIN inventory_items ii ON ii.id = ir.inventory_item_id
-    WHERE ir.menu_item_id = ANY(v_menu_item_ids)
+    WHERE p_is_combo = false
+      AND ir.menu_item_id = p_target_id
       AND ir.shop_id = p_shop_id
       AND ii.stop_orders_on_empty = true
+
+    UNION ALL
+
+    -- ── Cas combo : agréger usage × cmi.quantity par ingredient ──────────
+    SELECT
+      ii.id,
+      ii.current_stock,
+      SUM(ir.usage_value * cmi.quantity) AS usage_per_unit
+    FROM combo_menu_items cmi
+    JOIN inventory_recipes ir
+      ON ir.menu_item_id = cmi.menu_item_id
+     AND ir.shop_id = p_shop_id
+    JOIN inventory_items ii ON ii.id = ir.inventory_item_id
+    WHERE p_is_combo = true
+      AND cmi.combo_menu_id = p_target_id
+      AND (
+        cmi.choice_group IS NULL                       -- items fixes toujours inclus
+        OR cmi.menu_item_id = ANY(p_selected_item_ids) -- choix sélectionné seulement
+      )
+      AND ii.stop_orders_on_empty = true
+    GROUP BY ii.id, ii.current_stock
+
   LOOP
-    -- Déductions déjà engagées (commandes pending + inprogress, pas encore done)
+    -- ── 2. Déductions déjà engagées en DB (orders pending + inprogress) ───
     SELECT COALESCE(SUM(ir2.usage_value * oi.quantity), 0)
     INTO v_pending_used
     FROM order_items oi
@@ -138,9 +152,15 @@ BEGIN
       AND o.shop_id = p_shop_id
       AND o.status IN ('pending', 'inprogress');
 
-    v_available := v_inv_item.current_stock - v_pending_used;
+    -- ── 3. Déductions issues du cart Flutter (pas encore en DB) ──────────
+    v_cart_used := COALESCE(
+      (p_extra_pending ->> v_inv_item.id::TEXT)::NUMERIC,
+      0
+    );
 
-    IF (v_available - (p_requested_qty::NUMERIC * v_inv_item.usage_value)) < 0 THEN
+    v_available := v_inv_item.current_stock - v_pending_used - v_cart_used;
+
+    IF (v_available - (p_requested_qty::NUMERIC * v_inv_item.usage_per_unit)) < 0 THEN
       RETURN false;
     END IF;
   END LOOP;

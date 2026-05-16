@@ -110,6 +110,7 @@ class InventoryRepository {
     required String shopId,
     required double requestedQty,
     required List<String> selectedItemIds,
+    Map<String, double> extraPending = const {},
   }) async {
     final result = await _client.rpc('check_stock_availability', params: {
       'p_target_id': targetId,
@@ -117,6 +118,9 @@ class InventoryRepository {
       'p_shop_id': shopId,
       'p_requested_qty': requestedQty,
       'p_selected_item_ids': selectedItemIds,
+      'p_extra_pending': extraPending.isEmpty
+          ? <String, dynamic>{}
+          : extraPending.map((k, v) => MapEntry(k, v)),
     });
     return result as bool;
   }

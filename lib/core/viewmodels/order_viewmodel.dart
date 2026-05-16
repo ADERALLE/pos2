@@ -8,6 +8,7 @@ import 'package:pos_v1/core/appconstants.dart';
 import 'package:pos_v1/core/models/cart_item.dart';
 import 'package:pos_v1/core/models/combo_menu.dart';
 import 'package:pos_v1/core/models/menu_item.dart';
+import 'package:pos_v1/core/viewmodels/inventory_viewmodel.dart';
 import 'package:pos_v1/core/models/order.dart';
 import 'package:pos_v1/core/models/order_item.dart';
 import 'package:pos_v1/core/repositories/inventory_repository.dart';
@@ -392,8 +393,9 @@ class Cart extends _$Cart {
   }
 
   // ── Stock-aware add methods (RPC 1) ────────────────────────────────────────
-  // Cache TTL : 5s par clé (targetId + qty + choiceIds).
-  // Offline → skip le check et laisse ajouter (optimiste).
+  // Cache keyed on (targetId + qty + selectedIds + cartOffset) — automatically
+  // invalidated when the cart changes because the offset changes.
+  // TTL of 5s protects against rapid double-taps on the same item.
 
   final _stockCache = <String, ({bool available, DateTime cachedAt})>{};
   static const _cacheTtl = Duration(seconds: 5);
@@ -409,7 +411,10 @@ class Cart extends _$Cart {
       requestedQty: (existingQty + 1).toDouble(),
       selectedItemIds: [],
     );
-    if (ok) addItem(item);
+    if (ok) {
+      _stockCache.clear(); // cart changed → cached offsets are stale
+      addItem(item);
+    }
     return ok;
   }
 
@@ -424,7 +429,10 @@ class Cart extends _$Cart {
       requestedQty: (existingQty + 1).toDouble(),
       selectedItemIds: [],
     );
-    if (ok) addCombo(combo);
+    if (ok) {
+      _stockCache.clear();
+      addCombo(combo);
+    }
     return ok;
   }
 
@@ -440,7 +448,10 @@ class Cart extends _$Cart {
       requestedQty: (existingQty + 1).toDouble(),
       selectedItemIds: selectedItemIds,
     );
-    if (ok) addComboWithChoices(combo, choices);
+    if (ok) {
+      _stockCache.clear();
+      addComboWithChoices(combo, choices);
+    }
     return ok;
   }
 
@@ -452,8 +463,26 @@ class Cart extends _$Cart {
   }) async {
     if (!ref.read(isOnlineProvider)) return true;
 
+    // ── Cart offset ────────────────────────────────────────────────────────
+    // Compute the ingredient usage already committed by OTHER items in the
+    // current cart (not yet submitted as DB orders).
+    // The target item itself is excluded because `requestedQty` already
+    // accounts for its existing cart quantity (existingQty + 1).
+    final extraPending = _computeCartIngredientOffset(
+      excludeTargetId: targetId,
+      excludeIsCombo: isCombo,
+    );
+
+    // Cache key includes the cart offset so it is invalidated whenever the
+    // cart changes.  The cache TTL prevents a rapid double-tap from issuing
+    // two identical RPC calls.
     final sortedIds = [...selectedItemIds]..sort();
-    final cacheKey = '${targetId}_${requestedQty}_${sortedIds.join(",")}';
+    final sortedExtra = (extraPending.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key)))
+        .map((e) => '${e.key}:${e.value}')
+        .join('|');
+    final cacheKey =
+        '${targetId}_${requestedQty}_${sortedIds.join(",")}_$sortedExtra';
 
     final cached = _stockCache[cacheKey];
     if (cached != null &&
@@ -469,6 +498,7 @@ class Cart extends _$Cart {
                 shopId: AppConstants.shopId,
                 requestedQty: requestedQty,
                 selectedItemIds: selectedItemIds,
+                extraPending: extraPending,
               );
       _stockCache[cacheKey] = (available: available, cachedAt: DateTime.now());
       return available;
@@ -476,6 +506,56 @@ class Cart extends _$Cart {
       // En cas d'erreur réseau inattendue, fail open (ne pas bloquer l'utilisateur)
       return true;
     }
+  }
+
+  /// Computes the total ingredient usage already in the current cart,
+  /// excluding the item identified by [excludeTargetId] / [excludeIsCombo]
+  /// (since that item's usage is already captured by `requestedQty`).
+  ///
+  /// Returns a map of {inventoryItemId → totalUsage}.
+  Map<String, double> _computeCartIngredientOffset({
+    required String excludeTargetId,
+    required bool excludeIsCombo,
+  }) {
+    final recipes =
+        ref.read(inventoryRecipeListProvider(AppConstants.shopId)).value ?? [];
+    if (recipes.isEmpty) return {};
+
+    final Map<String, double> offset = {};
+
+    for (final cartItem in state) {
+      // Skip the item currently being checked — requestedQty already covers it.
+      if (!cartItem.isCombo && !excludeIsCombo &&
+          cartItem.menuItem?.id == excludeTargetId) continue;
+      if (cartItem.isCombo && excludeIsCombo &&
+          cartItem.comboMenu?.id == excludeTargetId) continue;
+
+      if (!cartItem.isCombo) {
+        // Simple menu item
+        for (final recipe
+            in recipes.where((r) => r.menuItemId == cartItem.menuItem!.id)) {
+          offset[recipe.inventoryItemId] = (offset[recipe.inventoryItemId] ?? 0) +
+              recipe.usageValue * cartItem.quantity;
+        }
+      } else {
+        // Combo: account for cmi.quantity (e.g. 2× Orange in combo)
+        for (final cmi in cartItem.comboMenu!.comboMenuItems) {
+          // Only fixed items + currently selected choices
+          if (cmi.choiceGroup != null &&
+              !cartItem.selectedChoices.values.contains(cmi.menuItemId)) {
+            continue;
+          }
+          for (final recipe
+              in recipes.where((r) => r.menuItemId == cmi.menuItemId)) {
+            offset[recipe.inventoryItemId] =
+                (offset[recipe.inventoryItemId] ?? 0) +
+                    recipe.usageValue * cmi.quantity * cartItem.quantity;
+          }
+        }
+      }
+    }
+
+    return offset;
   }
 
   void invalidateStockCache() => _stockCache.clear();
