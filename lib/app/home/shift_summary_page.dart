@@ -313,6 +313,10 @@ class _ShiftStatsBody extends ConsumerWidget {
           ),
         ],
 
+        // ── Stock usage ────────────────────────────────────────────────
+        const SizedBox(height: 24),
+        _StockUsageSection(shiftId: shift.id, ref: ref),
+
         // ── Order list ─────────────────────────────────────────────────
         if (orders.isNotEmpty) ...[          const SizedBox(height: 24),
           _SectionLabel(
@@ -321,10 +325,6 @@ class _ShiftStatsBody extends ConsumerWidget {
           const SizedBox(height: 8),
           ...orders.map((o) => _OrderTile(order: o)),
         ],
-
-        // ── Stock usage ──────────────────────────────────────────────────────────
-        const SizedBox(height: 24),
-        _StockUsageSection(shiftId: shift.id, ref: ref),
       ],
     );
   }

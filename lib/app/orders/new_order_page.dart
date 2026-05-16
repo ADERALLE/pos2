@@ -631,6 +631,14 @@ class _CartContentState extends ConsumerState<CartContent> {
     super.dispose();
   }
 
+  bool _isCartItemBlocked(CartItem c, Set<String> blockedIds) {
+    if (!c.isCombo) return blockedIds.contains(c.menuItem?.id);
+    // For combos: blocked if any fixed item is blocked
+    return c.comboMenu!.comboMenuItems
+        .where((ci) => ci.choiceGroup == null)
+        .any((ci) => blockedIds.contains(ci.menuItemId));
+  }
+
   Future<void> _submit() async {
     setState(() => _loading = true);
     final staff = ref.read(currentStaffProvider);
@@ -686,6 +694,7 @@ class _CartContentState extends ConsumerState<CartContent> {
     final total = ref.read(cartProvider.notifier).total;
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final blockedIds = ref.watch(outOfStockMenuItemIdsProvider(AppConstants.shopId));
 
     // Block order placement only when every item in the cart is a supplement
     // (i.e. belongs to a supp category). Combo items always count as main items
@@ -802,7 +811,18 @@ class _CartContentState extends ConsumerState<CartContent> {
                       Text('${c.quantity}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       IconButton(
                         icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => ref.read(cartProvider.notifier).updateQuantity(c.cartKey, c.quantity + 1),
+                        onPressed: _isCartItemBlocked(c, blockedIds)
+                            ? () {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(c.displayName +
+                                      (AppLocalizations.of(context)!.outOfStock.isNotEmpty
+                                          ? ' — ${AppLocalizations.of(context)!.outOfStock}'
+                                          : ' est épuisé')),
+                                  backgroundColor: theme.colorScheme.error,
+                                  duration: const Duration(seconds: 2),
+                                ));
+                              }
+                            : () => ref.read(cartProvider.notifier).updateQuantity(c.cartKey, c.quantity + 1),
                       ),
                     ],
                   ),
