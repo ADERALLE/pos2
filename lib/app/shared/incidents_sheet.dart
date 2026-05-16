@@ -62,26 +62,39 @@ class _IncidentsSheetState extends ConsumerState<IncidentsSheet> {
     if (confirmed != true || !mounted) return;
 
     setState(() => _loading[item.id] = 'redo');
+    bool available = true;
     try {
       if (isManager) {
-        await ref
+        available = await ref
             .read(activeOrdersProvider(AppConstants.shopId).notifier)
             .redoOrderItem(
               orderItemId: item.id,
+              menuItemId: item.menuItemId,
               prevRedoCount: item.redoCount,
               shopId: AppConstants.shopId,
             );
       } else {
-        await ref
+        available = await ref
             .read(myActiveOrdersProvider(staff.id).notifier)
             .redoOrderItem(
               orderItemId: item.id,
+              menuItemId: item.menuItemId,
               prevRedoCount: item.redoCount,
               cashierId: staff.id,
             );
       }
     } finally {
       if (mounted) setState(() => _loading.remove(item.id));
+    }
+
+    if (!available && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.outOfStock),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 

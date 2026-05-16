@@ -85,17 +85,31 @@ class ActiveOrders extends _$ActiveOrders {
   }
 
   /// Marks an order item as remade (redo) — deducts stock without changing price.
-  Future<void> redoOrderItem({
+  /// Returns false (without deducting) if ingredients are insufficient.
+  Future<bool> redoOrderItem({
     required String orderItemId,
+    required String menuItemId,
     required int prevRedoCount,
     required String shopId,
   }) async {
+    final available = await ref
+        .read(inventoryRepositoryProvider)
+        .checkStockAvailability(
+          targetId: menuItemId,
+          isCombo: false,
+          shopId: AppConstants.shopId,
+          requestedQty: 1,
+          selectedItemIds: [],
+        );
+    if (!available) return false;
+
     await ref.read(orderRepositoryProvider).redoOrderItem(
       orderItemId: orderItemId,
       prevRedoCount: prevRedoCount,
     );
     await refresh(shopId);
     ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+    return true;
   }
 
   /// Marks an order item as cancelled (wasted, not replaced) — reduces order total.
@@ -301,17 +315,31 @@ class MyActiveOrders extends _$MyActiveOrders {
   }
 
   /// Marks an order item as remade (redo) — deducts stock without changing price.
-  Future<void> redoOrderItem({
+  /// Returns false (without deducting) if ingredients are insufficient.
+  Future<bool> redoOrderItem({
     required String orderItemId,
+    required String menuItemId,
     required int prevRedoCount,
     required String cashierId,
   }) async {
+    final available = await ref
+        .read(inventoryRepositoryProvider)
+        .checkStockAvailability(
+          targetId: menuItemId,
+          isCombo: false,
+          shopId: AppConstants.shopId,
+          requestedQty: 1,
+          selectedItemIds: [],
+        );
+    if (!available) return false;
+
     await ref.read(orderRepositoryProvider).redoOrderItem(
       orderItemId: orderItemId,
       prevRedoCount: prevRedoCount,
     );
     await refresh(cashierId);
     ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+    return true;
   }
 
   /// Marks an order item as cancelled (wasted, not replaced) — reduces order total.
