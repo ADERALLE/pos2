@@ -45,8 +45,17 @@ class InventoryDetailPage extends ConsumerWidget {
     final menuItems = menuItemsAsync.value ?? [];
 
     return Scaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref
+              .read(inventoryItemListProvider(AppConstants.shopId).notifier)
+              .refresh(AppConstants.shopId);
+          await ref
+              .read(inventoryRecipeListProvider(AppConstants.shopId).notifier)
+              .refresh(AppConstants.shopId);
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             title: Text(item.label),
@@ -131,6 +140,7 @@ class InventoryDetailPage extends ConsumerWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -140,7 +150,9 @@ class InventoryDetailPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _EditItemForm(item: item),
     );
   }
@@ -182,7 +194,9 @@ class InventoryDetailPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _AdjustmentSheet(
           item: item, shiftId: shift?.id ?? ''),
     );
@@ -193,7 +207,9 @@ class InventoryDetailPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _RecipeForm(
           inventoryItem: item, menuItems: menuItems, editing: editing),
     );

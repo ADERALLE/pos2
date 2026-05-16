@@ -1,4 +1,7 @@
 import 'package:pos_v1/core/viewmodels/order_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/inventory_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/notification_viewmodel.dart';
+import 'package:pos_v1/core/viewmodels/all_notifications_viewmodel.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../models/auth_state.dart';
 import '../models/staff.dart';
@@ -29,15 +32,15 @@ class Auth extends _$Auth {
 
   Future<void> logout() async {
     state = const AuthState();
-    // ref.invalidate(activeOrdersProvider);
-    // ref.invalidate(myActiveOrdersProvider);
-    // ref.invalidate(shiftOrdersProvider);
-    //
-    // ref.invalidate(orderHistoryProvider);
-    // ref.invalidate(myOrderHistoryProvider);
-    // ref.invalidate(shopOrderHistoryProvider);
-    //
-    // ref.invalidate(currentStaffProvider);
+    // Invalidate all keepAlive providers so the next user gets fresh data
+    ref.invalidate(activeOrdersProvider);
+    ref.invalidate(myActiveOrdersProvider);
+    ref.invalidate(shiftOrdersProvider);
+    ref.invalidate(cartProvider);
+    ref.invalidate(inventoryItemListProvider);
+    ref.invalidate(inventoryRecipeListProvider);
+    ref.invalidate(notificationsProvider);
+    ref.invalidate(allNotificationsProvider);
   }
 }
 

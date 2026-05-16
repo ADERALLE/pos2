@@ -19,8 +19,12 @@ class InventoryPage extends ConsumerWidget {
         ref.watch(inventoryItemListProvider(AppConstants.shopId));
 
     return Scaffold(
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
+      body: RefreshIndicator(
+        onRefresh: () => ref
+            .read(inventoryItemListProvider(AppConstants.shopId).notifier)
+            .refresh(AppConstants.shopId),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
             title: Text(l10n.inventory),
@@ -83,6 +87,7 @@ class InventoryPage extends ConsumerWidget {
             },
           ),
         ],
+        ),
       ),
     );
   }
@@ -92,7 +97,9 @@ class InventoryPage extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => _InventoryItemForm(editing: editing),
     );
   }
