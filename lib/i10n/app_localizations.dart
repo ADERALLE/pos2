@@ -1558,61 +1558,335 @@ abstract class AppLocalizations {
   /// **'Sum'**
   String get sum;
 
+  /// No description provided for @inventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory'**
   String get inventory;
+
+  /// No description provided for @inventorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage stock and recipes'**
   String get inventorySubtitle;
+
+  /// No description provided for @inventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Inventory item'**
   String get inventoryItem;
+
+  /// No description provided for @addInventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
   String get addInventoryItem;
+
+  /// No description provided for @noInventoryItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No stock items'**
   String get noInventoryItems;
+
+  /// No description provided for @addFirstInventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the first stock item'**
   String get addFirstInventoryItem;
+
+  /// No description provided for @editInventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit item'**
   String get editInventoryItem;
+
+  /// No description provided for @newInventoryItem.
+  ///
+  /// In en, this message translates to:
+  /// **'New item'**
   String get newInventoryItem;
+
+  /// No description provided for @deleteInventoryItemQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete item?'**
   String get deleteInventoryItemQuestion;
+
+  /// No description provided for @deleteInventoryItemMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting will also remove all linked recipes.'**
   String get deleteInventoryItemMessage;
+
+  /// No description provided for @currentStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Current stock'**
   String get currentStock;
+
+  /// No description provided for @unitType.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
   String get unitType;
+
+  /// No description provided for @unitUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit (piece)'**
   String get unitUnit;
+
+  /// No description provided for @unitGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'Grams (g)'**
   String get unitGrams;
+
+  /// No description provided for @unitMl.
+  ///
+  /// In en, this message translates to:
+  /// **'Millilitres (ml)'**
   String get unitMl;
+
+  /// No description provided for @stopOrdersOnEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Block orders when empty'**
   String get stopOrdersOnEmpty;
+
+  /// No description provided for @stopOrdersOnEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Items linked to this ingredient cannot be ordered when out of stock'**
   String get stopOrdersOnEmptySubtitle;
+
+  /// No description provided for @outOfStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of stock'**
   String get outOfStock;
+
+  /// No description provided for @linkedRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked recipes'**
   String get linkedRecipes;
+
+  /// No description provided for @linkMenuItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Link a menu item'**
   String get linkMenuItem;
+
+  /// No description provided for @noLinkedRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes — this ingredient is not linked to any menu item.'**
   String get noLinkedRecipes;
+
+  /// No description provided for @editRecipe.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recipe'**
   String get editRecipe;
+
+  /// No description provided for @usagePerUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage per unit sold'**
   String get usagePerUnit;
+
+  /// No description provided for @manualAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual adjustment'**
   String get manualAdjustment;
+
+  /// No description provided for @adjustmentRefill.
+  ///
+  /// In en, this message translates to:
+  /// **'Refill'**
   String get adjustmentRefill;
+
+  /// No description provided for @adjustmentWaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Waste'**
   String get adjustmentWaste;
+
+  /// No description provided for @adjustmentCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
   String get adjustmentCorrection;
+
+  /// No description provided for @adjustmentNewStock.
+  ///
+  /// In en, this message translates to:
+  /// **'New stock value'**
   String get adjustmentNewStock;
+
+  /// No description provided for @adjustmentDelta.
+  ///
+  /// In en, this message translates to:
+  /// **'Delta +/-'**
   String get adjustmentDelta;
+
+  /// No description provided for @adjustmentAmountAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity added'**
   String get adjustmentAmountAdded;
+
+  /// No description provided for @adjustmentAmountLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity lost'**
   String get adjustmentAmountLost;
+
+  /// No description provided for @adjustmentAbsoluteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 42  (replaces current stock)'**
   String get adjustmentAbsoluteHint;
+
+  /// No description provided for @adjustmentDeltaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. -3  (loss) or +2  (return)'**
   String get adjustmentDeltaHint;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
   String get confirm;
+
+  /// No description provided for @shiftStockUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock usage'**
   String get shiftStockUsage;
+
+  /// No description provided for @stockExpectedUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Expected usage'**
   String get stockExpectedUsage;
+
+  /// No description provided for @stockManualRefills.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual refills'**
   String get stockManualRefills;
+
+  /// No description provided for @stockAdjustments.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjustments'**
   String get stockAdjustments;
+
+  /// No description provided for @noStockDataForShift.
+  ///
+  /// In en, this message translates to:
+  /// **'No stock data for this shift'**
   String get noStockDataForShift;
+
+  /// No description provided for @lowStockThreshold.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock alert threshold'**
   String get lowStockThreshold;
+
+  /// No description provided for @lowStockThresholdHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 50  (optional, leave empty to disable)'**
   String get lowStockThresholdHint;
+
+  /// No description provided for @lowStockAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
   String get lowStockAlertTitle;
-  String lowStockAlertBody(String itemName, String stock, String unit);
+
+  /// No description provided for @lowStockAlertBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{itemName} is running low ({stock} {unit} remaining)'**
+  String lowStockAlertBody(Object itemName, Object stock, Object unit);
+
+  /// No description provided for @redoItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Remake'**
   String get redoItem;
+
+  /// No description provided for @redoItemTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark this item as remade (extra stock deducted, price unchanged)'**
   String get redoItemTooltip;
-  String redoItemConfirm(String name);
+
+  /// No description provided for @redoItemConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remake {name}?'**
+  String redoItemConfirm(Object name);
+
+  /// No description provided for @redoItemConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock will be deducted again. The customer price remains unchanged.'**
   String get redoItemConfirmBody;
-  String redoCount(int count);
+
+  /// No description provided for @redoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Remade {count}x'**
+  String redoCount(Object count);
+
+  /// No description provided for @incidents.
+  ///
+  /// In en, this message translates to:
+  /// **'Incidents'**
   String get incidents;
+
+  /// No description provided for @incidentsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage remakes & cancellations'**
   String get incidentsTooltip;
+
+  /// No description provided for @cancelItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
   String get cancelItem;
+
+  /// No description provided for @cancelItemTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this item (stock consumed, price removed from bill)'**
   String get cancelItemTooltip;
-  String cancelItemConfirm(String name);
+
+  /// No description provided for @cancelItemConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel {name}?'**
+  String cancelItemConfirm(Object name);
+
+  /// No description provided for @cancelItemConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This item will be removed from the bill. The stock that was already consumed will NOT be refunded.'**
   String get cancelItemConfirmBody;
-  String cancelCount(int count);
+
+  /// No description provided for @cancelCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled {count}x'**
+  String cancelCount(Object count);
 }
 
 class _AppLocalizationsDelegate

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$OrderItem {
 
- String get id;@JsonKey(name: 'order_id') String get orderId;@JsonKey(name: 'menu_item_id') String get menuItemId; String get name;@JsonKey(name: 'unit_price') double get unitPrice; int get quantity; double get subtotal;@JsonKey(name: 'order_notes') List<OrderNote> get orderNotes;
+ String get id;@JsonKey(name: 'order_id') String get orderId;@JsonKey(name: 'menu_item_id') String get menuItemId; String get name;@JsonKey(name: 'unit_price') double get unitPrice; int get quantity; double get subtotal;@JsonKey(name: 'redo_count') int get redoCount;@JsonKey(name: 'cancel_count') int get cancelCount;@JsonKey(name: 'order_notes') List<OrderNote> get orderNotes;
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $OrderItemCopyWith<OrderItem> get copyWith => _$OrderItemCopyWithImpl<OrderItem>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.menuItemId, menuItemId) || other.menuItemId == menuItemId)&&(identical(other.name, name) || other.name == name)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&const DeepCollectionEquality().equals(other.orderNotes, orderNotes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.menuItemId, menuItemId) || other.menuItemId == menuItemId)&&(identical(other.name, name) || other.name == name)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.redoCount, redoCount) || other.redoCount == redoCount)&&(identical(other.cancelCount, cancelCount) || other.cancelCount == cancelCount)&&const DeepCollectionEquality().equals(other.orderNotes, orderNotes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,menuItemId,name,unitPrice,quantity,subtotal,const DeepCollectionEquality().hash(orderNotes));
+int get hashCode => Object.hash(runtimeType,id,orderId,menuItemId,name,unitPrice,quantity,subtotal,redoCount,cancelCount,const DeepCollectionEquality().hash(orderNotes));
 
 @override
 String toString() {
-  return 'OrderItem(id: $id, orderId: $orderId, menuItemId: $menuItemId, name: $name, unitPrice: $unitPrice, quantity: $quantity, subtotal: $subtotal, orderNotes: $orderNotes)';
+  return 'OrderItem(id: $id, orderId: $orderId, menuItemId: $menuItemId, name: $name, unitPrice: $unitPrice, quantity: $quantity, subtotal: $subtotal, redoCount: $redoCount, cancelCount: $cancelCount, orderNotes: $orderNotes)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $OrderItemCopyWith<$Res>  {
   factory $OrderItemCopyWith(OrderItem value, $Res Function(OrderItem) _then) = _$OrderItemCopyWithImpl;
 @useResult
 $Res call({
- String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'menu_item_id') String menuItemId, String name,@JsonKey(name: 'unit_price') double unitPrice, int quantity, double subtotal,@JsonKey(name: 'order_notes') List<OrderNote> orderNotes
+ String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'menu_item_id') String menuItemId, String name,@JsonKey(name: 'unit_price') double unitPrice, int quantity, double subtotal,@JsonKey(name: 'redo_count') int redoCount,@JsonKey(name: 'cancel_count') int cancelCount,@JsonKey(name: 'order_notes') List<OrderNote> orderNotes
 });
 
 
@@ -65,7 +65,7 @@ class _$OrderItemCopyWithImpl<$Res>
 
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? menuItemId = null,Object? name = null,Object? unitPrice = null,Object? quantity = null,Object? subtotal = null,Object? orderNotes = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? orderId = null,Object? menuItemId = null,Object? name = null,Object? unitPrice = null,Object? quantity = null,Object? subtotal = null,Object? redoCount = null,Object? cancelCount = null,Object? orderNotes = null,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -74,7 +74,9 @@ as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non
 as String,unitPrice: null == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,subtotal: null == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
-as double,orderNotes: null == orderNotes ? _self.orderNotes : orderNotes // ignore: cast_nullable_to_non_nullable
+as double,redoCount: null == redoCount ? _self.redoCount : redoCount // ignore: cast_nullable_to_non_nullable
+as int,cancelCount: null == cancelCount ? _self.cancelCount : cancelCount // ignore: cast_nullable_to_non_nullable
+as int,orderNotes: null == orderNotes ? _self.orderNotes : orderNotes // ignore: cast_nullable_to_non_nullable
 as List<OrderNote>,
   ));
 }
@@ -160,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'redo_count')  int redoCount, @JsonKey(name: 'cancel_count')  int cancelCount, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _OrderItem() when $default != null:
-return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.orderNotes);case _:
+return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.redoCount,_that.cancelCount,_that.orderNotes);case _:
   return orElse();
 
 }
@@ -181,10 +183,10 @@ return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPri
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'redo_count')  int redoCount, @JsonKey(name: 'cancel_count')  int cancelCount, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)  $default,) {final _that = this;
 switch (_that) {
 case _OrderItem():
-return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.orderNotes);case _:
+return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.redoCount,_that.cancelCount,_that.orderNotes);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -201,10 +203,10 @@ return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPri
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id, @JsonKey(name: 'order_id')  String orderId, @JsonKey(name: 'menu_item_id')  String menuItemId,  String name, @JsonKey(name: 'unit_price')  double unitPrice,  int quantity,  double subtotal, @JsonKey(name: 'redo_count')  int redoCount, @JsonKey(name: 'cancel_count')  int cancelCount, @JsonKey(name: 'order_notes')  List<OrderNote> orderNotes)?  $default,) {final _that = this;
 switch (_that) {
 case _OrderItem() when $default != null:
-return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.orderNotes);case _:
+return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPrice,_that.quantity,_that.subtotal,_that.redoCount,_that.cancelCount,_that.orderNotes);case _:
   return null;
 
 }
@@ -216,7 +218,7 @@ return $default(_that.id,_that.orderId,_that.menuItemId,_that.name,_that.unitPri
 @JsonSerializable()
 
 class _OrderItem implements OrderItem {
-  const _OrderItem({required this.id, @JsonKey(name: 'order_id') required this.orderId, @JsonKey(name: 'menu_item_id') required this.menuItemId, required this.name, @JsonKey(name: 'unit_price') required this.unitPrice, required this.quantity, required this.subtotal, @JsonKey(name: 'order_notes') final  List<OrderNote> orderNotes = const []}): _orderNotes = orderNotes;
+  const _OrderItem({required this.id, @JsonKey(name: 'order_id') required this.orderId, @JsonKey(name: 'menu_item_id') required this.menuItemId, required this.name, @JsonKey(name: 'unit_price') required this.unitPrice, required this.quantity, required this.subtotal, @JsonKey(name: 'redo_count') this.redoCount = 0, @JsonKey(name: 'cancel_count') this.cancelCount = 0, @JsonKey(name: 'order_notes') final  List<OrderNote> orderNotes = const []}): _orderNotes = orderNotes;
   factory _OrderItem.fromJson(Map<String, dynamic> json) => _$OrderItemFromJson(json);
 
 @override final  String id;
@@ -226,6 +228,8 @@ class _OrderItem implements OrderItem {
 @override@JsonKey(name: 'unit_price') final  double unitPrice;
 @override final  int quantity;
 @override final  double subtotal;
+@override@JsonKey(name: 'redo_count') final  int redoCount;
+@override@JsonKey(name: 'cancel_count') final  int cancelCount;
  final  List<OrderNote> _orderNotes;
 @override@JsonKey(name: 'order_notes') List<OrderNote> get orderNotes {
   if (_orderNotes is EqualUnmodifiableListView) return _orderNotes;
@@ -247,16 +251,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.menuItemId, menuItemId) || other.menuItemId == menuItemId)&&(identical(other.name, name) || other.name == name)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&const DeepCollectionEquality().equals(other._orderNotes, _orderNotes));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _OrderItem&&(identical(other.id, id) || other.id == id)&&(identical(other.orderId, orderId) || other.orderId == orderId)&&(identical(other.menuItemId, menuItemId) || other.menuItemId == menuItemId)&&(identical(other.name, name) || other.name == name)&&(identical(other.unitPrice, unitPrice) || other.unitPrice == unitPrice)&&(identical(other.quantity, quantity) || other.quantity == quantity)&&(identical(other.subtotal, subtotal) || other.subtotal == subtotal)&&(identical(other.redoCount, redoCount) || other.redoCount == redoCount)&&(identical(other.cancelCount, cancelCount) || other.cancelCount == cancelCount)&&const DeepCollectionEquality().equals(other._orderNotes, _orderNotes));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,orderId,menuItemId,name,unitPrice,quantity,subtotal,const DeepCollectionEquality().hash(_orderNotes));
+int get hashCode => Object.hash(runtimeType,id,orderId,menuItemId,name,unitPrice,quantity,subtotal,redoCount,cancelCount,const DeepCollectionEquality().hash(_orderNotes));
 
 @override
 String toString() {
-  return 'OrderItem(id: $id, orderId: $orderId, menuItemId: $menuItemId, name: $name, unitPrice: $unitPrice, quantity: $quantity, subtotal: $subtotal, orderNotes: $orderNotes)';
+  return 'OrderItem(id: $id, orderId: $orderId, menuItemId: $menuItemId, name: $name, unitPrice: $unitPrice, quantity: $quantity, subtotal: $subtotal, redoCount: $redoCount, cancelCount: $cancelCount, orderNotes: $orderNotes)';
 }
 
 
@@ -267,7 +271,7 @@ abstract mixin class _$OrderItemCopyWith<$Res> implements $OrderItemCopyWith<$Re
   factory _$OrderItemCopyWith(_OrderItem value, $Res Function(_OrderItem) _then) = __$OrderItemCopyWithImpl;
 @override @useResult
 $Res call({
- String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'menu_item_id') String menuItemId, String name,@JsonKey(name: 'unit_price') double unitPrice, int quantity, double subtotal,@JsonKey(name: 'order_notes') List<OrderNote> orderNotes
+ String id,@JsonKey(name: 'order_id') String orderId,@JsonKey(name: 'menu_item_id') String menuItemId, String name,@JsonKey(name: 'unit_price') double unitPrice, int quantity, double subtotal,@JsonKey(name: 'redo_count') int redoCount,@JsonKey(name: 'cancel_count') int cancelCount,@JsonKey(name: 'order_notes') List<OrderNote> orderNotes
 });
 
 
@@ -284,7 +288,7 @@ class __$OrderItemCopyWithImpl<$Res>
 
 /// Create a copy of OrderItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? menuItemId = null,Object? name = null,Object? unitPrice = null,Object? quantity = null,Object? subtotal = null,Object? orderNotes = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? orderId = null,Object? menuItemId = null,Object? name = null,Object? unitPrice = null,Object? quantity = null,Object? subtotal = null,Object? redoCount = null,Object? cancelCount = null,Object? orderNotes = null,}) {
   return _then(_OrderItem(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,orderId: null == orderId ? _self.orderId : orderId // ignore: cast_nullable_to_non_nullable
@@ -293,7 +297,9 @@ as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non
 as String,unitPrice: null == unitPrice ? _self.unitPrice : unitPrice // ignore: cast_nullable_to_non_nullable
 as double,quantity: null == quantity ? _self.quantity : quantity // ignore: cast_nullable_to_non_nullable
 as int,subtotal: null == subtotal ? _self.subtotal : subtotal // ignore: cast_nullable_to_non_nullable
-as double,orderNotes: null == orderNotes ? _self._orderNotes : orderNotes // ignore: cast_nullable_to_non_nullable
+as double,redoCount: null == redoCount ? _self.redoCount : redoCount // ignore: cast_nullable_to_non_nullable
+as int,cancelCount: null == cancelCount ? _self.cancelCount : cancelCount // ignore: cast_nullable_to_non_nullable
+as int,orderNotes: null == orderNotes ? _self._orderNotes : orderNotes // ignore: cast_nullable_to_non_nullable
 as List<OrderNote>,
   ));
 }

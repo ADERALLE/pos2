@@ -747,113 +747,184 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get inventory => 'المخزون';
+
   @override
   String get inventorySubtitle => 'إدارة المخزون والوصفات';
+
   @override
   String get inventoryItem => 'عنصر مخزون';
+
   @override
   String get addInventoryItem => 'إضافة عنصر';
+
   @override
   String get noInventoryItems => 'لا توجد عناصر في المخزون';
+
   @override
   String get addFirstInventoryItem => 'أضف أول عنصر';
+
   @override
   String get editInventoryItem => 'تعديل العنصر';
+
   @override
   String get newInventoryItem => 'عنصر جديد';
+
   @override
   String get deleteInventoryItemQuestion => 'حذف العنصر؟';
+
   @override
-  String get deleteInventoryItemMessage => 'سيؤدي الحذف إلى إزالة جميع الوصفات المرتبطة.';
+  String get deleteInventoryItemMessage =>
+      'سيؤدي الحذف إلى إزالة جميع الوصفات المرتبطة.';
+
   @override
   String get currentStock => 'المخزون الحالي';
+
   @override
   String get unitType => 'الوحدة';
+
   @override
   String get unitUnit => 'وحدة (قطعة)';
+
   @override
   String get unitGrams => 'غرام (g)';
+
   @override
   String get unitMl => 'مليلتر (ml)';
+
   @override
   String get stopOrdersOnEmpty => 'حظر الطلبات عند النفاد';
+
   @override
-  String get stopOrdersOnEmptySubtitle => 'لا يمكن طلب العناصر المرتبطة بهذه المكون عند نفاد المخزون';
+  String get stopOrdersOnEmptySubtitle =>
+      'لا يمكن طلب العناصر المرتبطة بهذه المكون عند نفاد المخزون';
+
   @override
   String get outOfStock => 'نفد المخزون';
+
   @override
   String get linkedRecipes => 'الوصفات المرتبطة';
+
   @override
   String get linkMenuItem => 'ربط عنصر قائمة';
+
   @override
-  String get noLinkedRecipes => 'لا توجد وصفات — هذه المكون غير مرتبط بأي عنصر في القائمة.';
+  String get noLinkedRecipes =>
+      'لا توجد وصفات — هذه المكون غير مرتبط بأي عنصر في القائمة.';
+
   @override
   String get editRecipe => 'تعديل الوصفة';
+
   @override
   String get usagePerUnit => 'الاستهلاك لكل وحدة مباعة';
+
   @override
   String get manualAdjustment => 'تسوية يدوية';
+
   @override
   String get adjustmentRefill => 'إعادة تعبئة';
+
   @override
   String get adjustmentWaste => 'هدر';
+
   @override
   String get adjustmentCorrection => 'تصحيح';
+
   @override
   String get adjustmentNewStock => 'مخزون جديد';
+
   @override
   String get adjustmentDelta => 'فرق +/-';
+
   @override
   String get adjustmentAmountAdded => 'الكمية المضافة';
+
   @override
   String get adjustmentAmountLost => 'الكمية المفقودة';
+
   @override
   String get adjustmentAbsoluteHint => 'مثال: 42 (يستبدل المخزون الحالي)';
+
   @override
   String get adjustmentDeltaHint => 'مثال: -3 (فقدان) أو +2 (إرجاع)';
+
   @override
   String get confirm => 'تأكيد';
+
   @override
   String get shiftStockUsage => 'استهلاك المخزون';
+
   @override
   String get stockExpectedUsage => 'الاستهلاك المتوقع';
+
   @override
   String get stockManualRefills => 'إعادة التعبئة اليدوية';
+
   @override
   String get stockAdjustments => 'التسويات';
+
   @override
   String get noStockDataForShift => 'لا توجد بيانات مخزون لهذه الوردية';
+
   @override
   String get lowStockThreshold => 'حد تنبيه انخفاض المخزون';
+
   @override
-  String get lowStockThresholdHint => 'مثال: 50  (اختياري، اتركه فارغًا للتعطيل)';
+  String get lowStockThresholdHint =>
+      'مثال: 50  (اختياري، اتركه فارغًا للتعطيل)';
+
   @override
   String get lowStockAlertTitle => 'مخزون منخفض';
+
   @override
-  String lowStockAlertBody(String itemName, String stock, String unit) =>
-      '$itemName على وشك النفاد ($stock $unit متبقي)';
+  String lowStockAlertBody(Object itemName, Object stock, Object unit) {
+    return '$itemName على وشك النفاد ($stock $unit متبقي)';
+  }
+
   @override
   String get redoItem => 'إعادة تحضير';
+
   @override
-  String get redoItemTooltip => 'تحديد هذا العنصر كمعاد تحضيره';
+  String get redoItemTooltip =>
+      'تحديد هذا العنصر كمعاد تحضيره (يتم خصم المخزون مرة أخرى، السعر ثابت)';
+
   @override
-  String redoItemConfirm(String name) => 'إعادة تحضير $name؟';
+  String redoItemConfirm(Object name) {
+    return 'إعادة تحضير $name؟';
+  }
+
   @override
-  String get redoItemConfirmBody => 'سيتم خصم المخزون مرة أخرى. سعر العميل يبقى ثابتًا.';
+  String get redoItemConfirmBody =>
+      'سيتم خصم المخزون مرة أخرى. سعر العميل يبقى ثابتًا.';
+
   @override
-  String redoCount(int count) => 'أعيد ×$count';
+  String redoCount(Object count) {
+    return 'أعيد ${count}x';
+  }
+
   @override
   String get incidents => 'الحوادث';
+
   @override
   String get incidentsTooltip => 'إدارة إعادة التحضير والإلغاء';
+
   @override
   String get cancelItem => 'إلغاء';
+
   @override
-  String get cancelItemTooltip => 'إلغاء هذا العنصر (المخزون مستهلك، السعر يُحذف من الفاتورة)';
+  String get cancelItemTooltip =>
+      'إلغاء هذا العنصر (المخزون مستهلك، السعر يُحذف من الفاتورة)';
+
   @override
-  String cancelItemConfirm(String name) => 'إلغاء $name؟';
+  String cancelItemConfirm(Object name) {
+    return 'إلغاء $name؟';
+  }
+
   @override
-  String get cancelItemConfirmBody => 'سيُحذف هذا العنصر من الفاتورة. لن يتم استرداد المخزون المستهلك.';
+  String get cancelItemConfirmBody =>
+      'سيُحذف هذا العنصر من الفاتورة. لن يتم استرداد المخزون المستهلك.';
+
   @override
-  String cancelCount(int count) => 'ملغى ×$count';
+  String cancelCount(Object count) {
+    return 'ملغى ${count}x';
+  }
 }

@@ -39,7 +39,7 @@ final class SyncServiceProvider
   SyncService create() => SyncService();
 }
 
-String _$syncServiceHash() => r'f88bf9aa082b74ec018afea56c06d1474126782b';
+String _$syncServiceHash() => r'00646384044ede3c40c9fa076eec399f020951c8';
 
 /// Watches connectivity and auto-syncs the offline queue when back online.
 /// Instantiate once at app startup via ref.watch(syncServiceProvider).

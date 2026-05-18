@@ -14,6 +14,8 @@ _OrderItem _$OrderItemFromJson(Map<String, dynamic> json) => _OrderItem(
   unitPrice: (json['unit_price'] as num).toDouble(),
   quantity: (json['quantity'] as num).toInt(),
   subtotal: (json['subtotal'] as num).toDouble(),
+  redoCount: (json['redo_count'] as num?)?.toInt() ?? 0,
+  cancelCount: (json['cancel_count'] as num?)?.toInt() ?? 0,
   orderNotes:
       (json['order_notes'] as List<dynamic>?)
           ?.map((e) => OrderNote.fromJson(e as Map<String, dynamic>))
@@ -30,5 +32,7 @@ Map<String, dynamic> _$OrderItemToJson(_OrderItem instance) =>
       'unit_price': instance.unitPrice,
       'quantity': instance.quantity,
       'subtotal': instance.subtotal,
+      'redo_count': instance.redoCount,
+      'cancel_count': instance.cancelCount,
       'order_notes': instance.orderNotes,
     };

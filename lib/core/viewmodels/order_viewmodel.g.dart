@@ -50,7 +50,7 @@ final class ActiveOrdersProvider
   }
 }
 
-String _$activeOrdersHash() => r'7cd05612fd4846a01a13f4b5d2074317bf4b5d30';
+String _$activeOrdersHash() => r'7530a44c8b7b9033135ea311963d52a44ed9809e';
 
 final class ActiveOrdersFamily extends $Family
     with
@@ -406,7 +406,7 @@ final class MyActiveOrdersProvider
   }
 }
 
-String _$myActiveOrdersHash() => r'522ea82bc926187d6c23ef667c2217a85932ddf8';
+String _$myActiveOrdersHash() => r'bd5841a320050b3aa33701efbad9274f15294728';
 
 final class MyActiveOrdersFamily extends $Family
     with
@@ -574,7 +574,7 @@ final class CartProvider extends $NotifierProvider<Cart, List<CartItem>> {
   }
 }
 
-String _$cartHash() => r'189c6f70eb493759c03f1d3943177db9dfb7bc31';
+String _$cartHash() => r'76bb3fead25c4685438185156574438f4cf7813b';
 
 abstract class _$Cart extends $Notifier<List<CartItem>> {
   List<CartItem> build();
