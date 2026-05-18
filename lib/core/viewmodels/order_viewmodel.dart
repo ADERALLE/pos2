@@ -123,6 +123,7 @@ class ActiveOrders extends _$ActiveOrders {
       prevCancelCount: prevCancelCount,
     );
     await refresh(shopId);
+    ref.invalidate(shiftOrdersProvider);
   }
 }
 
@@ -353,6 +354,7 @@ class MyActiveOrders extends _$MyActiveOrders {
       prevCancelCount: prevCancelCount,
     );
     await refresh(cashierId);
+    ref.invalidate(shiftOrdersProvider);
   }
 }
 
