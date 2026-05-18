@@ -60,22 +60,28 @@ BEGIN
       v_quantity, v_cancel;
   END IF;
 
-  -- Incrémenter cancel_count — subtotal est une colonne générée (unit_price * quantity),
-  -- on ne peut pas l'écrire. Le total réel affiché côté Flutter utilise
-  -- unit_price * (quantity - cancel_count). On ne met à jour que orders.total.
+  -- Incrémenter cancel_count.
+  -- Le trigger sur order_items recalcule automatiquement orders.total via
+  -- SUM(unit_price * GREATEST(quantity - cancel_count, 0)) — pas besoin
+  -- de mettre à jour orders.total manuellement ici.
+  -- IMPORTANT : le trigger doit utiliser GREATEST(quantity - cancel_count, 0)
+  -- et non SUM(subtotal) pour que les annulations soient bien prises en compte.
   UPDATE order_items
      SET cancel_count = cancel_count + 1
    WHERE id = p_order_item_id;
+END;
+$$;
 
-  -- Recalculer le total depuis zéro (robuste contre les triggers DB qui remettent
-  -- total = SUM(unit_price * quantity) à chaque modif d'order_items).
+CREATE OR REPLACE FUNCTION sync_order_total()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
   UPDATE orders
-     SET total = GREATEST(
-       (SELECT COALESCE(SUM(oi.unit_price * GREATEST(oi.quantity - oi.cancel_count, 0)), 0)
-          FROM order_items oi
-         WHERE oi.order_id = v_order_id),
-       0
-     )
-   WHERE id = v_order_id;
+  SET total = (
+    SELECT COALESCE(SUM(unit_price * GREATEST(quantity - cancel_count, 0)), 0)
+    FROM order_items
+    WHERE order_id = COALESCE(NEW.order_id, OLD.order_id)
+  )
+  WHERE id = COALESCE(NEW.order_id, OLD.order_id);
+  RETURN NEW;
 END;
 $$;
