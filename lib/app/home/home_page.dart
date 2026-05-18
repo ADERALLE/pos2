@@ -568,7 +568,7 @@ class _ShiftOrderTile extends ConsumerWidget {
   void _openPayment(BuildContext context, WidgetRef ref) {
     PaymentDialog.show(
       context: context,
-      total: order.total,
+      total: order.effectiveTotal,
       onConfirm: (payment) async {
         final staff = ref.read(currentStaffProvider)!;
         final isManager = staff.role == StaffRole.manager;
@@ -651,7 +651,7 @@ class _ShiftOrderTile extends ConsumerWidget {
                     // Wrap meta line so it never overflows.
                     Text(
                       '${order.orderItems.length} items · '
-                          '${order.total.toStringAsFixed(2)} MAD  '
+                          '${order.effectiveTotal.toStringAsFixed(2)} MAD  '
                           '$shortId',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

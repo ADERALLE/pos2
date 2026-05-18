@@ -469,7 +469,7 @@ class _OrderCard extends ConsumerWidget {
                     ],
                   ),
                 Text(
-                  '${order.orderItems.length} items · ${order.total.toStringAsFixed(2)} MAD',
+                  '${order.orderItems.length} items · ${order.effectiveTotal.toStringAsFixed(2)} MAD',
                   style: TextStyle(fontSize: 13, color: scheme.onSurface.withOpacity(0.6)),
                 ),
               ],
@@ -532,7 +532,7 @@ class _OrderCard extends ConsumerWidget {
                 tooltip: AppLocalizations.of(context)!.markDone,
                 onPressed: () => PaymentDialog.show(
                   context: context,
-                  total: order.total,
+                  total: order.effectiveTotal,
                   onConfirm: (payment) async {
                     if (isManager) {
                       await ref.read(activeOrdersProvider(AppConstants.shopId).notifier)

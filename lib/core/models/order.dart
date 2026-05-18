@@ -48,4 +48,12 @@ extension OrderPaymentLabel on Order {
     if (cardAmount > 0) return 'Card';
     return 'Cash';
   }
+
+  /// Billable total computed from order items: unit_price × (quantity − cancelCount).
+  /// Use this instead of [total] for active orders — [total] stored in the DB
+  /// can be stale when a DB trigger resets it before cancel_order_item recalculates it.
+  double get effectiveTotal => orderItems.fold<double>(
+    0.0,
+    (sum, item) => sum + item.unitPrice * (item.quantity - item.cancelCount).clamp(0, item.quantity),
+  );
 }

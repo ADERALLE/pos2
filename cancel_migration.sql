@@ -67,9 +67,15 @@ BEGIN
      SET cancel_count = cancel_count + 1
    WHERE id = p_order_item_id;
 
-  -- Diminuer le total de la commande
+  -- Recalculer le total depuis zéro (robuste contre les triggers DB qui remettent
+  -- total = SUM(unit_price * quantity) à chaque modif d'order_items).
   UPDATE orders
-     SET total = GREATEST(total - v_unit_price, 0)
+     SET total = GREATEST(
+       (SELECT COALESCE(SUM(oi.unit_price * GREATEST(oi.quantity - oi.cancel_count, 0)), 0)
+          FROM order_items oi
+         WHERE oi.order_id = v_order_id),
+       0
+     )
    WHERE id = v_order_id;
 END;
 $$;
