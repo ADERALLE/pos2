@@ -143,7 +143,8 @@ BEGIN
 
   LOOP
     -- ── 2. Déductions déjà engagées en DB (orders pending + inprogress) ───
-    SELECT COALESCE(SUM(ir2.usage_value * oi.quantity), 0)
+    -- On inclut redo_count car deduct_order_stock déduit (quantity + redo_count).
+    SELECT COALESCE(SUM(ir2.usage_value * (oi.quantity + oi.redo_count)), 0)
     INTO v_pending_used
     FROM order_items oi
     JOIN orders o ON o.id = oi.order_id
