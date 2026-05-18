@@ -252,6 +252,14 @@ class OrderRepository {
     });
   }
 
+  /// Atomically cancels all sub-items of a combo unit (sets cancel_count = quantity each)
+  /// and recalculates the order total.
+  Future<void> cancelComboItems(List<String> itemIds) async {
+    await _client.rpc('cancel_combo_items', params: {
+      'p_item_ids': itemIds,
+    });
+  }
+
   Future<Map<String, dynamic>> getShiftSummary(String shiftId) async {
     final orders = await _client
         .from('orders')

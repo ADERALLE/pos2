@@ -125,6 +125,46 @@ class ActiveOrders extends _$ActiveOrders {
     await refresh(shopId);
     ref.invalidate(shiftOrdersProvider);
   }
+
+  /// Remakes every sub-item of a combo unit — stock deducted again per item, price unchanged.
+  /// Returns false (without deducting) if any ingredient is insufficient.
+  Future<bool> redoComboItems({
+    required List<OrderItem> comboItems,
+    required String shopId,
+  }) async {
+    for (final item in comboItems) {
+      final available = await ref
+          .read(inventoryRepositoryProvider)
+          .checkStockAvailability(
+            targetId: item.menuItemId,
+            isCombo: false,
+            shopId: AppConstants.shopId,
+            requestedQty: 1,
+            selectedItemIds: [],
+          );
+      if (!available) return false;
+    }
+    for (final item in comboItems) {
+      await ref.read(orderRepositoryProvider).redoOrderItem(
+        orderItemId: item.id,
+        prevRedoCount: item.redoCount,
+      );
+    }
+    await refresh(shopId);
+    ref.invalidate(shiftOrdersProvider);
+    ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+    return true;
+  }
+
+  /// Atomically cancels all sub-items of a combo unit — stock consumed, price removed from bill.
+  Future<void> cancelComboItems({
+    required List<String> itemIds,
+    required String shopId,
+  }) async {
+    await ref.read(orderRepositoryProvider).cancelComboItems(itemIds);
+    await refresh(shopId);
+    ref.invalidate(shiftOrdersProvider);
+  }
 }
 
 // ── order history (manager) ───────────────────────────────────────────────────
@@ -353,6 +393,46 @@ class MyActiveOrders extends _$MyActiveOrders {
       orderItemId: orderItemId,
       prevCancelCount: prevCancelCount,
     );
+    await refresh(cashierId);
+    ref.invalidate(shiftOrdersProvider);
+  }
+
+  /// Remakes every sub-item of a combo unit — stock deducted again per item, price unchanged.
+  /// Returns false (without deducting) if any ingredient is insufficient.
+  Future<bool> redoComboItems({
+    required List<OrderItem> comboItems,
+    required String cashierId,
+  }) async {
+    for (final item in comboItems) {
+      final available = await ref
+          .read(inventoryRepositoryProvider)
+          .checkStockAvailability(
+            targetId: item.menuItemId,
+            isCombo: false,
+            shopId: AppConstants.shopId,
+            requestedQty: 1,
+            selectedItemIds: [],
+          );
+      if (!available) return false;
+    }
+    for (final item in comboItems) {
+      await ref.read(orderRepositoryProvider).redoOrderItem(
+        orderItemId: item.id,
+        prevRedoCount: item.redoCount,
+      );
+    }
+    await refresh(cashierId);
+    ref.invalidate(shiftOrdersProvider);
+    ref.invalidate(inventoryItemListProvider(AppConstants.shopId));
+    return true;
+  }
+
+  /// Atomically cancels all sub-items of a combo unit — stock consumed, price removed from bill.
+  Future<void> cancelComboItems({
+    required List<String> itemIds,
+    required String cashierId,
+  }) async {
+    await ref.read(orderRepositoryProvider).cancelComboItems(itemIds);
     await refresh(cashierId);
     ref.invalidate(shiftOrdersProvider);
   }

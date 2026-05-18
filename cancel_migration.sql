@@ -84,3 +84,43 @@ $$;
 -- gère désormais orders.total explicitement.
 DROP TRIGGER IF EXISTS sync_order_total_trigger ON public.order_items;
 DROP FUNCTION IF EXISTS sync_order_total();
+
+-- ── 4. RPC cancel_combo_items ─────────────────────────────────────────────────
+-- Annule entièrement une unité combo en une seule transaction atomique.
+-- • cancel_count = quantity pour chaque item de la liste (fully cancelled)
+-- • orders.total recalculé via SUM(unit_price * GREATEST(quantity - cancel_count, 0))
+CREATE OR REPLACE FUNCTION cancel_combo_items(
+  p_item_ids UUID[]
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_order_id UUID;
+BEGIN
+  IF array_length(p_item_ids, 1) IS NULL THEN RETURN; END IF;
+
+  SELECT order_id INTO v_order_id
+    FROM order_items WHERE id = p_item_ids[1];
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'order_item not found';
+  END IF;
+
+  -- Fully cancel each sub-item of the combo unit.
+  UPDATE order_items
+     SET cancel_count = quantity
+   WHERE id = ANY(p_item_ids)
+     AND cancel_count < quantity;
+
+  -- Recalculate order total from scratch.
+  UPDATE orders
+     SET total = (
+       SELECT COALESCE(SUM(oi.unit_price * GREATEST(oi.quantity - oi.cancel_count, 0)), 0)
+         FROM order_items oi
+        WHERE oi.order_id = v_order_id
+     )
+   WHERE id = v_order_id;
+END;
+$$;
