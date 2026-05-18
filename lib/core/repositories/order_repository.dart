@@ -121,9 +121,15 @@ class OrderRepository {
 
     final orderId = orderData['id'] as String;
 
-    await _client.from('order_items').insert(
-      items.map((i) => {...i, 'order_id': orderId}).toList(),
+    final mappedItems = items.map((i) => {...i, 'order_id': orderId}).toList();
+    await _client.from('order_items').insert(mappedItems);
+
+    // Compute total explicitly — no trigger to do it anymore.
+    final total = items.fold<double>(
+      0.0,
+      (sum, i) => sum + (i['unit_price'] as double) * (i['quantity'] as int),
     );
+    await _client.from('orders').update({'total': total}).eq('id', orderId);
 
     final full = await _client
         .from('orders')

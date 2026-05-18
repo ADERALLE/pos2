@@ -61,27 +61,26 @@ BEGIN
   END IF;
 
   -- Incrémenter cancel_count.
-  -- Le trigger sur order_items recalcule automatiquement orders.total via
-  -- SUM(unit_price * GREATEST(quantity - cancel_count, 0)) — pas besoin
-  -- de mettre à jour orders.total manuellement ici.
-  -- IMPORTANT : le trigger doit utiliser GREATEST(quantity - cancel_count, 0)
-  -- et non SUM(subtotal) pour que les annulations soient bien prises en compte.
   UPDATE order_items
      SET cancel_count = cancel_count + 1
    WHERE id = p_order_item_id;
+
+  -- Recalculer le total de la commande sans dépendre d'un trigger.
+  -- On fait un SUM complet pour être robuste (pas de soustraction cumulative).
+  UPDATE orders
+     SET total = (
+       SELECT COALESCE(SUM(oi.unit_price * GREATEST(oi.quantity - oi.cancel_count, 0)), 0)
+         FROM order_items oi
+        WHERE oi.order_id = v_order_id
+     )
+   WHERE id = v_order_id;
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION sync_order_total()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
-BEGIN
-  UPDATE orders
-  SET total = (
-    SELECT COALESCE(SUM(unit_price * GREATEST(quantity - cancel_count, 0)), 0)
-    FROM order_items
-    WHERE order_id = COALESCE(NEW.order_id, OLD.order_id)
-  )
-  WHERE id = COALESCE(NEW.order_id, OLD.order_id);
-  RETURN NEW;
-END;
-$$;
+-- ── 3. Supprimer le trigger automatique sur order_items ──────
+-- Ce trigger recalculait orders.total à chaque modif d'order_items via
+-- SUM(subtotal) sans tenir compte de cancel_count — source du bug.
+-- Chaque code path (cancel_order_item, Flutter createOrder/updateOrderItems)
+-- gère désormais orders.total explicitement.
+DROP TRIGGER IF EXISTS sync_order_total_trigger ON public.order_items;
+DROP FUNCTION IF EXISTS sync_order_total();
